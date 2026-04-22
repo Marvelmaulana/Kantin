@@ -2,23 +2,42 @@
 session_start();
 include 'config.php';
 
-// 1. PENGUNCI SESSION: Supaya tidak mental kembali ke login jika sudah login
-if (!isset($_SESSION['id_user'])) {
+// CEK LOGIN
+if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'pembeli') {
     header("Location: login.php");
     exit();
 }
 
 $id_user = $_SESSION['id_user'];
 
-// 2. AMBIL DATA USER (Untuk nama profil)
-$query_user = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = '$id_user'");
-$user = mysqli_fetch_assoc($query_user);
+// DATA USER
+$user = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT * FROM users WHERE id_user='$id_user'"));
 
-// 3. AMBIL DATA KANTIN (Dinamis dari database kamu)
-$query_kantin = mysqli_query($koneksi, "SELECT * FROM kantin ORDER BY id_kantin ASC");
+// NOTIF (Menghitung pesan/notifikasi yang belum dibaca)
+$jml_notif = 0;
+$cek = mysqli_query($koneksi, "SHOW TABLES LIKE 'notifikasi'");
+if(mysqli_num_rows($cek) > 0){
+    $notif = mysqli_query($koneksi, "SELECT * FROM notifikasi WHERE id_user='$id_user' AND status=0");
+    $jml_notif = mysqli_num_rows($notif);
+}
 
-// 4. AMBIL MENU TERBARU
-$query_terbaru = mysqli_query($koneksi, "SELECT * FROM menu ORDER BY id_menu DESC LIMIT 4");
+// SEARCH & KATEGORI
+$search   = isset($_GET['search']) ? mysqli_real_escape_string($koneksi, $_GET['search']) : '';
+$kategori = isset($_GET['kategori']) ? mysqli_real_escape_string($koneksi, $_GET['kategori']) : '';
+
+// QUERY MENU
+$sql = "SELECT * FROM menu WHERE 1";
+if (!empty($search)) {
+    $sql .= " AND nama_menu LIKE '%$search%'";
+}
+if (!empty($kategori)) {
+    $sql .= " AND LOWER(kategori) = LOWER('$kategori')";
+}
+$sql .= " ORDER BY id_menu DESC";
+$query_menu = mysqli_query($koneksi, $sql);
+
+// KANTIN
+$query_kantin = mysqli_query($koneksi, "SELECT * FROM kantin");
 ?>
 
 <!DOCTYPE html>
@@ -26,133 +45,204 @@ $query_terbaru = mysqli_query($koneksi, "SELECT * FROM menu ORDER BY id_menu DES
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kantin Kita - Home</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Kantin Online</title>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    
     <style>
-        :root { --blue: #50c8ff; --orange: #ffb74d; --gray: #f2f2f2; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background: white; margin: 0; padding-bottom: 90px; overflow-x: hidden; }
-
-        /* Header Biru */
-        .header-top { background: var(--blue); padding: 45px 20px 65px; text-align: center; color: white; border-bottom-left-radius: 5px; border-bottom-right-radius: 5px; position: relative; }
-        .logo-box { display: flex; align-items: center; justify-content: center; gap: 12px; }
-        .logo-box i { background: white; color: var(--blue); padding: 10px; border-radius: 15px; font-size: 20px; }
-        .logo-box h2 { font-style: italic; margin: 0; font-size: 24px; letter-spacing: 1px; }
-        
-        /* Nama User */
-        .user-welcome { position: absolute; top: 15px; left: 20px; font-size: 12px; color: white; font-weight: bold; }
-
-        /* Search Bar melayang */
-        .search-container { margin: -30px 25px 0; position: relative; z-index: 10; }
-        .search-container input { 
-            width: 100%; padding: 16px 20px; border-radius: 30px; 
-            border: 1px solid #ddd; box-shadow: 0 4px 12px rgba(0,0,0,0.1); outline: none; font-size: 14px;
+        /* CSS DASAR */
+        :root {
+            --primary: #ab2d00;      /* Merah Bata */
+            --bg-page: #fff4f3;      /* Krem Lembut */
+            --white: #ffffff;
+            --text: #4e2120;
         }
-        .search-container i { position: absolute; right: 20px; top: 18px; color: #444; font-size: 18px; }
 
-        /* Kategori Chips */
-        .chip-wrapper { padding: 25px 10px 10px; text-align: center; }
-        .chip-row { display: flex; justify-content: center; gap: 10px; margin-bottom: 12px; }
-        .chip { background: var(--gray); border: 1px solid #e0e0e0; padding: 8px 22px; border-radius: 20px; font-size: 12px; font-weight: 500; color: #333; }
-
-        /* Label Section */
-        .section-label { padding: 10px 25px; font-weight: bold; font-size: 15px; display: flex; align-items: center; gap: 8px; color: #333; }
-
-        /* Horizontal Scroll Menu Terbaru */
-        .menu-row { display: flex; overflow-x: auto; padding: 0 25px 20px; gap: 15px; scrollbar-width: none; }
-        .menu-row::-webkit-scrollbar { display: none; }
-        .card-item { min-width: 165px; background: white; border-radius: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); overflow: hidden; position: relative; }
-        .card-item img { width: 100%; height: 125px; object-fit: cover; }
-        .btn-fav { position: absolute; top: 12px; right: 12px; background: white; color: #666; padding: 6px; border-radius: 50%; font-size: 11px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-decoration: none; }
-        .card-body { background: var(--orange); padding: 10px 12px; }
-        .card-body h4 { margin: 0; font-size: 13px; color: #222; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 5px; font-size: 11px; font-weight: bold; }
-
-        /* Tombol List Kantin (Dinamis) */
-        .btn-kantin-list { 
-            display: flex; justify-content: space-between; align-items: center;
-            background: var(--orange); margin: 10px 25px; padding: 15px 25px; 
-            border-radius: 35px; text-decoration: none; color: #333; font-weight: bold; font-size: 14px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05); transition: 0.2s;
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-page);
+            color: var(--text);
+            padding-bottom: 100px; /* Supaya konten tidak tertutup nav bawah */
         }
-        .btn-kantin-list:active { transform: scale(0.95); }
 
-        /* Navigation Bawah */
-        .footer-nav { 
-            position: fixed; bottom: 0; width: 100%; height: 75px; 
-            background: #e0e0e0; border-top: 4px solid var(--blue); 
-            display: flex; align-items: center; justify-content: space-around; z-index: 100;
+        /* HEADER */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
         }
-        .nav-item { color: #333; font-size: 26px; text-decoration: none; width: 25%; height: 100%; display: flex; align-items: center; justify-content: center; transition: 0.3s; }
-        .nav-item.active { background: var(--orange); }
+        .header h1 { font-size: 20px; color: var(--primary); margin: 0; }
+        .cart-icon { position: relative; color: var(--primary); }
+        .badge {
+            position: absolute; top: -5px; right: -5px;
+            background: var(--primary); color: white;
+            font-size: 10px; padding: 2px 6px; border-radius: 50%;
+        }
+
+        /* SEARCH BAR */
+        .search-container { padding: 0 20px; margin-bottom: 20px; }
+        .search-container input {
+            width: 100%; padding: 15px 20px; border-radius: 30px;
+            border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            box-sizing: border-box; outline: none;
+        }
+
+        /* BANNER PROMO */
+        .promo-card {
+            margin: 0 20px; padding: 25px;
+            background: linear-gradient(135deg, #ab2d00, #ff7851);
+            border-radius: 20px; color: white;
+            position: relative; overflow: hidden;
+        }
+        .promo-card h2 { margin: 5px 0; font-size: 22px; }
+        .promo-card p { font-size: 12px; opacity: 0.8; margin-bottom: 15px; }
+        .btn-promo {
+            background: white; color: var(--primary);
+            padding: 8px 15px; border-radius: 15px;
+            text-decoration: none; font-size: 12px; font-weight: bold;
+        }
+
+        /* KATEGORI (CHIPS) */
+        .category-row {
+            display: flex; gap: 15px; padding: 20px;
+            overflow-x: auto; /* Bisa digeser ke samping jika penuh */
+            scrollbar-width: none; /* Sembunyikan scrollbar */
+        }
+        .cat-item {
+            text-align: center; text-decoration: none; color: inherit; min-width: 70px;
+        }
+        .cat-box {
+            width: 60px; height: 60px; background: white;
+            border-radius: 20px; display: flex; align-items: center;
+            justify-content: center; margin-bottom: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+            transition: 0.3s;
+        }
+        .cat-item.active .cat-box { background: var(--primary); color: white; }
+        .cat-item span { font-size: 11px; font-weight: bold; }
+
+        /* GRID MENU */
+        .menu-grid {
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 15px; padding: 0 20px;
+        }
+        .card {
+            background: white; border-radius: 25px;
+            overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            position: relative;
+        }
+        .card img { width: 100%; height: 110px; object-fit: cover; }
+        .card-body { padding: 12px; }
+        .card-body b { font-size: 14px; display: block; margin-bottom: 4px; }
+        .card-body .price { color: var(--primary); font-weight: bold; font-size: 14px; }
+        .btn-add {
+            position: absolute; bottom: 12px; right: 12px;
+            width: 32px; height: 32px; background: #ffd2d0;
+            color: var(--primary); border-radius: 50%;
+            text-align: center; line-height: 32px;
+            text-decoration: none; font-weight: bold;
+        }
+
+        /* NAVIGASI BAWAH */
+        .nav-bottom {
+            position: fixed; bottom: 15px; left: 50%;
+            transform: translateX(-50%); width: 90%;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px); height: 70px;
+            border-radius: 35px; display: flex;
+            justify-content: space-around; align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .nav-link { color: #ccc; text-decoration: none; display: flex; flex-direction: column; align-items: center; }
+        .nav-link.active { color: var(--primary); }
     </style>
 </head>
+
 <body>
 
-    <div class="header-top">
-        <div class="user-welcome">Halo, <?= htmlspecialchars($user['username'] ?? 'User'); ?>!</div>
-        <div class="logo-box">
-            <i class="fas fa-home"></i>
-            <h2>Kantin Kita</h2>
+    <div class="header">
+        <span class="material-symbols-outlined">menu</span>
+        <h1>Kantin Online</h1>
+        <div class="cart-icon">
+            <span class="material-symbols-outlined">shopping_cart</span>
+            <?php if($jml_notif > 0): ?>
+                <span class="badge"><?= $jml_notif ?></span>
+            <?php endif; ?>
         </div>
     </div>
 
     <div class="search-container">
-        <input type="text" placeholder="Cari makanan atau kantin...">
-        <i class="fas fa-search"></i>
+        <form method="GET">
+            <input type="text" name="search" placeholder="Cari makan siang apa hari ini?" value="<?= htmlspecialchars($search) ?>">
+        </form>
     </div>
 
-    <div class="chip-wrapper">
-        <div class="chip-row">
-            <div class="chip">Favorit</div>
-            <div class="chip">Kantin</div>
-            <div class="chip">Makanan</div>
-        </div>
-        <div class="chip-row">
-            <div class="chip">Minuman</div>
-            <div class="chip">Camilan</div>
-        </div>
+    <div class="promo-card">
+        <small style="background: #ffd2d0; color: #ab2d00; padding: 2px 8px; border-radius: 10px; font-weight: bold;">PROMO</small>
+        <h2>Diskon Hingga 50%</h2>
+        <p>Halo, <?= $user['username'] ?>! Nikmati menu spesial hari ini.</p>
+        <a href="#" class="btn-promo">PESAN SEKARANG</a>
     </div>
 
-    <div class="section-label"><i class="far fa-clock"></i> Menu Terbaru</div>
-    <div class="menu-row">
-        <?php if(mysqli_num_rows($query_terbaru) > 0): ?>
-            <?php while($m = mysqli_fetch_assoc($query_terbaru)) : ?>
-            <div class="card-item">
-                <a href="#" class="btn-fav"><i class="far fa-heart"></i></a>
-                <img src="uploads/<?= $m['foto_menu'] ?>" onerror="this.src='https://via.placeholder.com/150'">
-                <div class="card-body">
-                    <h4><?= $m['nama_menu'] ?></h4>
-                    <div class="card-footer">
-                        <span>Rp <?= number_format($m['harga'], 0, ',', '.') ?></span>
-                        <span><i class="fas fa-star"></i> 4.8</span>
-                    </div>
-                </div>
-            </div>
-            <?php endwhile; ?>
-        <?php else: ?>
-            <p style="padding-left: 25px; font-size: 12px; color: #888;">Belum ada menu.</p>
-        <?php endif; ?>
-    </div>
-
-    <div class="section-label"><i class="fas fa-store"></i> Pilih Kantin</div>
-    <?php if(mysqli_num_rows($query_kantin) > 0): ?>
-        <?php while($k = mysqli_fetch_assoc($query_kantin)) : ?>
-        <a href="menu_kantin.php?id=<?= $k['id_kantin'] ?>" class="btn-kantin-list">
-            <span><?= $k['nama_kantin'] ?></span>
-            <span style="font-size: 11px; font-weight: normal;">Lihat Menu <i class="fas fa-arrow-alt-circle-right"></i></span>
+    <div class="category-row">
+        <a href="dashboard.php" class="cat-item <?= ($kategori=='')?'active':'' ?>">
+            <div class="cat-box"><span class="material-symbols-outlined">grid_view</span></div>
+            <span>Semua</span>
         </a>
-        <?php endwhile; ?>
-    <?php else: ?>
-        <p style="text-align: center; color: #888;">Data kantin tidak ditemukan di database.</p>
-    <?php endif; ?>
+        <a href="?kategori=Makanan" class="cat-item <?= (strtolower($kategori)=='makanan')?'active':'' ?>">
+            <div class="cat-box"><span class="material-symbols-outlined">restaurant</span></div>
+            <span>Makanan</span>
+        </a>
+        <a href="?kategori=Minuman" class="cat-item <?= (strtolower($kategori)=='minuman')?'active':'' ?>">
+            <div class="cat-box"><span class="material-symbols-outlined">local_drink</span></div>
+            <span>Minuman</span>
+        </a>
+        <a href="?kategori=Cemilan" class="cat-item <?= (strtolower($kategori)=='cemilan')?'active':'' ?>">
+            <div class="cat-box"><span class="material-symbols-outlined">icecream</span></div>
+            <span>Cemilan</span>
+        </a>
+    </div>
 
-    <nav class="footer-nav">
-        <a href="dashboard.php" class="nav-item active"><i class="fas fa-home"></i></a>
-        <a href="keranjang.php" class="nav-item"><i class="fas fa-shopping-basket"></i></a>
-        <a href="riwayat_pembeli.php" class="nav-item"><i class="fas fa-comment-dots"></i></a>
-        <a href="profil.php" class="nav-item"><i class="fas fa-user-circle"></i></a>
-    </nav>
+    <h4 style="padding-left: 20px; margin-bottom: 10px;">Rekomendasi</h4>
+    <div class="menu-grid">
+        <?php while($m = mysqli_fetch_assoc($query_menu)) : ?>
+        <div class="card">
+            <img src="uploads/<?= $m['foto_menu'] ?>" onerror="this.src='https://via.placeholder.com/150'">
+            <div class="card-body">
+                <b><?= $m['nama_menu'] ?></b>
+                <span class="price">Rp <?= number_format($m['harga']) ?></span>
+                <a href="tambah_keranjang.php?id=<?= $m['id_menu'] ?>" class="btn-add">+</a>
+            </div>
+        </div>
+        <?php endwhile; ?>
+    </div>
+
+    <h4 style="padding-left: 20px; margin-top: 25px;">Daftar Kantin</h4>
+    <?php while($k = mysqli_fetch_assoc($query_kantin)) : ?>
+    <a href="menu_kantin.php?id=<?= $k['id_kantin'] ?>" style="display: block; margin: 10px 20px; padding: 15px; background: white; border-radius: 20px; text-decoration: none; color: inherit; font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
+        🏪 Kantin <?= $k['id_kantin'] ?>
+    </a>
+    <?php endwhile; ?>
+
+    <div class="nav-bottom">
+        <a href="dashboard.php" class="nav-link active">
+            <span class="material-symbols-outlined">home</span>
+            <small>Home</small>
+        </a>
+        <a href="keranjang.php" class="nav-link">
+            <span class="material-symbols-outlined">shopping_bag</span>
+            <small>Pesanan</small>
+        </a>
+        <a href="riwayat_pembeli.php" class="nav-link">
+            <span class="material-symbols-outlined">history</span>
+            <small>Riwayat</small>
+        </a>
+        <a href="profil.php" class="nav-link">
+            <span class="material-symbols-outlined">person</span>
+            <small>Profil</small>
+        </a>
+    </div>
 
 </body>
 </html>

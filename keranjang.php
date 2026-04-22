@@ -74,8 +74,7 @@ $total_bayar = 0;
 <div class="navbar">
     <h2>🛒 Keranjang Kita</h2>
     <div>
-        <a href="dashboard_pembeli.php">Home</a>
-        <a href="riwayat_pembeli.php">Riwayat</a>
+        <a href="dashboard.php">Home</a>
     </div>
 </div>
 
@@ -95,7 +94,7 @@ $total_bayar = 0;
             <p style="font-size: 60px;">🛒</p>
             <h3>Keranjangmu masih kosong</h3>
             <p>Sepertinya perutmu butuh asupan jajanan enak.</p>
-            <a href="dashboard_pembeli.php" style="display:inline-block; margin-top:20px; background: var(--primary-blue); color:white; padding: 10px 25px; border-radius: 8px; text-decoration:none; font-weight:bold;">Cari Makanan Sekarang</a>
+            <a href="dashboard.php" style="display:inline-block; margin-top:20px; background: var(--primary-blue); color:white; padding: 10px 25px; border-radius: 8px; text-decoration:none; font-weight:bold;">Cari Makanan Sekarang</a>
         </div>
     <?php else : ?>
         
