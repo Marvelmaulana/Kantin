@@ -17,5 +17,5 @@
     <a href="profil.php" class="flex flex-col items-center <?= ($current_page == 'profile') ? 'text-[#b22204]' : 'text-stone-400' ?>">
         <span class="material-symbols-outlined" style='font-variation-settings: "FILL" <?= ($current_page == 'profile') ? "1" : "0" ?>;'>person</span>
         <span class="text-[9px] font-bold uppercase">Profile</span>
-    </a>
+    </a> 
 </nav>
