@@ -2,63 +2,75 @@
 session_start();
 include(__DIR__ . '/../../config/config.php');
 
-if (!isset($_SESSION['id_user'])) { exit(); }
-$id_user = $_SESSION['id_user'];
-
-// Ambil metode dari URL (ewallet / cash)
-$metode = isset($_GET['metode']) ? $_GET['metode'] : 'cash';
-$tanggal = date('Y-m-d H:i:s');
-
-// 1. Ambil data keranjang DAN id_kantin
-$q_keranjang = mysqli_query($koneksi, "SELECT keranjang.*, menu.harga, menu.id_kantin 
-                                       FROM keranjang 
-                                       JOIN menu ON keranjang.id_menu = menu.id_menu 
-                                       WHERE keranjang.id_user = '$id_user'");
-
-// Kita butuh data keranjang dua kali, simpan ke array
-$items = [];
-$total_harga = 0;
-$id_kantin = null;
-
-while($row = mysqli_fetch_assoc($q_keranjang)) {
-    $items[] = $row;
-    $total_harga += ($row['harga'] * $row['qty']);
-    $id_kantin = $row['id_kantin']; 
+if (!isset($_SESSION['id_user'])) {
+    header("Location: ../auth/login.php");
+    exit();
 }
 
-if ($total_harga > 0 && $id_kantin != null) {
-    // 2. Simpan ke tabel pesanan (Utama)
-    $status = ($metode == 'ewallet') ? 'Lunas' : 'Proses Masak';
-    
-    $query_insert = "INSERT INTO pesanan (id_user, id_kantin, total_harga, tanggal, status, metode_pembayaran) 
-                     VALUES ('$id_user', '$id_kantin', '$total_harga', '$tanggal', '$status', '$metode')";
-    
-    if (mysqli_query($koneksi, $query_insert)) {
-        // AMBIL ID PESANAN YANG BARU SAJA TERJADI
-        $id_pesanan_baru = mysqli_insert_id($koneksi);
+$id_user = $_SESSION['id_user'];
+$metode_bayar = mysqli_real_escape_string($koneksi, $_GET['method']);
+$source = isset($_GET['source']) ? $_GET['source'] : '';
+$tanggal = date('Y-m-d H:i:s');
 
-        // 3. MASUKKAN SETIAP ITEM KE TABEL detail_pesanan
-        foreach ($items as $item) {
-            $id_menu = $item['id_menu'];
-            $qty = $item['qty'];
-            $subtotal = $item['harga'] * $qty;
-            $catatan = $item['catatan']; // Pastikan di tabel keranjang ada kolom catatan
+// 1. HITUNG TOTAL HARGA DULU
+$total_bayar = 0;
 
-            mysqli_query($koneksi, "INSERT INTO detail_pesanan (id_pesanan, id_menu, qty, subtotal, catatan) 
-                                    VALUES ('$id_pesanan_baru', '$id_menu', '$qty', '$subtotal', '$catatan')");
+if ($source == 'cart') {
+    // Ambil total dari keranjang
+    $q_total = mysqli_query($koneksi, "SELECT SUM(menu.harga * keranjang.qty) as total 
+                                      FROM keranjang 
+                                      JOIN menu ON keranjang.id_menu = menu.id_menu 
+                                      WHERE keranjang.id_user = '$id_user'");
+    $res_total = mysqli_fetch_assoc($q_total);
+    $total_bayar = $res_total['total'];
+} else {
+    // Ambil total dari beli langsung
+    $id_menu = mysqli_real_escape_string($koneksi, $_GET['id_menu']);
+    $qty = (int)$_GET['qty'];
+    $q_menu = mysqli_query($koneksi, "SELECT harga FROM menu WHERE id_menu = '$id_menu'");
+    $res_menu = mysqli_fetch_assoc($q_menu);
+    $total_bayar = $res_menu['harga'] * $qty;
+}
+
+// 2. INPUT KE TABEL PESANAN (Induk)
+// Status default 'menunggu'
+$query_pesanan = "INSERT INTO pesanan (id_user, tanggal, total_harga, metode_pembayaran, status) 
+                  VALUES ('$id_user', '$tanggal', '$total_bayar', '$metode_bayar', 'menunggu')";
+
+if (mysqli_query($koneksi, $query_pesanan)) {
+    $id_pesanan_baru = mysqli_insert_id($koneksi); // AMBIL ID PESANAN YANG BARU SAJA DIBUAT
+
+    // 3. INPUT KE TABEL DETAIL_PESANAN (Anak)
+    if ($source == 'cart') {
+        // Pindahkan semua dari keranjang ke detail_pesanan
+        $keranjang = mysqli_query($koneksi, "SELECT * FROM keranjang WHERE id_user = '$id_user'");
+        while ($item = mysqli_fetch_assoc($keranjang)) {
+            $id_m = $item['id_menu'];
+            $qty_m = $item['qty'];
+            $keranjang = mysqli_query($koneksi, "
+    SELECT keranjang.*, menu.harga 
+    FROM keranjang 
+    JOIN menu ON keranjang.id_menu = menu.id_menu
+    WHERE keranjang.id_user = '$id_user'
+");
+            
+            mysqli_query($koneksi, "INSERT INTO detail_pesanan (id_pesanan, id_menu, qty) 
+                                    VALUES ('$id_pesanan_baru', '$id_m', '$qty_m')");
         }
-
-        // 4. Kosongkan keranjang pembeli
+        // Hapus keranjang karena sudah jadi pesanan
         mysqli_query($koneksi, "DELETE FROM keranjang WHERE id_user = '$id_user'");
         
-        echo "<script>
-                alert('Pembayaran Berhasil! Pesanan Anda sedang dikirim ke kantin.');
-                window.location='pesanan.php'; 
-              </script>";
     } else {
-        echo "Gagal memproses pesanan: " . mysqli_error($koneksi);
+        // Input satu menu saja (Beli Langsung)
+        mysqli_query($koneksi, "INSERT INTO detail_pesanan (id_pesanan, id_menu, qty) 
+                                VALUES ('$id_pesanan_baru', '$id_menu', '$qty')");
     }
+
+    // 4. REDIRECT KE HALAMAN BERHASIL (STRUK)
+    header("Location: pembayaran_berhasil.php?id_pesanan=" . $id_pesanan_baru);
+    exit();
+
 } else {
-    echo "<script>alert('Keranjang kosong!'); window.location='dashboard.php';</script>";
+    echo "Gagal memproses pesanan: " . mysqli_error($koneksi);
 }
 ?>

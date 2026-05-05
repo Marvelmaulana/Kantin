@@ -40,11 +40,12 @@ if (mysqli_query($koneksi, $sql)) {
         // JIKA TOMBOL PESAN SEKARANG DIPENCET
         header("Location: checkout.php");
         exit();
-    } else {
-        // JIKA TOMBOL TAMBAH KERANJANG DIPENCET
-        echo "<script>alert('Berhasil ditambah ke keranjang!'); window.location='dashboard.php';</script>";
-        exit();
-    }
+    // Ganti bagian ini di kodinganmu
+} else {
+    // Tambahkan kembali id_menu agar halaman detail_menu tidak bingung
+    echo "<script>alert('Berhasil ditambah ke keranjang!'); window.location='detail_menu.php?id=$id_menu';</script>";
+    exit();
+}
 } else {
     echo "Error: " . mysqli_error($koneksi);
 }

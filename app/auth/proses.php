@@ -9,7 +9,7 @@ include(__DIR__ . '/../../config/config.php');
 if (isset($_POST['login_btn'])) {
 
     $user_input = mysqli_real_escape_string($koneksi, trim($_POST['user_input']));
-    $password   = trim($_POST['password']); 
+    $password   = mysqli_real_escape_string($koneksi, trim($_POST['password'])); 
 
     // Mencari user berdasarkan username atau email
     $query = mysqli_query($koneksi, "SELECT * FROM users WHERE username='$user_input' OR email='$user_input' LIMIT 1");
