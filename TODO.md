@@ -25,3 +25,20 @@
 ## Langkah Setelah Edit:
 - Test daftar akun baru dan login dengan akun baru untuk memastikan hash berfungsi.
 
+
+# GitHub Push Plan (Approved)
+
+## Information Gathered
+- Repo: https://github.com/Marvelmaulana/Kantin.git
+- Branch: main (ahead by 1 commit)
+- Untracked: uploads PNGs (ignore dir)
+
+## Steps:
+1. [x] Create .gitignore ignoring uploads/ etc.
+2. [ ] Update TODO.md with git steps
+3. [ ] git add .gitignore TODO.md
+4. [ ] git commit -m "Add .gitignore and update TODO.md"
+5. [ ] git push origin main
+6. [ ] Create blackboxai/github-push branch if PR needed
+7. [ ] Install GitHub CLI and create PR
+
