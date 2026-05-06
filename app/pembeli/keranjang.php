@@ -2,7 +2,6 @@
 session_start();
 include(__DIR__ . '/../../config/config.php');
 
-// 1. Proteksi Halaman
 if (!isset($_SESSION['id_user'])) {
     header("Location: ../auth/login.php");
     exit();
@@ -10,7 +9,7 @@ if (!isset($_SESSION['id_user'])) {
 
 $id_user = $_SESSION['id_user'];
 
-// 2. Logika Hapus Item
+// Hapus satu item
 if (isset($_GET['hapus'])) {
     $id_keranjang = mysqli_real_escape_string($koneksi, $_GET['hapus']);
     mysqli_query($koneksi, "DELETE FROM keranjang WHERE id_keranjang = '$id_keranjang' AND id_user = '$id_user'");
@@ -18,141 +17,349 @@ if (isset($_GET['hapus'])) {
     exit();
 }
 
-// 3. Ambil Data Keranjang (Pastikan nama kolom foto sesuai database)
-$sql = "SELECT keranjang.*, menu.nama_menu, menu.harga, menu.foto 
-        FROM keranjang 
-        JOIN menu ON keranjang.id_menu = menu.id_menu 
-        WHERE keranjang.id_user = '$id_user'";
+// AJAX: update qty langsung tanpa reload
+if (isset($_POST['ajax_qty'])) {
+    header('Content-Type: application/json');
+    $id_keranjang = (int)$_POST['id_keranjang'];
+    $aksi = $_POST['aksi'];
+
+    $res = mysqli_query($koneksi, "SELECT keranjang.qty, menu.harga FROM keranjang JOIN menu ON keranjang.id_menu = menu.id_menu WHERE keranjang.id_keranjang = '$id_keranjang' AND keranjang.id_user = '$id_user'");
+    $data = mysqli_fetch_assoc($res);
+
+    if (!$data) { echo json_encode(['ok' => false]); exit(); }
+
+    $qty   = (int)$data['qty'];
+    $harga = (int)$data['harga'];
+
+    if ($aksi === 'tambah') {
+        $qty++;
+        mysqli_query($koneksi, "UPDATE keranjang SET qty = '$qty' WHERE id_keranjang = '$id_keranjang' AND id_user = '$id_user'");
+        echo json_encode(['ok' => true, 'deleted' => false, 'qty' => $qty, 'subtotal' => $harga * $qty]);
+    } elseif ($aksi === 'kurang') {
+        if ($qty <= 1) {
+            mysqli_query($koneksi, "DELETE FROM keranjang WHERE id_keranjang = '$id_keranjang' AND id_user = '$id_user'");
+            echo json_encode(['ok' => true, 'deleted' => true]);
+        } else {
+            $qty--;
+            mysqli_query($koneksi, "UPDATE keranjang SET qty = '$qty' WHERE id_keranjang = '$id_keranjang' AND id_user = '$id_user'");
+            echo json_encode(['ok' => true, 'deleted' => false, 'qty' => $qty, 'subtotal' => $harga * $qty]);
+        }
+    }
+    exit();
+}
+
+// Ambil data keranjang
+$sql   = "SELECT keranjang.*, menu.nama_menu, menu.harga, menu.foto FROM keranjang JOIN menu ON keranjang.id_menu = menu.id_menu WHERE keranjang.id_user = '$id_user'";
 $query = mysqli_query($koneksi, $sql);
 $total_items = mysqli_num_rows($query);
+$items = [];
+while ($row = mysqli_fetch_assoc($query)) $items[] = $row;
 ?>
-
 <!DOCTYPE html>
-<html class="light" lang="id">
+<html lang="id">
 <head>
-    <meta charset="utf-8"/>
-    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Keranjang Belanja - Kantin Kita</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet"/>
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        "primary": "#b22204",
-                        "surface": "#fff8f6",
-                        "on-surface": "#271815",
-                    }
-                }
-            }
-        }
-    </script>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Keranjang - Kantin Kita</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&family=Be+Vietnam+Pro:wght@400;500;600&display=swap" rel="stylesheet"/>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@400,1&display=swap" rel="stylesheet"/>
     <style>
-        body { font-family: 'Be Vietnam Pro', sans-serif; }
-        h1, h3 { font-family: 'Plus Jakarta Sans', sans-serif; }
+        body { font-family: 'Be Vietnam Pro', sans-serif; background: #fff8f6; }
+        .headline { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+        /* CHECKBOX CUSTOM - tidak pakai Tailwind Forms agar tidak double */
+        input[type="checkbox"].my-check {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 22px; height: 22px; min-width: 22px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background 0.15s, border-color 0.15s;
+            position: relative;
+            background: white;
+            display: inline-block;
+        }
+        input[type="checkbox"].my-check:checked {
+            background: #b22204;
+            border-color: #b22204;
+        }
+        input[type="checkbox"].my-check:checked::after {
+            content: '';
+            position: absolute;
+            left: 5px; top: 2px;
+            width: 8px; height: 12px;
+            border: 2.5px solid white;
+            border-top: none; border-left: none;
+            transform: rotate(40deg);
+        }
+        input[type="checkbox"].my-check:indeterminate {
+            background: #b22204;
+            border-color: #b22204;
+        }
+        input[type="checkbox"].my-check:indeterminate::after {
+            content: '';
+            position: absolute;
+            left: 3px; top: 8px;
+            width: 12px; height: 2px;
+            background: white; border-radius: 2px;
+        }
+
+        .item-card { transition: border-color 0.15s, background 0.15s; border: 2px solid transparent; background: white; }
+        .item-card.selected { border-color: #b22204; background: #fff5f3; }
+        .qty-btn { transition: transform 0.1s; }
+        .qty-btn:active { transform: scale(0.85); }
     </style>
 </head>
-<body class="bg-surface text-on-surface antialiased min-h-screen">
+<body class="min-h-screen pb-48">
 
-<header class="fixed top-0 w-full z-50 bg-white/80 backdrop-blur-md shadow-sm">
-    <div class="flex justify-between items-center px-6 py-4 w-full max-w-7xl mx-auto">
-        <div class="flex items-center gap-4">
-            <button class="material-symbols-outlined text-stone-500 p-2 rounded-full hover:bg-stone-100" onclick="window.location.href='dashboard.php'">arrow_back</button>
-            <span class="text-xl font-extrabold tracking-tighter text-orange-700">Kantin Kita</span>
+<header class="fixed top-0 w-full z-50 bg-white/90 backdrop-blur-md border-b border-zinc-100">
+    <div class="flex items-center justify-between px-4 h-16 max-w-2xl mx-auto">
+        <div class="flex items-center gap-3">
+            <button onclick="history.back()" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-100">
+                <span class="material-symbols-outlined text-zinc-600">arrow_back</span>
+            </button>
+            <div>
+                <h1 class="headline font-bold text-lg">Keranjang</h1>
+                <p class="text-[11px] text-zinc-400"><?= $total_items ?> item tersimpan</p>
+            </div>
         </div>
+        <?php if ($total_items > 0): ?>
+        <button id="btn-hapus" onclick="hapusTerpilih()"
+                class="hidden text-xs font-bold text-red-500 px-3 py-1.5 rounded-full hover:bg-red-50 transition-all">
+            Hapus Dipilih
+        </button>
+        <?php endif; ?>
     </div>
 </header>
 
-<main class="pt-24 pb-48 px-4 max-w-2xl mx-auto">
-    <div class="flex items-center justify-between mb-8">
-        <h1 class="text-2xl font-bold tracking-tight">Keranjang Belanja</h1>
-        <span class="text-sm font-medium text-stone-500 bg-orange-100 px-3 py-1 rounded-full"><?= $total_items ?> Items</span>
+<main class="pt-20 px-4 max-w-2xl mx-auto space-y-3">
+    <?php if ($total_items > 0): ?>
+
+    <!-- PILIH SEMUA -->
+    <div class="flex items-center justify-between bg-white rounded-2xl px-4 py-3 shadow-sm border border-zinc-100">
+        <label class="flex items-center gap-3 cursor-pointer select-none">
+            <input type="checkbox" id="selectAll" class="my-check" onchange="toggleAll(this)">
+            <span class="font-semibold text-sm text-zinc-700">Pilih Semua</span>
+        </label>
+        <span id="badge" class="text-xs font-bold text-[#b22204] bg-red-50 px-2.5 py-1 rounded-full opacity-0 transition-opacity">
+            0 dipilih
+        </span>
     </div>
 
-    <div class="space-y-4">
-        <?php 
-        $subtotal = 0;
-        if ($total_items > 0):
-            while($item = mysqli_fetch_assoc($query)): 
-                $item_total = $item['harga'] * $item['qty'];
-                $subtotal += $item_total;
-        ?>
-        <div class="flex items-center gap-4 bg-white p-4 rounded-2xl shadow-sm border border-orange-50 relative group">
-            <div class="w-24 h-24 rounded-xl overflow-hidden flex-shrink-0 bg-stone-100 border border-stone-100">
-                <img alt="<?= $item['nama_menu'] ?>" class="w-full h-full object-cover" 
-                     src="../../uploads/<?= $item['foto'] ?>" 
-                     onerror="this.src='https://via.placeholder.com/150?text=No+Image'"/>
-            </div>
-            
-            <div class="flex-1 min-w-0">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <h3 class="font-bold text-on-surface truncate text-lg"><?= $item['nama_menu'] ?></h3>
-                        <?php if(!empty($item['catatan'])): ?>
-                            <p class="text-[11px] text-orange-600 bg-orange-50 px-2 py-0.5 rounded-md inline-block mt-1 italic">
-                                "<?= $item['catatan'] ?>"
+    <!-- ITEM LIST -->
+    <div class="space-y-3">
+        <?php foreach ($items as $item):
+            $sub = $item['harga'] * $item['qty']; ?>
+        <div class="item-card rounded-2xl p-4 shadow-sm" id="card-<?= $item['id_keranjang'] ?>">
+            <div class="flex items-center gap-3">
+
+                <!-- Checkbox -->
+                <input type="checkbox" class="my-check item-check"
+                       id="chk-<?= $item['id_keranjang'] ?>"
+                       data-id="<?= $item['id_keranjang'] ?>"
+                       onchange="onCheck(this)">
+
+                <!-- Foto (klik = centang) -->
+                <label for="chk-<?= $item['id_keranjang'] ?>" class="cursor-pointer flex-shrink-0">
+                    <img src="../../uploads/<?= $item['foto'] ?>"
+                         alt="<?= htmlspecialchars($item['nama_menu']) ?>"
+                         class="w-20 h-20 rounded-xl object-cover bg-zinc-100"
+                         onerror="this.src='../../assets/img/default-food.jpg'">
+                </label>
+
+                <!-- Info -->
+                <div class="flex-1 min-w-0">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h3 class="headline font-bold text-sm text-zinc-800"><?= htmlspecialchars($item['nama_menu']) ?></h3>
+                            <p class="text-xs text-zinc-400 mt-0.5">
+                                <?= !empty($item['catatan']) ? '"'.htmlspecialchars($item['catatan']).'"' : 'Tanpa catatan' ?>
                             </p>
-                        <?php else: ?>
-                            <p class="text-xs text-stone-400 mt-1">Tanpa catatan</p>
-                        <?php endif; ?>
+                        </div>
+                        <a href="?hapus=<?= $item['id_keranjang'] ?>" onclick="return confirm('Hapus item ini?')"
+                           class="material-symbols-outlined text-zinc-300 hover:text-red-500 transition-colors text-xl ml-2 flex-shrink-0">
+                            delete
+                        </a>
                     </div>
-                    <a href="?hapus=<?= $item['id_keranjang'] ?>" onclick="return confirm('Hapus dari keranjang?')" class="material-symbols-outlined text-stone-300 hover:text-red-600 transition-colors">delete</a>
-                </div>
-                
-                <div class="mt-4 flex justify-between items-center">
-                    <span class="font-bold text-primary">Rp <?= number_format($item_total, 0, ',', '.') ?></span>
-                    
-                    <div class="flex items-center bg-stone-100 rounded-full p-1 border border-stone-200">
-                        <button onclick="window.location.href='kurangi_keranjang.php?id=<?= $item['id_menu'] ?>'" class="w-8 h-8 flex items-center justify-center rounded-full bg-white text-stone-500 shadow-sm active:scale-90 transition-transform">
-                            <span class="material-symbols-outlined text-sm">remove</span>
-                        </button>
-                        <span class="px-3 text-sm font-bold"><?= $item['qty'] ?></span>
-                        <button onclick="window.location.href='tambah_keranjang.php?id=<?= $item['id_menu'] ?>'" class="w-8 h-8 flex items-center justify-center rounded-full bg-primary text-white shadow-sm active:scale-90 transition-transform">
-                            <span class="material-symbols-outlined text-sm">add</span>
-                        </button>
+
+                    <div class="flex items-center justify-between mt-3">
+                        <span class="font-extrabold text-[#b22204] text-sm" id="harga-<?= $item['id_keranjang'] ?>">
+                            Rp <?= number_format($sub, 0, ',', '.') ?>
+                        </span>
+                        <div class="flex items-center bg-zinc-100 rounded-full p-0.5 gap-1">
+                            <button class="qty-btn w-8 h-8 flex items-center justify-center rounded-full bg-white shadow-sm text-zinc-600"
+                                    onclick="ubahQty(<?= $item['id_keranjang'] ?>, 'kurang')">
+                                <span class="material-symbols-outlined text-sm">remove</span>
+                            </button>
+                            <span class="text-sm font-bold min-w-[28px] text-center" id="qty-<?= $item['id_keranjang'] ?>">
+                                <?= $item['qty'] ?>
+                            </span>
+                            <button class="qty-btn w-8 h-8 flex items-center justify-center rounded-full bg-[#b22204] text-white shadow-sm"
+                                    onclick="ubahQty(<?= $item['id_keranjang'] ?>, 'tambah')">
+                                <span class="material-symbols-outlined text-sm">add</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <?php 
-            endwhile; 
-        else:
-        ?>
-            <div class="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-stone-200">
-                <span class="material-symbols-outlined text-6xl text-stone-200">shopping_cart</span>
-                <p class="mt-4 text-stone-500 font-medium">Wah, keranjangmu masih kosong nih.</p>
-                <button onclick="window.location.href='dashboard.php'" class="mt-4 text-primary font-bold text-sm underline underline-offset-4">Mulai Belanja Sekarang</button>
-            </div>
-        <?php endif; ?>
+        <?php endforeach; ?>
     </div>
 
-    <?php if ($total_items > 0): ?>
-    <button class="w-full mt-8 flex items-center justify-center gap-2 py-4 border-2 border-dashed border-orange-200 rounded-2xl text-stone-400 font-semibold hover:border-primary hover:text-primary transition-all group" onclick="window.location.href='dashboard.php'">
+    <button onclick="location.href='dashboard.php'"
+            class="w-full flex items-center justify-center gap-2 py-4 border-2 border-dashed border-orange-200 rounded-2xl text-zinc-400 text-sm font-semibold hover:border-[#b22204] hover:text-[#b22204] transition-all group">
         <span class="material-symbols-outlined group-hover:scale-110 transition-transform">add_circle</span>
         Tambah Menu Lainnya
     </button>
+
+    <?php else: ?>
+    <div class="text-center py-20 bg-white rounded-3xl border-2 border-dashed border-zinc-200 mt-4">
+        <span class="material-symbols-outlined text-6xl text-zinc-200" style="font-variation-settings:'FILL' 1">shopping_cart</span>
+        <p class="mt-4 text-zinc-500 font-medium">Keranjangmu masih kosong.</p>
+        <button onclick="location.href='dashboard.php'" class="mt-4 text-[#b22204] font-bold text-sm underline underline-offset-4">Mulai Belanja</button>
+    </div>
     <?php endif; ?>
 </main>
 
 <?php if ($total_items > 0): ?>
-<div class="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-xl shadow-[0_-10px_30px_rgba(0,0,0,0.05)] px-6 pb-8 pt-6 z-50 border-t border-stone-100">
-    <div class="max-w-2xl mx-auto space-y-4">
-        <div class="flex flex-col gap-2">
-            <div class="pt-3 flex justify-between items-end mt-2">
-                <span class="text-on-surface font-bold text-lg">Total Pembayaran</span>
-                <span class="text-primary text-2xl font-extrabold tracking-tight">Rp <?= number_format($subtotal, 0, ',', '.') ?></span>
+<div class="fixed bottom-0 left-0 w-full z-50">
+    <div class="bg-white/95 backdrop-blur-xl border-t border-zinc-100 shadow-[0_-8px_30px_rgba(0,0,0,0.06)] px-4 pt-4 pb-8 max-w-2xl mx-auto">
+        <div class="flex justify-between items-end mb-3">
+            <div>
+                <p class="text-xs text-zinc-400">Total Pembayaran</p>
+                <p class="headline font-black text-xl text-[#b22204]" id="total-display">Rp 0</p>
+            </div>
+            <div class="text-right">
+                <p class="text-xs text-zinc-400">Item dipilih</p>
+                <p class="headline font-bold text-zinc-700" id="qty-display">0 item</p>
             </div>
         </div>
-        
-        <button class="w-full bg-gradient-to-r from-[#b22204] to-[#d63c1e] text-white py-4 rounded-full font-bold text-lg shadow-lg shadow-primary/20 active:scale-95 transition-all flex items-center justify-center gap-3" onclick="window.location.href='checkout.php'">
-            <span>Lanjut ke Pembayaran</span>
+        <button id="btn-checkout" onclick="lanjutCheckout()" disabled
+                class="w-full h-14 rounded-full font-bold text-base flex items-center justify-center gap-2 transition-all bg-zinc-200 text-zinc-400 cursor-not-allowed"
+                style="font-family:'Plus Jakarta Sans',sans-serif">
             <span class="material-symbols-outlined">shopping_cart_checkout</span>
+            <span id="btn-label">Pilih item dulu</span>
         </button>
     </div>
 </div>
 <?php endif; ?>
 
+<script>
+const itemData = {
+    <?php foreach ($items as $item): ?>
+    <?= $item['id_keranjang'] ?>: { harga: <?= $item['harga'] ?>, qty: <?= $item['qty'] ?> },
+    <?php endforeach; ?>
+};
+const selected = new Set();
+
+function toggleAll(cb) {
+    document.querySelectorAll('.item-check').forEach(c => {
+        c.checked = cb.checked;
+        const id = +c.dataset.id;
+        cb.checked ? selected.add(id) : selected.delete(id);
+        styleCard(id, cb.checked);
+    });
+    updateUI();
+}
+
+function onCheck(cb) {
+    const id = +cb.dataset.id;
+    cb.checked ? selected.add(id) : selected.delete(id);
+    styleCard(id, cb.checked);
+    syncAll();
+    updateUI();
+}
+
+function styleCard(id, on) {
+    const c = document.getElementById('card-' + id);
+    if (c) on ? c.classList.add('selected') : c.classList.remove('selected');
+}
+
+function syncAll() {
+    const all = document.querySelectorAll('.item-check');
+    const chk = document.querySelectorAll('.item-check:checked');
+    const sa  = document.getElementById('selectAll');
+    if (!sa) return;
+    if (chk.length === 0)           { sa.checked = false; sa.indeterminate = false; }
+    else if (chk.length === all.length) { sa.checked = true;  sa.indeterminate = false; }
+    else                            { sa.checked = false; sa.indeterminate = true; }
+}
+
+function updateUI() {
+    let total = 0, qty = 0;
+    selected.forEach(id => {
+        if (itemData[id]) { total += itemData[id].harga * itemData[id].qty; qty += itemData[id].qty; }
+    });
+    document.getElementById('total-display').textContent = 'Rp ' + total.toLocaleString('id-ID');
+    document.getElementById('qty-display').textContent   = qty + ' item';
+
+    const badge   = document.getElementById('badge');
+    const btnHapus = document.getElementById('btn-hapus');
+    if (selected.size > 0) {
+        badge.textContent = selected.size + ' dipilih';
+        badge.classList.remove('opacity-0');
+        btnHapus && btnHapus.classList.remove('hidden');
+    } else {
+        badge.classList.add('opacity-0');
+        btnHapus && btnHapus.classList.add('hidden');
+    }
+
+    const btn   = document.getElementById('btn-checkout');
+    const label = document.getElementById('btn-label');
+    if (selected.size > 0) {
+        btn.disabled = false;
+        btn.style.cssText = 'background:linear-gradient(135deg,#b22204,#d63c1e);color:white;cursor:pointer;box-shadow:0 8px 20px rgba(178,34,4,0.25)';
+        btn.classList.remove('bg-zinc-200','text-zinc-400','cursor-not-allowed');
+        label.textContent = 'Checkout (' + selected.size + ' item)';
+    } else {
+        btn.disabled = true;
+        btn.style.cssText = '';
+        btn.classList.add('bg-zinc-200','text-zinc-400','cursor-not-allowed');
+        label.textContent = 'Pilih item dulu';
+    }
+}
+
+// AJAX qty — tidak reload halaman
+async function ubahQty(id, aksi) {
+    const fd = new FormData();
+    fd.append('ajax_qty', '1');
+    fd.append('id_keranjang', id);
+    fd.append('aksi', aksi);
+
+    const res  = await fetch('keranjang.php', { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!data.ok) return;
+
+    if (data.deleted) {
+        document.getElementById('card-' + id)?.remove();
+        selected.delete(id);
+        delete itemData[id];
+        syncAll();
+        updateUI();
+        if (Object.keys(itemData).length === 0) location.reload();
+        return;
+    }
+
+    itemData[id].qty = data.qty;
+    document.getElementById('qty-' + id).textContent   = data.qty;
+    document.getElementById('harga-' + id).textContent = 'Rp ' + data.subtotal.toLocaleString('id-ID');
+    if (selected.has(id)) updateUI();
+}
+
+function lanjutCheckout() {
+    if (!selected.size) return;
+    location.href = 'checkout.php?selected=' + [...selected].join(',');
+}
+
+function hapusTerpilih() {
+    if (!selected.size) return;
+    if (!confirm('Hapus ' + selected.size + ' item yang dipilih?')) return;
+    location.href = 'hapus_banyak.php?ids=' + [...selected].join(',');
+}
+
+updateUI();
+</script>
 </body>
 </html>

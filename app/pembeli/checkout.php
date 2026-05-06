@@ -21,12 +21,18 @@ if ($id_menu_langsung) {
                                      JOIN kantin ON menu.id_kantin = kantin.id_kantin 
                                      WHERE menu.id_menu = '$id_menu_langsung'");
 } else {
-    // Mode: Dari Keranjang
+   // Di checkout.php, ganti query keranjang dengan:
+$selected_raw = isset($_GET['selected']) ? $_GET['selected'] : '';
+$selected_ids = array_filter(array_map('intval', explode(',', $selected_raw)));
+
+if (!empty($selected_ids)) {
+    $ids_str = implode(',', $selected_ids);
     $query = mysqli_query($koneksi, "SELECT keranjang.*, menu.nama_menu, menu.harga, menu.foto, kantin.nama_kantin 
                                      FROM keranjang 
                                      JOIN menu ON keranjang.id_menu = menu.id_menu 
                                      JOIN kantin ON menu.id_kantin = kantin.id_kantin 
-                                     WHERE keranjang.id_user = '$id_user'");
+                                     WHERE keranjang.id_keranjang IN ($ids_str) AND keranjang.id_user = '$id_user'");
+}
 }
 
 $total_items = mysqli_num_rows($query);
