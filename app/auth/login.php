@@ -54,12 +54,12 @@ include(__DIR__ . '/../../includes/language_helper.php');
 
                 <form action="proses.php" method="POST" class="space-y-6">
                     <div class="space-y-2">
-                        <label class="text-[11px] font-bold uppercase tracking-widest text-gray-500 px-1"><?= t('auth.email') ?></label>
+                        <label class="text-[11px] font-bold uppercase tracking-widest text-gray-500 px-1"><?= t('auth.email_or_username') ?></label>
                         <div class="relative flex items-center bg-surface-container-highest rounded-xl">
                             <span class="material-symbols-outlined absolute left-4 text-gray-400">alternate_email</span>
-                            <input type="email" id="userInput" name="user_input" class="w-full bg-transparent border-none focus:ring-0 py-4 pl-12 pr-4" placeholder="<?= t('auth.placeholder_email') ?>" required/>
+                            <input type="text" id="userInput" name="user_input" class="w-full bg-transparent border-none focus:ring-0 py-4 pl-12 pr-4" placeholder="<?= t('auth.placeholder_email') ?>" required/>
                         </div>
-                        <p class="text-[10px] text-gray-400 mt-2">Gunakan email terdaftar untuk masuk ke semua akun.</p>
+                        <p class="text-[10px] text-gray-400 mt-2">Masukkan username atau email terdaftar untuk login.</p>
                     </div>
 
                     <div class="space-y-2">
