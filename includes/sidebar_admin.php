@@ -2,55 +2,54 @@
 $current_page = basename($_SERVER['PHP_SELF']);
 ?>
 
-<button onclick="toggleSidebar()" class="lg:hidden fixed top-4 left-4 z-[60] bg-white border border-slate-100 p-2 rounded-xl shadow-lg text-primary-orange">
+<button onclick="toggleSidebar()" class="lg:hidden fixed top-4 left-4 z-[60] bg-orange-700/95 border border-orange-600 p-2 rounded-2xl shadow-2xl shadow-orange-500/20 text-white">
     <span class="material-symbols-outlined">menu</span>
 </button>
 
-<div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/20 z-40 hidden backdrop-blur-sm transition-opacity"></div>
+<div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/30 z-40 hidden backdrop-blur-sm transition-opacity"></div>
 
-<aside id="sidebar" class="fixed left-0 top-0 h-screen w-72 bg-white border-r border-slate-100 flex flex-col p-8 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+<aside id="sidebar" class="fixed left-0 top-0 h-screen w-72 bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.25),_transparent_35%),_linear-gradient(180deg,_#ffedd5_0%,_#f97316_40%,_#c2410c_100%)] border-r border-orange-700 shadow-[12px_0_60px_-30px_rgba(251,146,60,0.45)] flex flex-col p-8 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
     <div class="flex items-center gap-3 mb-12">
-        <div class="w-10 h-10 rounded-xl bg-primary-orange flex items-center justify-center text-white shadow-lg">
-            <span class="material-symbols-outlined font-bold">restaurant</span>
+        <div class="w-12 h-12 rounded-3xl bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 flex items-center justify-center text-white shadow-2xl shadow-orange-500/30 border border-white/10">
+            <span class="material-symbols-outlined text-2xl">restaurant</span>
         </div>
         <div>
-            <h1 class="text-xl font-extrabold text-[#003049] leading-none">Kantin Kita</h1>
-            <p class="text-[9px] font-bold text-slate-400 tracking-[0.2em] uppercase mt-1">Management Portal</p>
+            <h1 class="text-2xl font-black text-white leading-tight tracking-wide">Kantin Kita</h1>
+            <p class="text-[9px] font-extrabold text-orange-100 uppercase tracking-[0.25em] mt-1">Gen-Z Kantin Vibes</p>
         </div>
     </div>
 
     <nav class="flex-1 space-y-2">
-        <a href="dashboard_admin.php" class="flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all <?= ($current_page == 'dashboard_admin.php') ? 'bg-[#F0F7FF] text-accent-blue shadow-sm' : 'text-slate-400 hover:bg-slate-50' ?>">
+        <a href="dashboard_admin.php" class="flex items-center gap-4 px-4 py-4 rounded-[28px] font-bold transition-all <?= ($current_page == 'dashboard_admin.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white shadow-2xl shadow-orange-400/30 scale-[1.01]' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
             <span class="material-symbols-outlined">grid_view</span>
             <span class="text-sm">Dashboard</span>
         </a>
-        <a href="manajemen_user.php" class="flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all <?= ($current_page == 'manajemen_user.php') ? 'bg-[#F0F7FF] text-accent-blue shadow-sm' : 'text-slate-400 hover:bg-slate-50' ?>">
+        <a href="manajemen_user.php" class="flex items-center gap-4 px-4 py-4 rounded-[28px] font-bold transition-all <?= ($current_page == 'manajemen_user.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white shadow-2xl shadow-orange-400/30 scale-[1.01]' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
             <span class="material-symbols-outlined">group</span>
             <span class="text-sm">Management User</span>
         </a>
-        <a href="manajemen_penjual.php" class="flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all <?= ($current_page == 'manajemen_penjual.php') ? 'bg-[#F0F7FF] text-accent-blue shadow-sm' : 'text-slate-400 hover:bg-slate-50' ?>">
+        <a href="manajemen_penjual.php" class="flex items-center gap-4 px-4 py-4 rounded-[28px] font-bold transition-all <?= ($current_page == 'manajemen_penjual.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white shadow-2xl shadow-orange-400/30 scale-[1.01]' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
             <span class="material-symbols-outlined">store</span>
             <span class="text-sm">Management Penjual</span>
         </a>
-        <a href="manajemen_menu.php" class="flex items-center gap-4 px-4 py-4 rounded-2xl font-bold transition-all <?= ($current_page == 'manajemen_menu.php') ? 'bg-[#F0F7FF] text-accent-blue shadow-sm' : 'text-slate-400 hover:bg-slate-50' ?>">
+        <a href="manajemen_menu.php" class="flex items-center gap-4 px-4 py-4 rounded-[28px] font-bold transition-all <?= ($current_page == 'manajemen_menu.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white shadow-2xl shadow-orange-400/30 scale-[1.01]' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
             <span class="material-symbols-outlined">restaurant_menu</span>
             <span class="text-sm">Management Menu</span>
         </a>
     </nav>
 
-    <div class="mt-auto pt-6 border-t border-slate-100 mb-4 flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-[#003049] flex items-center justify-center text-white text-xs font-bold uppercase shrink-0">AD</div>
+    <div class="mt-auto pt-6 border-t border-orange-200 mb-4 flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-orange-700 to-orange-500 flex items-center justify-center text-white text-xs font-bold uppercase shrink-0">AD</div>
         <div class="overflow-hidden">
-            <p class="text-xs font-black text-slate-800 leading-none truncate">Admin Kantin</p>
-            <p class="text-[9px] text-slate-400 font-bold uppercase mt-1">Super Admin</p>
+            <p class="text-xs font-black text-orange-950 leading-none truncate">Admin Kantin</p>
+            <p class="text-[9px] text-orange-600 font-bold uppercase mt-1">Super Admin</p>
         </div>
     </div>
 
-   <a href="../auth/logout.php" class="flex items-center gap-4 px-4 py-3 text-red-500 hover:bg-red-50 rounded-2xl transition-all">
+   <a href="../auth/logout.php" class="flex items-center gap-4 px-4 py-3 bg-orange-100/90 text-orange-900 hover:bg-orange-200 rounded-2xl transition-all shadow-sm border border-orange-100">
     <span class="material-symbols-outlined">logout</span>
     <span class="text-sm font-bold">Logout</span>
 </a>
-    </a>
 </aside>
 
 <script>

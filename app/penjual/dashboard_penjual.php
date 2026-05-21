@@ -178,30 +178,33 @@ tailwind.config = { theme: { extend: { colors: { primary: '#f97316' } } } }
 
 <style>
 * { font-family: 'Plus Jakarta Sans', sans-serif; }
-.stat-card{background:white;border-radius:1.5rem;padding:1.5rem;border:1.5px solid #f3f4f6;transition:all .25s cubic-bezier(0.4,0,0.2,1);position:relative;overflow:hidden}
-.stat-card::before{content:'';position:absolute;top:0;right:0;width:120px;height:120px;border-radius:50%;opacity:.06;transform:translate(30%,-30%);transition:all .3s}
+body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), transparent 22%), linear-gradient(135deg, #fff6f0 0%, #fffaf6 30%, #f8fbff 100%); }
+.stat-card{background:linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,250,242,.95));border-radius:1.75rem;padding:1.75rem;border:1px solid rgba(251,146,60,.15);transition:all .28s cubic-bezier(0.4,0,0.2,1);position:relative;overflow:hidden}
+.stat-card::before{content:'';position:absolute;top:0;right:0;width:120px;height:120px;border-radius:50%;opacity:.12;transform:translate(30%,-30%);transition:all .3s}
 .stat-card:hover::before{transform:translate(20%,-20%) scale(1.1)}
-.stat-card:hover{transform:translateY(-4px);box-shadow:0 20px 40px rgba(178,34,4,.12);border-color:#fed7aa}
-.stat-card.blue::before{background:#3b82f6}
+.stat-card:hover{transform:translateY(-4px);box-shadow:0 20px 45px rgba(234,88,12,.14);border-color:rgba(251,146,60,.25)}
+.stat-card.blue::before{background:#2563eb}
 .stat-card.green::before{background:#10b981}
 .stat-card.orange::before{background:#f97316}
 .stat-card.purple::before{background:#8b5cf6}
-.pesanan-card{cursor:pointer;transition:all .22s cubic-bezier(.4,0,.2,1);border:1.5px solid #f3f4f6;border-radius:1.2rem;overflow:hidden;background:white}
-.pesanan-card:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(249,115,22,.13);border-color:#fb923c}
-.badge-pending{background:linear-gradient(135deg,#fef3c7,#fde68a);color:#92400e;border:1px solid #fcd34d}
-.badge-diproses{background:linear-gradient(135deg,#dbeafe,#bfdbfe);color:#1e40af;border:1px solid #93c5fd}
+.pesanan-card{cursor:pointer;transition:all .22s cubic-bezier(.4,0,.2,1);border:1px solid rgba(251,146,60,.12);border-radius:1.5rem;overflow:hidden;background:linear-gradient(135deg,#ffffff,#fff3e8)}
+.pesanan-card:hover{transform:translateY(-3px);box-shadow:0 20px 35px rgba(249,115,22,.16);border-color:rgba(251,146,60,.3)}
+.badge-pending{background:linear-gradient(135deg,#fde68a,#fbbf24);color:#92400e;border:1px solid #f59e0b}
+.badge-diproses{background:linear-gradient(135deg,#bfdbfe,#93c5fd);color:#1e3a8a;border:1px solid #60a5fa}
+.badge-siap{background:linear-gradient(135deg,#d8b4fe,#c084fc);color:#6d28d9;border:1px solid #a78bfa}
+.badge-selesai{background:linear-gradient(135deg,#a7f3d0,#6ee7b7);color:#047857;border:1px solid #34d399}
 #modalStruk{display:none;position:fixed;inset:0;z-index:9999;background:rgba(15,15,15,.65);backdrop-filter:blur(6px);align-items:center;justify-content:center;padding:1rem;animation:fadeIn .2s}
 #modalStruk.active{display:flex}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 #strutBox{animation:slideUp .25s cubic-bezier(.34,1.56,.64,1)}
 @keyframes slideUp{from{opacity:0;transform:translateY(40px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
 .struk-font{font-family:'Courier New','Courier',monospace}
-.struk-dash{border:none;border-top:2px dashed #d1d5db;margin:12px 0}
+.struk-dash{border:none;border-top:2px dashed #eab308;margin:12px 0}
 @media print{body>*:not(#modalStruk){display:none!important}#modalStruk{display:flex!important;position:static;background:white;backdrop-filter:none}#btnTutup,#btnCetak,#btnTutup2{display:none!important}#strutBox{box-shadow:none!important;max-width:320px;border:1px solid #eee}}
 @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .float-anim{animation:float 3s ease-in-out infinite}
-.glow-brand{box-shadow:0 0 30px rgba(178,34,4,.3)}
-.chart-container{background:white;border-radius:1.5rem;border:1.5px solid #f3f4f6;padding:1.5rem;position:relative}
+.glow-brand{box-shadow:0 0 32px rgba(249,115,22,.24)}
+.chart-container{background:linear-gradient(180deg,#ffffff,#fff7ef);border-radius:1.75rem;border:1px solid rgba(251,146,60,.12);padding:1.5rem;position:relative}
 </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-orange-50 min-h-screen">

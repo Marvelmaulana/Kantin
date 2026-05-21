@@ -146,15 +146,16 @@ function renderMenuCard($m, $is_fav) {
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet"/>
 <style>
-* { scrollbar-width: thin; scrollbar-color: #fed7aa transparent; }
+* { scrollbar-width: thin; scrollbar-color: #fbbf24 transparent; }
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-thumb { background: #fed7aa; border-radius: 10px; }
+::-webkit-scrollbar-thumb { background: #fbbf24; border-radius: 10px; }
 
 body {
     font-family: 'Be Vietnam Pro', sans-serif;
-    background: linear-gradient(135deg, #fff7ed 0%, #fff5eb 20%, #ffe4e1 50%, #f0f4ff 75%, #e8f5e9 100%);
+    background: linear-gradient(135deg, #f6f2fb 0%, #fff4e6 32%, #fff9f2 66%, #f8fafc 100%);
     min-height: 100vh;
     padding-bottom: 120px;
+    color: #1f2937;
 }
 
 body::before {
@@ -165,9 +166,9 @@ body::before {
     width: 200%;
     height: 200%;
     background:
-        radial-gradient(circle at 20% 20%, rgba(249,115,22,0.08) 0%, transparent 40%),
-        radial-gradient(circle at 80% 80%, rgba(139,92,246,0.06) 0%, transparent 40%),
-        radial-gradient(circle at 50% 50%, rgba(16,185,129,0.04) 0%, transparent 50%);
+        radial-gradient(circle at 20% 18%, rgba(249,115,22,0.12) 0%, transparent 42%),
+        radial-gradient(circle at 80% 80%, rgba(139,92,246,0.10) 0%, transparent 42%),
+        radial-gradient(circle at 50% 50%, rgba(16,185,129,0.06) 0%, transparent 50%);
     z-index: -1;
     animation: floatBg 25s ease-in-out infinite;
 }
@@ -182,7 +183,7 @@ body::before {
 .material-symbols-outlined { font-variation-settings: 'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24 }
 
 .gradient-text {
-    background: linear-gradient(135deg, #f97316, #ea580c, #dc2626);
+    background: linear-gradient(135deg, #d97706, #ea580c, #b91c1c);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -196,29 +197,29 @@ body::before {
     display: inline-flex;
     align-items: center;
     gap: .4rem;
-    padding: .6rem 1.2rem;
-    border-radius: 16px;
-    font-size: .8rem;
+    padding: .65rem 1.25rem;
+    border-radius: 18px;
+    font-size: .82rem;
     font-weight: 800;
     white-space: nowrap;
-    border: 2px solid #fde7d4;
+    border: 2px solid rgba(251,146,60,.3);
     transition: all 0.25s;
-    background: white;
-    color: #74645d;
+    background: rgba(255,255,255,.92);
+    color: #7c2d12;
     text-decoration: none;
 }
 .chip:hover {
-    background: #fff1ee;
-    color: #b22204;
-    border-color: #fcd4bc;
+    background: linear-gradient(135deg, #fff1e0, #ffe3cc);
+    color: #b54708;
+    border-color: #fb923c;
     transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(249,115,22,0.15);
+    box-shadow: 0 12px 24px rgba(249,115,22,0.18);
 }
 .chip-active {
-    background: linear-gradient(135deg, #f97316, #ea580c) !important;
+    background: linear-gradient(135deg, #ea580c, #c2410c) !important;
     color: white !important;
     border-color: transparent !important;
-    box-shadow: 0 10px 28px rgba(249,115,22,0.35);
+    box-shadow: 0 10px 30px rgba(194,65,12,0.35);
     transform: translateY(-2px);
 }
 
@@ -228,11 +229,11 @@ body::before {
     50% { transform: translateY(-10px) rotate(2deg); }
 }
 
-.menu-card { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); }
-.menu-card:hover { transform: translateY(-6px); }
+.menu-card { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); background: linear-gradient(135deg, #ffffff, #fff4eb); border: 1px solid rgba(251,146,60,.15); border-radius: 30px; }
+.menu-card:hover { transform: translateY(-6px); box-shadow: 0 24px 40px rgba(251,146,60,.12); }
 
 .section-title {
-    background: linear-gradient(135deg, #f97316, #ea580c);
+    background: linear-gradient(135deg, #ea580c, #c2410c);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }

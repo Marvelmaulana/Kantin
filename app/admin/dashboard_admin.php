@@ -98,12 +98,15 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
     <script>
-        tailwind.config = { theme: { extend: { colors: { 'bg-soft':'#FFF9F8','primary-orange':'#E25E3E','accent-blue':'#2D9CDB','accent-green':'#27AE60' }, borderRadius:{'4xl':'2.5rem'} } } }
+        tailwind.config = { theme: { extend: { colors: { 'bg-soft':'#FFF4EB','primary-orange':'#E25E3E','primary-orange-dark':'#C2410C','accent-orange':'#fb8500','neon-orange':'#ffb703' }, borderRadius:{'4xl':'2.5rem'} } } }
     </script>
     <style>
-        body { font-family:'Plus Jakarta Sans',sans-serif; }
-        ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-thumb{background:#E25E3E;border-radius:10px}
-        @keyframes fadein{from{opacity:0;transform:scale(.95) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
+        body { font-family:'Plus Jakarta Sans',sans-serif; background: radial-gradient(circle at top left, rgba(251,146,60,.20), transparent 32%), radial-gradient(circle at 80% 20%, rgba(255,183,3,.12), transparent 25%), linear-gradient(180deg,#fff7f1 0%,#fff2e7 38%,#fff9f3 100%); }
+        ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-thumb{background:#FF8C20;border-radius:10px}
+        .glow-card{box-shadow:0 25px 80px rgba(251,146,60,0.16);}
+        .badge-genz{background:linear-gradient(135deg,#ffb703,#fb8500);color:#fff;}
+        .box-fade{animation:fadein .25s ease-out forwards}
+        @keyframes fadein{from{opacity:0;transform:scale(.97) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
         .modal-anim{animation:fadein .2s ease-out forwards}
     </style>
 </head>
@@ -114,49 +117,54 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
 <main class="flex-1 w-full lg:ml-72 p-6 md:p-10">
     <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 mt-14 lg:mt-0">
         <div>
-            <h2 class="text-3xl font-extrabold text-[#003049]"><?= t('admin.dashboard_overview') ?></h2>
-            <p class="text-slate-400 font-medium"><?= t('admin.dashboard_subtitle') ?></p>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-[#2a2a2a] tracking-tight"><?= t('admin.dashboard_overview') ?></h2>
+            <p class="text-orange-700 font-semibold mt-2"><?= t('admin.dashboard_subtitle') ?></p>
+            <div class="mt-4 inline-flex items-center gap-2 rounded-full border border-orange-200 px-4 py-2 bg-white/80 shadow-sm text-sm font-semibold text-orange-700">
+                <span class="h-2.5 w-2.5 rounded-full bg-neon-orange shadow-[0_0_12px_rgba(255,183,3,0.45)]"></span>
+                Gen-Z Mode Aktif
+            </div>
         </div>
         <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
-            <div class="bg-white px-5 py-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-sm text-sm font-bold text-slate-600">
-                <span class="material-symbols-outlined text-slate-400 text-lg">calendar_today</span>
+            <div class="bg-white px-5 py-3 rounded-2xl border border-orange-100 flex items-center gap-3 shadow-glow-card text-sm font-bold text-orange-700">
+                <span class="material-symbols-outlined text-orange-500 text-lg">calendar_today</span>
                 <?= date('M d, Y') ?>
             </div>
-            <button onclick="window.print()" class="bg-primary-orange text-white px-6 py-3 rounded-2xl font-bold shadow-lg shadow-orange-200 flex items-center justify-center gap-2 hover:scale-105 transition-all w-full md:w-auto">
+            <button onclick="window.print()" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-3xl font-black shadow-glow-card flex items-center justify-center gap-2 hover:-translate-y-0.5 transition-all w-full md:w-auto">
                 <span class="material-symbols-outlined text-xl">print</span> <?= t('admin.print_report') ?>
             </button>
         </div>
     </header>
 
     <?php if ($message !== ''): ?>
-    <div class="mb-6 px-5 py-4 rounded-2xl border <?= $message_type==='success' ? 'bg-green-50 border-green-100 text-accent-green' : 'bg-red-50 border-red-100 text-red-500' ?> font-bold text-sm">
+    <div class="mb-6 px-5 py-4 rounded-2xl border <?= $message_type==='success' ? 'bg-orange-50 border-orange-100 text-primary-orange' : 'bg-red-50 border-red-100 text-red-500' ?> font-bold text-sm">
         <?= $message ?>
     </div>
     <?php endif; ?>
 
     <!-- Statistik Cards -->
     <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6 mb-10">
-        <div class="bg-white p-8 rounded-4xl border border-slate-50 flex items-center gap-5 shadow-sm">
-            <div class="w-14 h-14 rounded-2xl bg-[#E8F5FD] flex items-center justify-center text-accent-blue shrink-0"><span class="material-symbols-outlined text-3xl font-bold">group</span></div>
-            <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total User</p><h3 class="text-2xl font-black text-[#003049]"><?= number_format($total_user) ?></h3></div>
+        <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card">
+            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">group</span></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Total User</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($total_user) ?></h3></div>
         </div>
-        <div class="bg-white p-8 rounded-4xl border border-slate-50 flex items-center gap-5 shadow-sm">
-            <div class="w-14 h-14 rounded-2xl bg-[#FFF1EE] flex items-center justify-center text-primary-orange shrink-0"><span class="material-symbols-outlined text-3xl font-bold">store</span></div>
-            <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Penjual</p><h3 class="text-2xl font-black text-[#003049]"><?= number_format($total_penjual) ?></h3></div>
+        <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card">
+            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">store</span></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Total Penjual</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($total_penjual) ?></h3></div>
         </div>
-        <div class="bg-white p-8 rounded-4xl border border-slate-50 flex items-center gap-5 shadow-sm">
-            <div class="w-14 h-14 rounded-2xl bg-[#EAF7F0] flex items-center justify-center text-accent-green shrink-0"><span class="material-symbols-outlined text-3xl font-bold">shopping_cart</span></div>
-            <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Pesanan Baru</p><h3 class="text-2xl font-black text-[#003049]"><?= number_format($pesanan_hari_ini) ?></h3></div>
+        <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card">
+            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-500 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">shopping_cart</span></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Pesanan Baru</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($pesanan_hari_ini) ?></h3></div>
         </div>
-        <div class="bg-white p-8 rounded-4xl border border-slate-50 shadow-sm relative overflow-hidden">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Total Pendapatan</p>
-            <h3 class="text-xl font-black text-[#003049]">Rp <?= number_format($total_pendapatan,0,',','.') ?></h3>
-            <div class="w-full h-1.5 bg-slate-100 rounded-full mt-4 overflow-hidden"><div class="h-full bg-accent-blue" style="width:<?= $persen_target ?>%"></div></div>
-            <p class="text-[8px] font-bold text-accent-blue mt-2 tracking-tighter uppercase"><?= round($persen_target) ?>% CAPAIAN TARGET</p>
+        <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 shadow-glow-card relative overflow-hidden">
+            <div class="absolute -top-10 -right-6 w-24 h-24 rounded-full bg-orange-100/70 blur-2xl"></div>
+            <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">Total Pendapatan</p>
+            <h3 class="text-xl font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_pendapatan,0,',','.') ?></h3>
+            <div class="w-full h-1.5 bg-orange-100 rounded-full mt-4 overflow-hidden"><div class="h-full bg-orange-500 shadow-[0_0_20px_rgba(251,146,60,0.25)]" style="width:<?= $persen_target ?>%"></div></div>
+            <p class="text-[8px] font-black text-orange-600 mt-2 tracking-tighter uppercase"><?= round($persen_target) ?>% CAPAIAN TARGET</p>
         </div>
-        <div class="bg-white p-8 rounded-4xl border border-slate-50 flex items-center gap-5 shadow-sm">
-            <div class="w-14 h-14 rounded-2xl bg-[#FFF7E6] flex items-center justify-center text-amber-500 shrink-0"><span class="material-symbols-outlined text-3xl font-bold">admin_panel_settings</span></div>
-            <div><p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Biaya Admin</p><h3 class="text-xl font-black text-[#003049]">Rp <?= number_format($total_biaya_admin,0,',','.') ?></h3></div>
+        <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card">
+            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-400 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">admin_panel_settings</span></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Biaya Admin</p><h3 class="text-xl font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_biaya_admin,0,',','.') ?></h3></div>
         </div>
     </section>
 
@@ -180,7 +188,7 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
             <h4 class="text-xl font-extrabold text-[#003049] mb-2"><?= t('admin.category') ?></h4>
             <p class="text-xs text-slate-400 font-medium mb-10"><?= t('admin.category_subtitle') ?></p>
             <div class="space-y-8 flex-1">
-                <?php $colors=['Makanan'=>'bg-primary-orange','Minuman'=>'bg-accent-blue','Camilan'=>'bg-accent-green'];
+                <?php $colors=['Makanan'=>'bg-primary-orange','Minuman'=>'bg-orange-400','Camilan'=>'bg-orange-500'];
                 foreach($stats as $kat => $jml): $persen=($total_stats>0)?($jml/$total_stats)*100:0; ?>
                 <div class="space-y-3">
                     <div class="flex justify-between text-[10px] font-black uppercase tracking-widest">
@@ -236,7 +244,7 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
             ?>
             <div class="bg-white rounded-2xl p-4 border border-orange-100 hover:shadow-lg hover:shadow-orange-200/30 transition-all relative">
                 <?php if ($rank <= 3): ?>
-                <div class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-gradient-to-br <?= $rank == 1 ? 'from-yellow-400 to-yellow-600' : ($rank == 2 ? 'from-gray-300 to-gray-400' : 'from-amber-400 to-amber-600') ?> flex items-center justify-center text-white font-black text-xs shadow-lg z-10">
+                <div class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-gradient-to-br <?= $rank == 1 ? 'from-orange-400 to-orange-600' : ($rank == 2 ? 'from-orange-300 to-orange-500' : 'from-orange-200 to-orange-400') ?> flex items-center justify-center text-white font-black text-xs shadow-lg z-10">
                     <?= $rank ?>
                 </div>
                 <?php endif; ?>
@@ -281,12 +289,12 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
                 $jml  = (int)$k['jumlah_penjual'];
                 $penuh = ($jml >= 5);
                 $pct   = ($jml / 5) * 100;
-                $bar   = $penuh ? 'bg-red-400' : ($jml >= 3 ? 'bg-yellow-400' : 'bg-accent-green');
+                $bar   = $penuh ? 'bg-orange-400' : ($jml >= 3 ? 'bg-orange-300' : 'bg-primary-orange');
             ?>
-            <div class="p-5 rounded-3xl border <?= $penuh ? 'border-red-100 bg-red-50/20' : 'border-slate-100 bg-slate-50/30' ?> flex flex-col gap-4 hover:shadow-md transition-all">
+<div class="p-5 rounded-3xl border <?= $penuh ? 'border-orange-100 bg-orange-50/20' : 'border-orange-50 bg-orange-50/30' ?> flex flex-col gap-4 hover:shadow-md transition-all">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-3">
-                        <div class="w-11 h-11 rounded-2xl <?= $penuh ? 'bg-red-100 text-red-400' : 'bg-orange-50 text-primary-orange' ?> flex items-center justify-center shrink-0">
+                        <div class="w-11 h-11 rounded-2xl <?= $penuh ? 'bg-orange-100 text-orange-500' : 'bg-orange-50 text-primary-orange' ?> flex items-center justify-center shrink-0">
                             <span class="material-symbols-outlined text-2xl">store</span>
                         </div>
                         <div>
@@ -294,7 +302,7 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
                             <p class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">ID: #<?= $k['id_kantin'] ?></p>
                         </div>
                     </div>
-                    <span class="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border <?= $penuh ? 'text-red-500 bg-red-50 border-red-100' : 'text-accent-green bg-green-50 border-green-100' ?>">
+                    <span class="text-[9px] font-black uppercase tracking-widest px-2.5 py-1 rounded-lg border <?= $penuh ? 'text-orange-600 bg-orange-50 border-orange-100' : 'text-orange-700 bg-orange-100 border-orange-200' ?>">
                         <?= $penuh ? t('admin.full') : t('admin.available') ?>
                     </span>
                 </div>
@@ -306,14 +314,14 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
                 <div>
                     <div class="flex justify-between items-center mb-1.5">
                         <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Slot Penjual</p>
-                        <p class="text-[10px] font-black <?= $penuh ? 'text-red-500' : 'text-accent-green' ?>"><?= $jml ?> / 5</p>
+                        <p class="text-[10px] font-black <?= $penuh ? 'text-orange-600' : 'text-primary-orange' ?>"><?= $jml ?> / 5</p>
                     </div>
                     <div class="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
                         <div class="h-full <?= $bar ?> rounded-full" style="width:<?= $pct ?>%"></div>
                     </div>
                     <div class="flex gap-1 mt-2">
                         <?php for ($s=1;$s<=5;$s++): ?>
-                        <div class="flex-1 h-1 rounded-full <?= $s<=$jml ? ($penuh ? 'bg-red-300' : 'bg-accent-green') : 'bg-slate-100' ?>"></div>
+                        <div class="flex-1 h-1 rounded-full <?= $s<=$jml ? ($penuh ? 'bg-orange-300' : 'bg-primary-orange') : 'bg-slate-100' ?>"></div>
                         <?php endfor; ?>
                     </div>
                 </div>

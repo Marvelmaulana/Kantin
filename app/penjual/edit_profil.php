@@ -96,26 +96,29 @@ $is_kantin_open = kk_is_kantin_open($data);
     <style>
         * { font-family: 'Plus Jakarta Sans', sans-serif; }
 
-        body { background: linear-gradient(135deg, #fff7f0 0%, #fff 60%, #fff0ee 100%); }
+        body { background: radial-gradient(circle at top left, rgba(249,115,22,0.15), transparent 22%), linear-gradient(135deg, #fff4eb 0%, #fff9f5 40%, #f8fafc 100%); }
 
         /* Upload preview */
         .upload-zone {
-            border: 2px dashed #fed7aa;
+            border: 2px dashed rgba(249,115,22,.35);
+            background: rgba(255,245,235,.85);
             transition: all .2s ease;
         }
         .upload-zone:hover {
-            border-color: #f97316;
-            background: #fff7ed;
+            border-color: #ea580c;
+            background: rgba(255,237,227,.95);
         }
 
         /* Input focus glow */
         input:focus, select:focus, textarea:focus {
-            box-shadow: 0 0 0 3px rgba(249,115,22,0.15);
+            box-shadow: 0 0 0 3px rgba(249,115,22,0.18);
         }
 
         /* Smooth slide-in */
         .card-fade {
             animation: fadeUp .4s ease both;
+            background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(255,249,240,.98));
+            border: 1px solid rgba(251,146,60,.14);
         }
         @keyframes fadeUp {
             from { opacity:0; transform:translateY(16px); }
