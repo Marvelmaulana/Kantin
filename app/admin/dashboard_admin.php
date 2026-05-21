@@ -164,7 +164,7 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
         </div>
         <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card">
             <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-400 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">admin_panel_settings</span></div>
-            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Biaya Admin</p><h3 class="text-xl font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_biaya_admin,0,',','.') ?></h3></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Pendapatan Pajak</p><h3 class="text-xl font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_biaya_admin,0,',','.') ?></h3></div>
         </div>
     </section>
 

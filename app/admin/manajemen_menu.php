@@ -88,6 +88,10 @@ $query = mysqli_query($koneksi, $sql);
             }
         ?>
         <div class="bg-white p-6 rounded-4xl shadow-sm border border-slate-50 group transition-all duration-300">
+            <?php $menu_image = !empty($menu['foto']) ? '../../uploads/' . $menu['foto'] : 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=900&q=80'; ?>
+            <div class="overflow-hidden rounded-3xl mb-5 h-44 bg-slate-100">
+                <img src="<?= htmlspecialchars($menu_image) ?>" alt="<?= htmlspecialchars($menu['nama_menu']) ?>" class="w-full h-full object-cover">
+            </div>
             <div class="flex justify-between items-start mb-6">
                 <div class="w-14 h-14 rounded-2xl bg-bg-soft flex items-center justify-center text-primary-orange border border-orange-50">
                     <span class="material-symbols-outlined text-3xl">
@@ -105,21 +109,16 @@ $query = mysqli_query($koneksi, $sql);
                 Stand: <span class="text-slate-600 uppercase"><?= htmlspecialchars($menu['nama_kantin']) ?></span>
             </p>
 
-            <div class="flex justify-between items-center pt-5 border-t border-slate-50">
+            <div class="flex flex-col gap-4 pt-5 border-t border-slate-50">
                 <div>
                     <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest">Harga</p>
                     <p class="text-2xl font-black text-[#003049]">
                         <span class="text-primary-orange text-sm font-bold">Rp</span> <?= number_format($menu['harga'], 0, ',', '.') ?>
                     </p>
                 </div>
-                <div class="flex gap-2">
-                    <button class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-accent-blue hover:text-white flex items-center justify-center transition-all">
-                        <span class="material-symbols-outlined text-lg">edit</span>
-                    </button>
-                    <button class="w-10 h-10 rounded-xl bg-slate-50 text-slate-400 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all">
-                        <span class="material-symbols-outlined text-lg">delete</span>
-                    </button>
-                </div>
+                <span class="inline-flex items-center justify-center w-max px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-full bg-orange-50 text-orange-700 border border-orange-100">
+                    <?= htmlspecialchars($menu['status'] ?? 'Tersedia') ?>
+                </span>
             </div>
         </div>
         <?php endwhile; ?>

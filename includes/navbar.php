@@ -26,9 +26,9 @@ $sidebarKantin = [];
 if (isset($koneksi) && $koneksi) {
     $q_sidebar_kantin = @mysqli_query($koneksi, "
         SELECT k.id_kantin, k.nama_kantin, k.logo,
-               COUNT(m.id_menu) AS total_menu
+               COUNT(CASE WHEN COALESCE(m.status,'Tersedia') <> 'Habis' THEN 1 END) AS total_menu
         FROM kantin k
-        LEFT JOIN menu m ON k.id_kantin = m.id_kantin AND COALESCE(m.status,'Tersedia') <> 'Habis'
+        LEFT JOIN menu m ON k.id_kantin = m.id_kantin
         GROUP BY k.id_kantin
         ORDER BY k.nama_kantin ASC
     ");

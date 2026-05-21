@@ -90,7 +90,6 @@ $query = mysqli_query($koneksi, $query_sql);
                         <th class="py-6 px-8">Informasi Profil</th>
                         <th class="py-6 px-8">Kontak Email</th>
                         <th class="py-6 px-8">Status</th>
-                        <th class="py-6 px-8 text-center">Tindakan</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
@@ -118,18 +117,6 @@ $query = mysqli_query($koneksi, $query_sql);
                                 <span class="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse"></span>
                                 Active <?= $user['role'] ?>
                             </span>
-                        </td>
-                        <td class="py-6 px-8">
-                            <div class="flex items-center justify-center gap-2">
-                                <button onclick="alert('Fitur edit sedang dikembangkan')" class="w-10 h-10 rounded-xl bg-blue-50 text-accent-blue flex items-center justify-center hover:bg-accent-blue hover:text-white transition-all shadow-sm">
-                                    <span class="material-symbols-outlined text-[20px]">edit_note</span>
-                                </button>
-                                <a href="proses_hapus_user.php?id=<?= $user['id_user'] ?>" 
-                                   onclick="return confirm('Hapus user ini selamanya? Semua data pesanan miliknya juga mungkin terhapus.')" 
-                                   class="w-10 h-10 rounded-xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm">
-                                    <span class="material-symbols-outlined text-[20px]">delete_sweep</span>
-                                </a>
-                            </div>
                         </td>
                     </tr>
                     <?php endwhile; ?>

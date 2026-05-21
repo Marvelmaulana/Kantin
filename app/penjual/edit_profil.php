@@ -24,7 +24,7 @@ $data = mysqli_fetch_assoc($q_kantin);
 if (!$data) die("Data kantin tidak ditemukan");
 
 if(isset($_POST['simpan'])){
-    $nama_kantin = mysqli_real_escape_string($koneksi, trim($_POST['nama_kantin']));
+    $username    = mysqli_real_escape_string($koneksi, trim($_POST['username']));
     $deskripsi   = mysqli_real_escape_string($koneksi, trim($_POST['deskripsi']));
     $jam_buka    = $_POST['jam_buka'];
     $jam_tutup   = $_POST['jam_tutup'];
@@ -51,6 +51,10 @@ if(isset($_POST['simpan'])){
         }
     }
 
+    if (!empty($username)) {
+        mysqli_query($koneksi, "UPDATE users SET username = '$username' WHERE id_user = $id_user");
+        $_SESSION['username'] = $username;
+    }
     mysqli_query($koneksi, "
         UPDATE kantin SET
             nama_kantin  = '$nama_kantin',
@@ -196,8 +200,19 @@ $is_kantin_open = kk_is_kantin_open($data);
             <!-- FORM FIELDS -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <!-- NAMA KANTIN -->
+                <!-- USERNAME PENJUAL -->
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.1s">
+                    <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
+                        <span class="material-symbols-outlined align-middle text-base mr-1">person</span>
+                        Username Penjual
+                    </label>
+                    <input type="text" name="username"
+                           value="<?= htmlspecialchars($user['username'] ?? '') ?>"
+                           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
+                </div>
+
+                <!-- NAMA KANTIN -->
+                <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.15s">
                     <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
                         <span class="material-symbols-outlined align-middle text-base mr-1">storefront</span>
                         Nama Kantin

@@ -8,11 +8,17 @@ include(__DIR__ . '/../../config/config.php');
 
 if (isset($_POST['login_btn'])) {
 
-    $user_input = mysqli_real_escape_string($koneksi, trim($_POST['user_input']));
+    $user_input_raw = trim($_POST['user_input']);
+    $user_input = mysqli_real_escape_string($koneksi, $user_input_raw);
     $password   = mysqli_real_escape_string($koneksi, trim($_POST['password']));
 
-    // Mencari user berdasarkan username atau email
-    $query = mysqli_query($koneksi, "SELECT * FROM users WHERE username='$user_input' OR email='$user_input' LIMIT 1");
+    if (!filter_var($user_input_raw, FILTER_VALIDATE_EMAIL)) {
+        echo "<script>alert('Login hanya dapat dilakukan dengan email.'); window.location='login.php';</script>";
+        exit();
+    }
+
+    // Mencari user berdasarkan email saja
+    $query = mysqli_query($koneksi, "SELECT * FROM users WHERE email='$user_input' LIMIT 1");
     $data  = mysqli_fetch_assoc($query);
 
     if ($data) {

@@ -30,7 +30,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </a>
         <a href="manajemen_penjual.php" class="flex items-center gap-4 px-4 py-4 rounded-[28px] font-bold transition-all <?= ($current_page == 'manajemen_penjual.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white shadow-2xl shadow-orange-400/30 scale-[1.01]' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
             <span class="material-symbols-outlined">store</span>
-            <span class="text-sm">Management Penjual</span>
+            <span class="text-sm">Management Kantin</span>
         </a>
         <a href="manajemen_menu.php" class="flex items-center gap-4 px-4 py-4 rounded-[28px] font-bold transition-all <?= ($current_page == 'manajemen_menu.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white shadow-2xl shadow-orange-400/30 scale-[1.01]' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
             <span class="material-symbols-outlined">restaurant_menu</span>

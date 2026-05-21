@@ -18,7 +18,7 @@ $query = mysqli_query($koneksi, "SELECT * FROM users WHERE role='penjual' ORDER 
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Manajemen Penjual - Kantin Kita</title>
+    <title>Manajemen Kantin - Kantin Kita</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
@@ -54,13 +54,13 @@ $query = mysqli_query($koneksi, "SELECT * FROM users WHERE role='penjual' ORDER 
                 <span class="material-symbols-outlined">arrow_back</span>
             </a>
             <div>
-                <h2 class="text-3xl font-extrabold text-[#003049]">Manajemen Penjual</h2>
-                <p class="text-slate-400 font-medium text-sm">Kelola mitra stand dan toko di Kantin Kita.</p>
+                <h2 class="text-3xl font-extrabold text-[#003049]">Manajemen Kantin</h2>
+                <p class="text-slate-400 font-medium text-sm">Kelola daftar kantin yang terdaftar di platform.</p>
             </div>
         </div>
         
-        <button onclick="alert('Fitur Tambah Penjual via Modal/Form')" class="bg-primary-orange text-white px-6 py-4 rounded-2xl font-bold shadow-lg shadow-orange-200 flex items-center justify-center gap-3 hover:scale-105 transition-all w-full md:w-auto">
-            <span class="material-symbols-outlined">add_business</span> Tambah Mitra Baru
+        <button onclick="alert('Fitur Tambah Kantin via Modal/Form')" class="bg-primary-orange text-white px-6 py-4 rounded-2xl font-bold shadow-lg shadow-orange-200 flex items-center justify-center gap-3 hover:scale-105 transition-all w-full md:w-auto">
+            <span class="material-symbols-outlined">add_business</span> Tambah Kantin Baru
         </button>
     </header>
 
@@ -68,11 +68,11 @@ $query = mysqli_query($koneksi, "SELECT * FROM users WHERE role='penjual' ORDER 
         <div class="p-8 border-b border-slate-50 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white/50 backdrop-blur-md sticky left-0">
             <h3 class="font-bold text-[#003049] flex items-center gap-2">
                 <span class="material-symbols-outlined text-accent-blue">storefront</span>
-                Daftar Stand & Penjual
+                Daftar Kantin
             </h3>
             <div class="flex items-center gap-2 px-4 py-2 bg-green-50 rounded-xl">
                 <span class="w-2 h-2 rounded-full bg-accent-green animate-pulse"></span>
-                <span class="text-[10px] font-black text-accent-green uppercase tracking-widest"><?= mysqli_num_rows($query) ?> Mitra Aktif</span>
+                <span class="text-[10px] font-black text-accent-green uppercase tracking-widest"><?= mysqli_num_rows($query) ?> Kantin Aktif</span>
             </div>
         </div>
         
