@@ -1,0 +1,144 @@
+```html
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Keranjang</title>
+
+<style>
+body{
+  font-family: Arial, sans-serif;
+  background:#f4f4f4;
+  margin:0;
+}
+
+header{
+  background:#16a34a;
+  color:white;
+  text-align:center;
+  padding:15px;
+}
+
+.container{
+  padding:20px;
+  max-width:600px;
+  margin:auto;
+}
+
+.item{
+  background:white;
+  padding:15px;
+  margin-bottom:10px;
+  border-radius:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 2px 5px rgba(0,0,0,0.1);
+}
+
+.total{
+  font-size:20px;
+  font-weight:bold;
+  margin-top:20px;
+}
+
+button{
+  background:#ef4444;
+  color:white;
+  border:none;
+  padding:5px 10px;
+  border-radius:5px;
+  cursor:pointer;
+}
+
+.pesan{
+  margin-top:20px;
+  width:100%;
+  padding:12px;
+  background:#16a34a;
+  color:white;
+  border:none;
+  border-radius:6px;
+  font-size:16px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<h1>Keranjang Belanja</h1>
+</header>
+
+<div class="container">
+
+<div id="listKeranjang"></div>
+
+<p class="total">Total: Rp <span id="totalHarga">0</span></p>
+
+<button class="pesan" onclick="pesan()">Pesan Sekarang</button>
+
+</div>
+
+<script>
+
+let keranjang = JSON.parse(localStorage.getItem("keranjang")) || [];
+let list = document.getElementById("listKeranjang");
+let total = 0;
+
+function tampilkanKeranjang(){
+
+  list.innerHTML = "";
+  total = 0;
+
+  keranjang.forEach((item,index)=>{
+
+    total += item.harga;
+
+    list.innerHTML += `
+    <div class="item">
+      <div>
+        <b>${item.nama}</b><br>
+        Rp ${item.harga}
+      </div>
+
+      <button onclick="hapusItem(${index})">Hapus</button>
+    </div>
+    `;
+
+  });
+
+  document.getElementById("totalHarga").innerText = total;
+}
+
+function hapusItem(index){
+
+  keranjang.splice(index,1);
+
+  localStorage.setItem("keranjang",JSON.stringify(keranjang));
+
+  tampilkanKeranjang();
+}
+
+function pesan(){
+
+  if(keranjang.length == 0){
+    alert("Keranjang masih kosong");
+    return;
+  }
+
+  alert("Pesanan berhasil dibuat!");
+
+  localStorage.removeItem("keranjang");
+
+  location.reload();
+}
+
+tampilkanKeranjang();
+
+</script>
+
+</body>
+</html>
+```
