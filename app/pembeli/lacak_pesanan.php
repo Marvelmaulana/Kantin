@@ -377,6 +377,7 @@ Rp <?= number_format($data['total_harga'],0,',','.') ?>
 
 <a
 href="download_bukti.php?id=<?= $data['id_pesanan'] ?>"
+download="bukti_pesanan_<?= htmlspecialchars($data['kode_pesanan']) ?>.txt"
 class="bg-stone-900 text-white rounded-2xl py-4 flex items-center justify-center gap-2 font-bold"
 >
 

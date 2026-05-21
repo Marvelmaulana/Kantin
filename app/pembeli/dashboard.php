@@ -101,7 +101,7 @@ function renderMenuCard($m, $is_fav) {
     $fill = $is_fav ? '1' : '0';
     $available = kk_is_menu_available($m);
     $badgeText = $available ? 'Tersedia' : 'Habis';
-    $badgeClass = $available ? 'bg-green-500/95 text-white' : 'bg-red-500/95 text-white';
+    $badgeClass = $available ? 'bg-orange-500/95 text-white' : 'bg-red-500/95 text-white';
     $cardClass = $available ? '' : 'opacity-75 grayscale-[35%]';
 
     return "
@@ -152,7 +152,7 @@ function renderMenuCard($m, $is_fav) {
 
 body {
     font-family: 'Be Vietnam Pro', sans-serif;
-    background: linear-gradient(135deg, #f6f2fb 0%, #fff4e6 32%, #fff9f2 66%, #f8fafc 100%);
+    background: linear-gradient(135deg, #fff7eb 0%, #fff0dd 32%, #fff7ef 66%, #fffbf5 100%);
     min-height: 100vh;
     padding-bottom: 120px;
     color: #1f2937;
@@ -166,9 +166,9 @@ body::before {
     width: 200%;
     height: 200%;
     background:
-        radial-gradient(circle at 20% 18%, rgba(249,115,22,0.12) 0%, transparent 42%),
-        radial-gradient(circle at 80% 80%, rgba(139,92,246,0.10) 0%, transparent 42%),
-        radial-gradient(circle at 50% 50%, rgba(16,185,129,0.06) 0%, transparent 50%);
+        radial-gradient(circle at 20% 18%, rgba(249,115,22,0.14) 0%, transparent 42%),
+        radial-gradient(circle at 80% 80%, rgba(251,146,60,0.10) 0%, transparent 42%),
+        radial-gradient(circle at 50% 50%, rgba(249,115,22,0.06) 0%, transparent 50%);
     z-index: -1;
     animation: floatBg 25s ease-in-out infinite;
 }
@@ -318,8 +318,8 @@ body::before {
         <?php if (!$query_menu || mysqli_num_rows($query_menu) === 0): ?>
         <div class="text-center py-16 bg-white rounded-3xl border-2 border-dashed border-orange-100">
             <div class="floating">
-                <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-pink-50 flex items-center justify-center">
-                    <i class="fa-solid fa-heart text-4xl text-pink-300"></i>
+                <div class="w-24 h-24 mx-auto mb-4 rounded-full bg-orange-50 flex items-center justify-center">
+                    <i class="fa-solid fa-fire text-4xl text-orange-400"></i>
                 </div>
             </div>
             <h3 class="headline font-black text-lg text-gray-600">Belum ada favorit</h3>
@@ -338,15 +338,15 @@ body::before {
     <section>
         <div class="flex items-center justify-between mb-5">
             <div class="flex items-center gap-2">
-                <div class="w-10 h-10 rounded-xl bg-green-100 flex items-center justify-center">
-                    <i class="fa-solid fa-sparkles text-green-500 text-lg"></i>
+                <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                    <i class="fa-solid fa-sparkles text-orange-500 text-lg"></i>
                 </div>
                 <div>
                     <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Baru nih!</p>
                     <h2 class="headline font-black text-xl section-title">Menu Terbaru</h2>
                 </div>
             </div>
-            <span class="bg-green-50 text-green-600 px-3 py-1 rounded-full text-xs font-bold">
+            <span class="bg-orange-50 text-orange-700 px-3 py-1 rounded-full text-xs font-bold">
                 <i class="fa-solid fa-bolt mr-1"></i>Fresh
             </span>
         </div>
@@ -381,8 +381,8 @@ body::before {
     <section>
         <div class="flex items-center justify-between mb-5">
             <div class="flex items-center gap-2">
-                <div class="w-10 h-10 rounded-xl bg-purple-100 flex items-center justify-center">
-                    <i class="fa-solid fa-utensils text-purple-500 text-lg"></i>
+                <div class="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center">
+                    <i class="fa-solid fa-utensils text-orange-500 text-lg"></i>
                 </div>
                 <h2 class="headline font-black text-xl section-title">Semua Menu</h2>
             </div>

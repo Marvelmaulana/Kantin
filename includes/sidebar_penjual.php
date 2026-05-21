@@ -49,7 +49,7 @@ $chat_unread = $data_chat_unread['total'] ?? 0;
 
 <!-- SIDEBAR -->
 <aside id="sidebar"
-class="h-screen w-72 fixed left-0 top-0 flex flex-col bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.3),transparent_38%),linear-gradient(180deg,_#351501_0%,_#1f1a18_20%,_#fef1e6_100%)] border-r border-orange-600 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.3),transparent_38%),linear-gradient(180deg,_#351501_0%,_#1f1a18_20%,_#fef1e6_100%)] border-r border-orange-600 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
 
     <div class="flex flex-col h-full p-8 gap-2">
 
@@ -96,7 +96,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col bg-[radial-gradient(circle
         </div>
 
         <!-- MENU -->
-        <nav class="flex-1 space-y-3">
+        <nav class="flex-1 space-y-3 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-orange-400/70">
 
             <!-- DASHBOARD -->
             <a href="dashboard_penjual.php"

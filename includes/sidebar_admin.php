@@ -8,7 +8,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
 
 <div id="overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-black/30 z-40 hidden backdrop-blur-sm transition-opacity"></div>
 
-<aside id="sidebar" class="fixed left-0 top-0 h-screen w-72 bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.25),_transparent_35%),_linear-gradient(180deg,_#ffedd5_0%,_#f97316_40%,_#c2410c_100%)] border-r border-orange-700 shadow-[12px_0_60px_-30px_rgba(251,146,60,0.45)] flex flex-col p-8 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+<aside id="sidebar" class="fixed left-0 top-0 h-screen w-72 bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.25),_transparent_35%),_linear-gradient(180deg,_#ffedd5_0%,_#f97316_40%,_#c2410c_100%)] border-r border-orange-700 shadow-[12px_0_60px_-30px_rgba(251,146,60,0.45)] flex flex-col overflow-hidden p-8 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
     <div class="flex items-center gap-3 mb-12">
         <div class="w-12 h-12 rounded-3xl bg-gradient-to-br from-orange-400 via-orange-500 to-orange-600 flex items-center justify-center text-white shadow-2xl shadow-orange-500/30 border border-white/10">
             <span class="material-symbols-outlined text-2xl">restaurant</span>
@@ -19,7 +19,7 @@ $current_page = basename($_SERVER['PHP_SELF']);
         </div>
     </div>
 
-    <nav class="flex-1 space-y-2">
+    <nav class="flex-1 space-y-2 overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-orange-400/70">
         <a href="dashboard_admin.php" class="flex items-center gap-4 px-4 py-4 rounded-[28px] font-bold transition-all <?= ($current_page == 'dashboard_admin.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white shadow-2xl shadow-orange-400/30 scale-[1.01]' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
             <span class="material-symbols-outlined">grid_view</span>
             <span class="text-sm">Dashboard</span>

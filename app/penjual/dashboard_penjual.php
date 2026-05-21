@@ -280,7 +280,7 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
 
                     <!-- Status -->
                     <span class="flex items-center gap-1.5 backdrop-blur-sm text-white text-xs font-semibold px-3 py-2 rounded-xl
-                        <?= $kantin_buka ? 'bg-green-500/70' : 'bg-red-500/70' ?>">
+                        <?= $kantin_buka ? 'bg-orange-500/70' : 'bg-red-500/70' ?>">
 
                         <span class="w-2 h-2 rounded-full bg-white <?= $kantin_buka ? 'animate-pulse' : '' ?>"></span>
 
@@ -298,17 +298,17 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
         <?php
         $stats = [
             ['label'=> t('seller.orders_today'), 'value'=>number_format($pesanan_hari_ini),
-             'icon'=>'fa-bag-shopping', 'from'=>'from-blue-500','to'=>'to-blue-600','shadow'=>'shadow-blue-200'],
+             'icon'=>'fa-bag-shopping', 'from'=>'from-orange-400','to'=>'to-orange-500','shadow'=>'shadow-orange-200'],
             ['label'=> t('seller.revenue_today'), 'value'=>'Rp '.number_format($pendapatan_hari_ini,0,',','.'),
-             'icon'=>'fa-coins', 'from'=>'from-emerald-500','to'=>'to-emerald-600','shadow'=>'shadow-emerald-200'],
+             'icon'=>'fa-coins', 'from'=>'from-orange-500','to'=>'to-orange-600','shadow'=>'shadow-orange-200'],
             ['label'=> t('seller.menu_available'), 'value'=>number_format($menu_aktif),
              'icon'=>'fa-utensils', 'from'=>'from-orange-500','to'=>'to-orange-600','shadow'=>'shadow-orange-200'],
             ['label'=> t('seller.total_orders'), 'value'=>number_format($total_pesanan),
-             'icon'=>'fa-list-check', 'from'=>'from-purple-500','to'=>'to-purple-600','shadow'=>'shadow-purple-200'],
+             'icon'=>'fa-list-check', 'from'=>'from-orange-500','to'=>'to-orange-700','shadow'=>'shadow-orange-200'],
         ];
         foreach ($stats as $s): ?>
         <div class="group bg-white rounded-2xl lg:rounded-3xl p-5 lg:p-7 shadow-lg hover:shadow-xl transition-all border border-gray-100 relative overflow-hidden">
-            <div class="absolute top-0 right-0 w-32 h-32 rounded-full bg-gradient-to-br from-blue-100/50 to-transparent -mr-8 -mt-8 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+            <div class="absolute top-0 right-0 w-32 h-32 rounded-full bg-gradient-to-br from-orange-100/50 to-transparent -mr-8 -mt-8 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div class="flex items-start justify-between gap-3 relative z-10">
                 <div class="flex-1 min-w-0">
                     <p class="text-gray-500 text-xs font-semibold mb-2 leading-tight"><?= $s['label'] ?></p>
@@ -364,8 +364,8 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
             <div class="space-y-3">
             <?php foreach ($pesanan_masuk as $idx => $pesan):
                 $sc = match($pesan['status']) {
-                    'Pending'  => ['bg'=>'bg-amber-100',  'text'=>'text-amber-700',  'dot'=>'bg-amber-500'],
-                    'Diproses' => ['bg'=>'bg-blue-100',   'text'=>'text-blue-700',   'dot'=>'bg-blue-500'],
+                    'Pending'  => ['bg'=>'bg-orange-100', 'text'=>'text-orange-700', 'dot'=>'bg-orange-500'],
+                    'Diproses' => ['bg'=>'bg-orange-100', 'text'=>'text-orange-700', 'dot'=>'bg-orange-500'],
                     default    => ['bg'=>'bg-gray-100',   'text'=>'text-gray-600',   'dot'=>'bg-gray-400'],
                 };
                 $total_item = array_sum(array_column($pesan['items'], 'qty'));
@@ -394,7 +394,7 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
                                 <?= $pesan['status'] ?>
                             </span>
                             <?php if ($pesan['metode_pembayaran']): ?>
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-green-100 text-green-700">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold bg-orange-50 text-orange-700">
                                 <i class="fa-solid fa-wallet text-[9px]"></i>
                                 <?= htmlspecialchars($pesan['metode_pembayaran']) ?>
                             </span>
@@ -424,8 +424,8 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
                         <?php endforeach; ?>
                     </div>
                     <?php if ($pesan['catatan']): ?>
-                    <p class="mt-2 text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-1.5 flex items-center gap-1.5">
-                        <i class="fa-solid fa-note-sticky text-amber-500 text-[10px]"></i>
+                    <p class="mt-2 text-xs text-orange-700 bg-orange-50 rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-note-sticky text-orange-500 text-[10px]"></i>
                         <?= htmlspecialchars($pesan['catatan']) ?>
                     </p>
                     <?php endif; ?>
@@ -492,7 +492,7 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
                     <p class="font-black text-gray-900">Rp <?= number_format($m['harga'],0,',','.') ?></p>
                     <p class="text-xs text-gray-400 mt-0.5"><?= t('seller.stok') ?>: <?= $m['stok'] ?? 0 ?></p>
                     <span class="inline-block mt-1 px-2 py-0.5 rounded-lg text-[11px] font-bold
-                                 <?= $m['status']==='Tersedia' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' ?>">
+                                 <?= $m['status']==='Tersedia' ? 'bg-orange-100 text-orange-700' : 'bg-red-100 text-red-700' ?>">
                         <?= $m['status'] ?>
                     </span>
                 </div>
@@ -607,11 +607,11 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
         </div>
 
         <!-- Catatan -->
-        <div id="s_catatan_wrap" class="hidden mt-3 bg-amber-50 border border-amber-200 rounded-xl p-3">
-            <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wide mb-1">
+        <div id="s_catatan_wrap" class="hidden mt-3 bg-orange-50 border border-orange-200 rounded-xl p-3">
+            <p class="text-[10px] font-bold text-orange-600 uppercase tracking-wide mb-1">
                 <i class="fa-solid fa-note-sticky mr-1"></i>Catatan dari Pembeli
             </p>
-            <p class="text-xs text-amber-800" id="s_catatan">-</p>
+            <p class="text-xs text-orange-800" id="s_catatan">-</p>
         </div>
 
         <hr class="struk-dash">
@@ -682,9 +682,9 @@ function bukaStruk(idx) {
 
     // Badge status
     const scMap = {
-        'Pending' : 'bg-amber-100 text-amber-700',
-        'Diproses': 'bg-blue-100 text-blue-700',
-        'Selesai' : 'bg-green-100 text-green-700',
+        'Pending' : 'bg-orange-100 text-orange-700',
+        'Diproses': 'bg-orange-100 text-orange-700',
+        'Selesai' : 'bg-orange-100 text-orange-700',
     };
     document.getElementById('s_status_wrap').innerHTML =
         `<span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold
