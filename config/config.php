@@ -27,6 +27,9 @@ include(__DIR__ . '/../includes/pembeli_helpers.php');
 if (function_exists('kk_ensure_buyer_schema')) {
     kk_ensure_buyer_schema($koneksi);
 }
+if (function_exists('kk_refresh_kantin_status')) {
+    kk_refresh_kantin_status($koneksi);
+}
 
 // include language helper
 include(__DIR__ . '/../includes/language_helper.php');

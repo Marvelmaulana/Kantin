@@ -28,7 +28,6 @@ if(isset($_POST['simpan'])){
     $deskripsi   = mysqli_real_escape_string($koneksi, trim($_POST['deskripsi']));
     $jam_buka    = $_POST['jam_buka'];
     $jam_tutup   = $_POST['jam_tutup'];
-    $status_buka = $_POST['status_buka'];
     $logo   = $data['logo'];
     $banner = $data['banner'];
 
@@ -58,7 +57,6 @@ if(isset($_POST['simpan'])){
             deskripsi    = '$deskripsi',
             jam_buka     = '$jam_buka',
             jam_tutup    = '$jam_tutup',
-            status_buka  = '$status_buka',
             logo         = '$logo',
             banner       = '$banner'
         WHERE id_kantin  = $id_kantin
@@ -69,6 +67,7 @@ if(isset($_POST['simpan'])){
 
 $logo_tampil   = !empty($data['logo'])   ? '../../uploads/' . $data['logo']   : '../../uploads/default-logo.png';
 $banner_tampil = !empty($data['banner']) ? '../../uploads/' . $data['banner'] : '../../uploads/default-banner.jpg';
+$is_kantin_open = kk_is_kantin_open($data);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -211,11 +210,12 @@ $banner_tampil = !empty($data['banner']) ? '../../uploads/' . $data['banner'] : 
                         <span class="material-symbols-outlined align-middle text-base mr-1">toggle_on</span>
                         Status Kantin
                     </label>
-                    <select name="status_buka"
-                            class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
-                        <option value="Buka"  <?= $data['status_buka']=='Buka'  ? 'selected':'' ?>>🟢 Sedang Buka</option>
-                        <option value="Tutup" <?= $data['status_buka']=='Tutup' ? 'selected':'' ?>>🔴 Tutup</option>
-                    </select>
+                    <div class="rounded-2xl border border-gray-100 bg-gray-50 px-5 py-3.5 text-gray-800 text-sm font-semibold">
+                        Status akan diperbarui otomatis berdasarkan jam buka dan jam tutup.
+                    </div>
+                    <div class="mt-4 rounded-2xl border border-gray-100 bg-white px-5 py-3.5 text-sm font-semibold text-gray-700">
+                        Status saat ini: <span class="font-black text-<?= $is_kantin_open ? 'green' : 'red' ?>-600"><?= $is_kantin_open ? 'Buka' : 'Tutup' ?></span>
+                    </div>
                 </div>
 
                 <!-- JAM BUKA -->

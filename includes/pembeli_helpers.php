@@ -140,6 +140,25 @@ if (!function_exists('kk_time_hm')) {
     }
 }
 
+if (!function_exists('kk_refresh_kantin_status')) {
+    function kk_refresh_kantin_status($koneksi) {
+        date_default_timezone_set('Asia/Jakarta');
+        $now = date('H:i:s');
+        $nowEsc = mysqli_real_escape_string($koneksi, $now);
+
+        $query = "UPDATE kantin SET status_buka = CASE
+            WHEN COALESCE(NULLIF(jam_buka,''),'07:00:00') = COALESCE(NULLIF(jam_tutup,''),'15:00:00') THEN 'Buka'
+            WHEN COALESCE(NULLIF(jam_buka,''),'07:00:00') < COALESCE(NULLIF(jam_tutup,''),'15:00:00')
+                 AND '$nowEsc' BETWEEN COALESCE(NULLIF(jam_buka,''),'07:00:00') AND COALESCE(NULLIF(jam_tutup,''),'15:00:00') THEN 'Buka'
+            WHEN COALESCE(NULLIF(jam_buka,''),'07:00:00') > COALESCE(NULLIF(jam_tutup,''),'15:00:00')
+                 AND ('$nowEsc' >= COALESCE(NULLIF(jam_buka,''),'07:00:00') OR '$nowEsc' <= COALESCE(NULLIF(jam_tutup,''),'15:00:00')) THEN 'Buka'
+            ELSE 'Tutup'
+        END";
+
+        @mysqli_query($koneksi, $query);
+    }
+}
+
 if (!function_exists('kk_is_kantin_open')) {
     function kk_is_kantin_open($kantin, $now = null) {
         $status = $kantin['status_buka'] ?? 'Buka';

@@ -52,7 +52,7 @@ $logo = (!empty($data_kantin['logo']) && file_exists("../../uploads/" . $data_ka
 
 date_default_timezone_set('Asia/Jakarta');
 $jam_sekarang = date('H:i:s');
-$kantin_buka  = ($status_buka === 'Buka' && $jam_sekarang >= $jam_buka && $jam_sekarang <= $jam_tutup);
+$kantin_buka  = kk_is_kantin_open($data_kantin);
 
 // ================================
 // STATISTIK
