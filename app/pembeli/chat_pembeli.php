@@ -168,6 +168,7 @@ body {
                     <h3 class="font-black text-gray-600 text-sm">Belum ada percakapan</h3>
                     <p class="text-xs text-gray-400 mt-1">Mulai chat dengan penjual di tab Semua Kantin</p>
                 </div>
+                
                 <?php else: ?>
                 <?php foreach ($conversations as $conv): ?>
                 <?php

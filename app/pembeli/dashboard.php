@@ -12,6 +12,7 @@ if (!isset($_SESSION['id_user']) || ($_SESSION['role'] ?? '') !== 'pembeli') {
 $id_user = (int)$_SESSION['id_user'];
 $csrfToken = kk_csrf_token();
 
+
 if (isset($_POST['ajax_favorit'])) {
     header('Content-Type: application/json');
     if (!kk_verify_csrf($_POST['csrf_token'] ?? '')) {
