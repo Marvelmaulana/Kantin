@@ -43,9 +43,9 @@ if (isset($koneksi) && $koneksi) {
 /* Gen-Z Buyer Sidebar Styles */
 @media (min-width:1024px){
     body{padding-left:18rem!important;padding-bottom:2rem!important;}
-    body>header.fixed{left:18rem!important;right:0!important;width:auto!important;max-width:none!important;}
+    body>header{left:18rem!important;right:0!important;width:auto!important;max-width:none!important;}
 }
-.kk-buyer-sidebar{font-family:'Be Vietnam Pro',system-ui,sans-serif;}
+.kk-buyer-sidebar{font-family:'Be Vietnam Pro',system-ui,sans-serif;display:flex !important;flex-direction:column !important;height:100% !important;}
 .kk-menu-toggle{display:none;}
 .kk-sidebar-overlay{display:none;}
 
@@ -79,7 +79,9 @@ if (isset($koneksi) && $koneksi) {
 .kk-nav-link .material-symbols-outlined{font-size:21px;font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 24;}
 .kk-kantin-link{display:flex;align-items:center;gap:.65rem;padding:.7rem;border-radius:18px;text-decoration:none;color:#422006;transition:.25s;}
 .kk-kantin-link:hover{background:linear-gradient(135deg, #fff4e6, #ffe9d5);color:#c2410c;transform:translateX(4px);border-radius:18px;}
-.kk-sidebar-scroll{scrollbar-width:thin;scrollbar-color:#fbbf24 transparent;max-height:calc(100vh - 22rem);min-height:0;}
+.kk-sidebar-scroll{scrollbar-width:thin;scrollbar-color:#fbbf24 transparent;}
+.kk-nav-scroll{scrollbar-width:thin;scrollbar-color:#fbbf24 transparent;max-height:50%;flex-shrink:0;overflow-y:auto;}
+.kk-kantin-section{flex:1;min-height:0;display:flex;flex-direction:column;overflow:hidden;}
 
 @media (max-width:1023px){
     body{padding-left:0!important;padding-bottom:2rem!important;}
@@ -90,7 +92,7 @@ if (isset($koneksi) && $koneksi) {
     .kk-sidebar-overlay{display:block;position:fixed;inset:0;background:rgba(249,115,22,.18);backdrop-filter:blur(6px);z-index:65;opacity:0;pointer-events:none;transition:opacity .25s;}
     .kk-sidebar-overlay.open{opacity:1;pointer-events:auto;}
     .kk-mobile-nav{display:none!important;}
-    .kk-sidebar-scroll{max-height:none!important;}
+    .kk-nav-scroll{max-height:none;}
 }
 @media (max-width:420px){
     body>header{padding-left:4.35rem!important;}
@@ -126,7 +128,7 @@ if (isset($koneksi) && $koneksi) {
 <div id="kk-sidebar-overlay" class="kk-sidebar-overlay" onclick="kkToggleBuyerSidebar(false)"></div>
 
 <aside id="kk-buyer-sidebar" class="kk-buyer-sidebar fixed left-0 top-0 bottom-0 z-[70] w-72 bg-white/98 backdrop-blur-xl border-r-2 border-orange-100 px-4 py-5 hidden lg:flex flex-col shadow-2xl shadow-orange-200/20">
-    <div class="px-3 pb-5 border-b-2 border-orange-100">
+    <div class="px-3 pb-3 border-b-2 border-orange-100">
         <div class="flex items-center gap-3">
             <a href="dashboard.php" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-xl shadow-orange-200/50 hover:scale-105 transition-all flex-shrink-0">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -150,7 +152,7 @@ if (isset($koneksi) && $koneksi) {
         </div>
     </div>
 
-    <nav class="py-5 space-y-2">
+    <nav class="kk-nav-scroll space-y-1">
         <?php foreach ($buyerNav as [$key, $href, $icon, $label]):
             $active = ($current_page === $key) || ($navBase === $href);
         ?>
@@ -161,12 +163,12 @@ if (isset($koneksi) && $koneksi) {
         <?php endforeach; ?>
     </nav>
 
-    <div class="flex-1 min-h-0 border-t-2 border-orange-100 pt-4">
-        <div class="flex items-center justify-between px-2 mb-2">
+    <div class="kk-kantin-section border-t-2 border-orange-100 pt-3">
+        <div class="flex items-center justify-between px-2 mb-2 flex-shrink-0">
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Kantin</p>
             <span class="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-1 rounded-full"><?= count($sidebarKantin) ?></span>
         </div>
-        <div class="kk-sidebar-scroll overflow-y-auto pr-1 space-y-1">
+        <div class="kk-sidebar-scroll overflow-y-auto pr-1 space-y-1 flex-1 min-h-0">
             <?php if (!empty($sidebarKantin)): ?>
                 <?php foreach ($sidebarKantin as $kantin):
                     $logo = function_exists('kk_upload_url') ? kk_upload_url($kantin['logo'] ?? '', 'logo') : '../../public/assets/img/default-logo.svg';
@@ -183,17 +185,6 @@ if (isset($koneksi) && $koneksi) {
                 <div class="rounded-2xl bg-orange-50 p-3 text-[11px] text-gray-400 font-bold text-center"><?= t('buyer.belum_ada_kantin') ?></div>
             <?php endif; ?>
         </div>
-    </div>
-
-    <div id="kk-help-section" class="rounded-3xl bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 p-4 shadow-lg shadow-orange-200/20 relative group">
-        <button type="button" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 rounded-full bg-orange-200 hover:bg-orange-300 text-orange-700 flex items-center justify-center" onclick="kkCloseHelpSection()" title="Tutup">
-            <span class="material-symbols-outlined text-sm">close</span>
-        </button>
-        <p class="text-xs font-black text-gray-700"><?= t('buyer.butuh_bantuan') ?></p>
-        <p class="text-[11px] text-gray-500 mt-1 leading-relaxed"><?= t('help.help_desc') ?></p>
-        <a href="bantuan.php" class="mt-3 inline-flex items-center gap-1 text-xs font-black text-orange-600 hover:text-orange-700">
-            <?= t('buyer.pusat_bantuan') ?> <span class="material-symbols-outlined text-sm">arrow_forward</span>
-        </a>
     </div>
 </aside>
 
@@ -217,22 +208,4 @@ function kkToggleBuyerSidebar(open) {
     sidebar.classList.toggle('open', !!open);
     overlay.classList.toggle('open', !!open);
 }
-
-function kkCloseHelpSection() {
-    const helpSection = document.getElementById('kk-help-section');
-    if (helpSection) {
-        helpSection.style.display = 'none';
-        localStorage.setItem('kk_help_closed', 'true');
-    }
-}
-
-// On page load, check if help was previously closed
-document.addEventListener('DOMContentLoaded', function() {
-    if (localStorage.getItem('kk_help_closed') === 'true') {
-        const helpSection = document.getElementById('kk-help-section');
-        if (helpSection) {
-            helpSection.style.display = 'none';
-        }
-    }
-});
 </script>

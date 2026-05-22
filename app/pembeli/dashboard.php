@@ -247,16 +247,7 @@ body::before {
         <div class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
                 <a href="dashboard.php" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-xl shadow-orange-200 hover:scale-105 transition-all">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <!-- Fork and knife for kantin/restaurant -->
-                        <g fill="currentColor">
-                            <path d="M6 2C5.45 2 5 2.45 5 3V13C5 13.55 5.45 14 6 14H5V20C5 20.55 5.45 21 6 21C6.55 21 7 20.55 7 20V14H6V3C6 2.45 6.45 2 6 2Z"/>
-                            <path d="M11 4C10.45 4 10 4.45 10 5V15C10 15.55 10.45 16 11 16C11.55 16 12 15.55 12 15V5C12 4.45 11.55 4 11 4Z"/>
-                            <path d="M11 16C10.45 16 10 16.45 10 17V20C10 20.55 10.45 21 11 21C11.55 21 12 20.55 12 20V17C12 16.45 11.55 16 11 16Z"/>
-                            <path d="M16 3C15.45 3 15 3.45 15 4V9H15L16 7L17 9H17V4C17 3.45 16.55 3 16 3Z"/>
-                            <path d="M14 10C13.45 10 13 10.45 13 11V20C13 20.55 13.45 21 14 21C14.55 21 15 20.55 15 20V11C15 10.45 14.55 10 14 10Z"/>
-                        </g>
-                    </svg>
+                    <span class="material-symbols-outlined text-2xl">local_dining</span>
                 </a>
                 <div>
                     <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest"><?= t('buyer.welcome', ['name' => $nama]) ?></p>
