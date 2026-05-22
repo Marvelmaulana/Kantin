@@ -59,7 +59,7 @@ $query = mysqli_query($koneksi, "SELECT * FROM users WHERE role='penjual' ORDER 
             </div>
         </div>
         
-        <button onclick="alert('Fitur Tambah Kantin via Modal/Form')" class="bg-primary-orange text-white px-6 py-4 rounded-2xl font-bold shadow-lg shadow-orange-200 flex items-center justify-center gap-3 hover:scale-105 transition-all w-full md:w-auto">
+        <button onclick="window.location='tambah_kantin.php'" class="bg-primary-orange text-white px-6 py-4 rounded-2xl font-bold shadow-lg shadow-orange-200 flex items-center justify-center gap-3 hover:scale-105 transition-all w-full md:w-auto">
             <span class="material-symbols-outlined">add_business</span> Tambah Kantin Baru
         </button>
     </header>
@@ -119,9 +119,6 @@ $query = mysqli_query($koneksi, "SELECT * FROM users WHERE role='penjual' ORDER 
                         </td>
                         <td class="py-6 px-8">
                             <div class="flex items-center justify-center gap-3">
-                                <button title="Edit Toko" class="w-11 h-11 rounded-2xl bg-blue-50 text-accent-blue flex items-center justify-center hover:bg-accent-blue hover:text-white transition-all shadow-sm">
-                                    <span class="material-symbols-outlined text-[20px]">edit_square</span>
-                                </button>
                                 <a href="proses_hapus_penjual.php?id=<?= $penjual['id_user'] ?>" 
                                    onclick="return confirm('Hapus mitra ini? Semua menu yang terdaftar di stand ini juga akan ikut terhapus!')" 
                                    class="w-11 h-11 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all shadow-sm">

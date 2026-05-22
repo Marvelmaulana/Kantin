@@ -31,6 +31,7 @@ if (!function_exists('kk_ensure_buyer_schema')) {
             ['kantin', 'jam_buka', "ALTER TABLE kantin ADD COLUMN jam_buka TIME NULL DEFAULT '07:00:00'"],
             ['kantin', 'jam_tutup', "ALTER TABLE kantin ADD COLUMN jam_tutup TIME NULL DEFAULT '15:00:00'"],
             ['kantin', 'status_buka', "ALTER TABLE kantin ADD COLUMN status_buka ENUM('Buka','Tutup') NULL DEFAULT 'Buka'"],
+            ['kantin', 'tipe_operasi', "ALTER TABLE kantin ADD COLUMN tipe_operasi ENUM('manual','otomatis') NOT NULL DEFAULT 'manual'"],
         ];
 
         foreach ($alters as [$table, $column, $sql]) {

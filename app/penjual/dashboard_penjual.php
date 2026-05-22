@@ -80,14 +80,23 @@ $total_pesanan = (int)(mysqli_fetch_assoc(mysqli_query($koneksi,
 $pesanan_masuk = [];
 
 $q_p = mysqli_query($koneksi, "
-    SELECT p.id_pesanan, p.kode_pesanan, p.nomor_antrean,
-           p.total_harga, p.status, p.tanggal,
-           p.metode_pembayaran, p.catatan,
-           u.username, u.email
+    SELECT 
+        p.id_pesanan,
+        p.kode_pesanan,
+        p.nomor_antrean,
+        p.total_harga,
+        COALESCE(p.pajak,0) AS pajak,
+        (p.total_harga - COALESCE(p.pajak,0)) AS subtotal,
+        p.status,
+        p.tanggal,
+        p.metode_pembayaran,
+        p.catatan,
+        u.username,
+        u.email
     FROM pesanan p
     LEFT JOIN users u ON p.id_user = u.id_user
     WHERE p.id_kantin = $id_kantin
-    AND   p.status IN ('Pending','Diproses')
+    AND p.status IN ('Pending','Diproses')
     ORDER BY p.tanggal DESC
     LIMIT 5
 ");
@@ -404,7 +413,7 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
 
                     <!-- Harga + waktu -->
                     <div class="text-right flex-shrink-0">
-                        <p class="font-black text-gray-900 text-lg">Rp <?= number_format($pesan['total_harga'],0,',','.') ?></p>
+                        <p class="font-black text-gray-900 text-lg"> Rp <?= number_format($pesan['subtotal'],0,',','.') ?></p>
                         <p class="text-[11px] text-gray-400 mt-0.5"><?= date('d M, H:i', strtotime($pesan['tanggal'])) ?></p>
                         <p class="text-[11px] text-orange-500 font-semibold mt-1"><?= $total_item ?> <?= t('general.item') ?></p>
                     </div>
@@ -600,11 +609,27 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
 
         <hr class="struk-dash">
 
-        <!-- Total -->
-        <div class="flex items-center justify-between py-1">
-            <span class="font-black text-sm text-gray-900">TOTAL BAYAR</span>
-            <span class="font-black text-lg text-orange-600" id="s_total">-</span>
-        </div>
+        <!-- Ringkasan -->
+<div class="space-y-1 text-sm">
+
+    <div class="flex justify-between">
+        <span class="text-gray-500">Subtotal</span>
+        <span class="font-bold text-gray-800" id="s_subtotal">-</span>
+    </div>
+
+    <div class="flex justify-between">
+        <span class="text-gray-500">Pajak</span>
+        <span class="font-bold text-orange-600" id="s_pajak">-</span>
+    </div>
+
+    <div class="border-t border-dashed border-gray-300 my-2"></div>
+
+    <div class="flex items-center justify-between py-1">
+        <span class="font-black text-sm text-gray-900">TOTAL BAYAR</span>
+        <span class="font-black text-lg text-orange-600" id="s_total">-</span>
+    </div>
+
+</div>
 
         <!-- Catatan -->
         <div id="s_catatan_wrap" class="hidden mt-3 bg-orange-50 border border-orange-200 rounded-xl p-3">
@@ -718,7 +743,9 @@ function bukaStruk(idx) {
     }
 
     // Total
-    document.getElementById('s_total').textContent = rp(p.total_harga);
+document.getElementById('s_subtotal').textContent = rp(p.subtotal || 0);
+document.getElementById('s_pajak').textContent    = rp(p.pajak || 0);
+document.getElementById('s_total').textContent    = rp(p.total_harga || 0);
 
     // Tampilkan modal
     document.getElementById('modalStruk').classList.add('active');

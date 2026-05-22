@@ -296,6 +296,12 @@ body::before {
     if ($total_tampil <= 0) {
         $total_tampil = array_sum(array_column($drows, 'subtotal'));
     }
+    $subtotal_items = array_sum(array_column($drows, 'subtotal'));
+    $pajak = (int)($p['pajak'] ?? 0);
+    if ($pajak <= 0 && $total_tampil > $subtotal_items) {
+        $pajak = (int)($total_tampil - $subtotal_items);
+    }
+    $pendapatan = max(0, $total_tampil - $pajak);
 ?>
 
 <div class="order-card">
@@ -428,9 +434,9 @@ body::before {
     <!-- Footer: total + tombol -->
     <div class="px-5 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-stone-50/60 border-t border-[var(--line)]">
         <div>
-            <p class="text-[9px] font-black uppercase tracking-widest text-[var(--muted)]"><?= t('cart.total_payment') ?></p>
+            <p class="text-[9px] font-black uppercase tracking-widest text-[var(--muted)]">Total Pendapatan</p>
             <p class="text-xl font-extrabold text-[var(--brand)] tabular-nums">
-                <?= $total_tampil > 0 ? 'Rp '.number_format($total_tampil, 0, ',', '.') : t('msg.no_orders') ?>
+                <?= $pendapatan > 0 ? 'Rp '.number_format($pendapatan, 0, ',', '.') : t('msg.no_orders') ?>
             </p>
             <p class="text-[11px] text-[var(--muted)]"><?= $jml ?> item</p>
         </div>
@@ -518,9 +524,11 @@ body::before {
 
     <table style="width:100%;border-collapse:collapse;font-size:.7rem;">
         <tr><td>Jumlah Item</td><td style="text-align:right;"><?= $jml ?> item</td></tr>
+        <tr><td>Subtotal</td><td style="text-align:right;"><?= $subtotal_items > 0 ? 'Rp '.number_format($subtotal_items,0,',','.') : '-' ?></td></tr>
+        <tr><td>Biaya Admin (Pajak)</td><td style="text-align:right;"><?= $pajak > 0 ? 'Rp '.number_format($pajak,0,',','.') : '-' ?></td></tr>
         <tr>
-            <td style="font-size:.85rem;font-weight:900;padding-top:.2rem;">TOTAL</td>
-            <td style="text-align:right;font-size:.85rem;font-weight:900;"><?= $total_tampil > 0 ? 'Rp '.number_format($total_tampil,0,',','.') : '-' ?></td>
+            <td style="font-size:.85rem;font-weight:900;padding-top:.2rem;">TOTAL PENDAPATAN</td>
+            <td style="text-align:right;font-size:.85rem;font-weight:900;"><?= $pendapatan > 0 ? 'Rp '.number_format($pendapatan,0,',','.') : '-' ?></td>
         </tr>
     </table>
 

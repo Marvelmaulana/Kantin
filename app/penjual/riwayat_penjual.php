@@ -33,7 +33,7 @@ while ($r = mysqli_fetch_assoc($query)) {
     $rows[] = $r;
     if ($r['status'] === 'Selesai') {
         $total_selesai++;
-        $total_pendapatan += (float)($r['total_harga'] ?? 0);
+        $total_pendapatan += (float)($r['total_harga'] ?? 0) - (float)($r['pajak'] ?? 0);
     }
     if ($r['status'] === 'Dibatalkan') {
         $total_batal++;
@@ -243,6 +243,8 @@ h1,h2,h3,h4 { font-family:'Plus Jakarta Sans',sans-serif; }
         $pajak = (int)($total_tampil - $subtotal_items);
     }
 
+    $pendapatan = max(0, $total_tampil - $pajak);
+
     $is_selesai = $p['status'] === 'Selesai';
     $badge_class = $is_selesai ? 'badge-selesai' : 'badge-batal';
     $badge_icon = $is_selesai ? 'task_alt' : 'cancel';
@@ -339,9 +341,9 @@ h1,h2,h3,h4 { font-family:'Plus Jakarta Sans',sans-serif; }
 
     <div class="px-5 py-3.5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-stone-50/60 border-t border-[var(--line)]">
         <div>
-            <p class="text-[9px] font-black uppercase tracking-widest text-[var(--muted)]">Total Pembayaran</p>
+            <p class="text-[9px] font-black uppercase tracking-widest text-[var(--muted)]">Total Pendapatan</p>
             <p class="text-xl font-extrabold text-[var(--brand)] tabular-nums">
-                <?= $total_tampil > 0 ? 'Rp '.number_format($total_tampil,0,',','.') : 'Total belum tersedia' ?>
+                <?= $pendapatan > 0 ? 'Rp '.number_format($pendapatan,0,',','.') : 'Total belum tersedia' ?>
             </p>
             <p class="text-[11px] text-[var(--muted)]"><?= $jml ?> item</p>
         </div>
@@ -404,8 +406,8 @@ h1,h2,h3,h4 { font-family:'Plus Jakarta Sans',sans-serif; }
         <tr><td>Biaya Admin</td><td style="text-align:right;"><?= $pajak > 0 ? 'Rp '.number_format($pajak,0,',','.') : '-' ?></td></tr>
         <tr><td>Jumlah Item</td><td style="text-align:right;"><?= $jml ?> item</td></tr>
         <tr>
-            <td style="font-size:.85rem;font-weight:900;padding-top:.2rem;">TOTAL</td>
-            <td style="text-align:right;font-size:.85rem;font-weight:900;"><?= $total_tampil > 0 ? 'Rp '.number_format($total_tampil,0,',','.') : '-' ?></td>
+            <td style="font-size:.85rem;font-weight:900;padding-top:.2rem;">TOTAL PENDAPATAN</td>
+            <td style="text-align:right;font-size:.85rem;font-weight:900;"><?= $pendapatan > 0 ? 'Rp '.number_format($pendapatan,0,',','.') : '-' ?></td>
         </tr>
     </table>
 

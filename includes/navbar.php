@@ -79,9 +79,7 @@ if (isset($koneksi) && $koneksi) {
 .kk-nav-link .material-symbols-outlined{font-size:21px;font-variation-settings:'FILL' 1,'wght' 600,'GRAD' 0,'opsz' 24;}
 .kk-kantin-link{display:flex;align-items:center;gap:.65rem;padding:.7rem;border-radius:18px;text-decoration:none;color:#422006;transition:.25s;}
 .kk-kantin-link:hover{background:linear-gradient(135deg, #fff4e6, #ffe9d5);color:#c2410c;transform:translateX(4px);border-radius:18px;}
-.kk-sidebar-scroll{scrollbar-width:thin;scrollbar-color:#fbbf24 transparent;}
-.kk-sidebar-scroll::-webkit-scrollbar{width:6px;}
-.kk-sidebar-scroll::-webkit-scrollbar-thumb{background:#fbbf24;border-radius:999px;}
+.kk-sidebar-scroll{scrollbar-width:thin;scrollbar-color:#fbbf24 transparent;max-height:calc(100vh - 22rem);min-height:0;}
 
 @media (max-width:1023px){
     body{padding-left:0!important;padding-bottom:2rem!important;}
@@ -130,8 +128,17 @@ if (isset($koneksi) && $koneksi) {
 <aside id="kk-buyer-sidebar" class="kk-buyer-sidebar fixed left-0 top-0 bottom-0 z-[70] w-72 bg-white/98 backdrop-blur-xl border-r-2 border-orange-100 px-4 py-5 hidden lg:flex flex-col shadow-2xl shadow-orange-200/20">
     <div class="px-3 pb-5 border-b-2 border-orange-100">
         <div class="flex items-center gap-3">
-            <a href="dashboard.php" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-xl shadow-orange-200/50 hover:scale-105 transition-all">
-                <span class="material-symbols-outlined">local_dining</span>
+            <a href="dashboard.php" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-xl shadow-orange-200/50 hover:scale-105 transition-all flex-shrink-0">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <!-- Fork and knife for kantin/restaurant -->
+                    <g fill="currentColor">
+                        <path d="M6 2C5.45 2 5 2.45 5 3V13C5 13.55 5.45 14 6 14H5V20C5 20.55 5.45 21 6 21C6.55 21 7 20.55 7 20V14H6V3C6 2.45 6.45 2 6 2Z"/>
+                        <path d="M11 4C10.45 4 10 4.45 10 5V15C10 15.55 10.45 16 11 16C11.55 16 12 15.55 12 15V5C12 4.45 11.55 4 11 4Z"/>
+                        <path d="M11 16C10.45 16 10 16.45 10 17V20C10 20.55 10.45 21 11 21C11.55 21 12 20.55 12 20V17C12 16.45 11.55 16 11 16Z"/>
+                        <path d="M16 3C15.45 3 15 3.45 15 4V9H15L16 7L17 9H17V4C17 3.45 16.55 3 16 3Z"/>
+                        <path d="M14 10C13.45 10 13 10.45 13 11V20C13 20.55 13.45 21 14 21C14.55 21 15 20.55 15 20V11C15 10.45 14.55 10 14 10Z"/>
+                    </g>
+                </svg>
             </a>
             <div>
                 <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Kantin Kita</p>
@@ -159,7 +166,7 @@ if (isset($koneksi) && $koneksi) {
             <p class="text-[10px] font-black uppercase tracking-widest text-gray-400">Kantin</p>
             <span class="text-[10px] font-black text-orange-600 bg-orange-50 px-2 py-1 rounded-full"><?= count($sidebarKantin) ?></span>
         </div>
-        <div class="kk-sidebar-scroll overflow-y-auto pr-1 space-y-1" style="max-height:calc(100vh - 29rem);">
+        <div class="kk-sidebar-scroll overflow-y-auto pr-1 space-y-1">
             <?php if (!empty($sidebarKantin)): ?>
                 <?php foreach ($sidebarKantin as $kantin):
                     $logo = function_exists('kk_upload_url') ? kk_upload_url($kantin['logo'] ?? '', 'logo') : '../../public/assets/img/default-logo.svg';
@@ -178,7 +185,10 @@ if (isset($koneksi) && $koneksi) {
         </div>
     </div>
 
-    <div class="rounded-3xl bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 p-4 shadow-lg shadow-orange-200/20">
+    <div id="kk-help-section" class="rounded-3xl bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200 p-4 shadow-lg shadow-orange-200/20 relative group">
+        <button type="button" class="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity w-6 h-6 rounded-full bg-orange-200 hover:bg-orange-300 text-orange-700 flex items-center justify-center" onclick="kkCloseHelpSection()" title="Tutup">
+            <span class="material-symbols-outlined text-sm">close</span>
+        </button>
         <p class="text-xs font-black text-gray-700"><?= t('buyer.butuh_bantuan') ?></p>
         <p class="text-[11px] text-gray-500 mt-1 leading-relaxed"><?= t('help.help_desc') ?></p>
         <a href="bantuan.php" class="mt-3 inline-flex items-center gap-1 text-xs font-black text-orange-600 hover:text-orange-700">
@@ -207,4 +217,22 @@ function kkToggleBuyerSidebar(open) {
     sidebar.classList.toggle('open', !!open);
     overlay.classList.toggle('open', !!open);
 }
+
+function kkCloseHelpSection() {
+    const helpSection = document.getElementById('kk-help-section');
+    if (helpSection) {
+        helpSection.style.display = 'none';
+        localStorage.setItem('kk_help_closed', 'true');
+    }
+}
+
+// On page load, check if help was previously closed
+document.addEventListener('DOMContentLoaded', function() {
+    if (localStorage.getItem('kk_help_closed') === 'true') {
+        const helpSection = document.getElementById('kk-help-section');
+        if (helpSection) {
+            helpSection.style.display = 'none';
+        }
+    }
+});
 </script>

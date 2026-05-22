@@ -9,9 +9,9 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
 }
 
 // 2. AMBIL DATA MENU
-$sql = "SELECT menu.*, users.username as nama_kantin 
+$sql = "SELECT menu.*, kantin.nama_kantin 
         FROM menu 
-        JOIN users ON menu.id_kantin = users.id_kantin 
+        JOIN kantin ON menu.id_kantin = kantin.id_kantin 
         ORDER BY menu.id_menu DESC";
 $query = mysqli_query($koneksi, $sql);
 ?>

@@ -13,6 +13,7 @@ if (!isset($_SESSION['id_user'])) {
 
 $id_user = (int)$_SESSION['id_user'];
 
+// HAPUS ini dari atas
 $q_user = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = $id_user");
 $user = mysqli_fetch_assoc($q_user);
 if (!$user) die("User tidak ditemukan");
@@ -24,12 +25,13 @@ $data = mysqli_fetch_assoc($q_kantin);
 if (!$data) die("Data kantin tidak ditemukan");
 
 if(isset($_POST['simpan'])){
-    $username    = mysqli_real_escape_string($koneksi, trim($_POST['username']));
-    $deskripsi   = mysqli_real_escape_string($koneksi, trim($_POST['deskripsi']));
-    $jam_buka    = $_POST['jam_buka'];
-    $jam_tutup   = $_POST['jam_tutup'];
-    $logo   = $data['logo'];
-    $banner = $data['banner'];
+    $username    = mysqli_real_escape_string($koneksi, trim($_POST['username'] ?? ''));
+    $nama_kantin = mysqli_real_escape_string($koneksi, trim($_POST['nama_kantin'] ?? ''));
+    $deskripsi   = mysqli_real_escape_string($koneksi, trim($_POST['deskripsi'] ?? ''));
+    $jam_buka    = $_POST['jam_buka'] ?? $data['jam_buka'];
+    $jam_tutup   = $_POST['jam_tutup'] ?? $data['jam_tutup'];
+    $logo        = $data['logo'];
+    $banner      = $data['banner'];
 
     $allowed = ['jpg', 'jpeg', 'png', 'webp'];
 
@@ -51,23 +53,47 @@ if(isset($_POST['simpan'])){
         }
     }
 
+    // ✅ Update username ke tabel users
     if (!empty($username)) {
-        mysqli_query($koneksi, "UPDATE users SET username = '$username' WHERE id_user = $id_user");
-        $_SESSION['username'] = $username;
+        // Cek duplikat username
+        $cek = mysqli_query($koneksi, "SELECT id_user FROM users WHERE username = '$username' AND id_user != $id_user");
+        if (mysqli_num_rows($cek) > 0) {
+            $_SESSION['error'] = "Username sudah digunakan!";
+        } else {
+            mysqli_query($koneksi, "UPDATE users SET username = '$username' WHERE id_user = $id_user");
+            $_SESSION['username'] = $username; // ✅ update session
+        }
     }
-    mysqli_query($koneksi, "
-        UPDATE kantin SET
-            nama_kantin  = '$nama_kantin',
-            deskripsi    = '$deskripsi',
-            jam_buka     = '$jam_buka',
-            jam_tutup    = '$jam_tutup',
-            logo         = '$logo',
-            banner       = '$banner'
-        WHERE id_kantin  = $id_kantin
-    ");
 
-    echo "<script>alert('Profil berhasil diperbarui'); window.location='dashboard_penjual.php';</script>";
+    // ✅ Update nama kantin ke tabel kantin
+    if (!empty($nama_kantin)) {
+        mysqli_query($koneksi, "
+            UPDATE kantin SET
+                nama_kantin = '$nama_kantin',
+                deskripsi   = '$deskripsi',
+                jam_buka    = '$jam_buka',
+                jam_tutup   = '$jam_tutup',
+                logo        = '$logo',
+                banner      = '$banner'
+            WHERE id_kantin = $id_kantin
+        ");
+    }
+
+    // ✅ Redirect pakai PHP header, bukan JavaScript
+    $_SESSION['success'] = "Profil berhasil diperbarui!";
+    header("Location: dashboard_penjual.php");
+    exit();
 }
+
+// Query ulang agar form selalu tampil data terbaru dari database
+$q_user = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = $id_user");
+$user   = mysqli_fetch_assoc($q_user);
+if (!$user) die("User tidak ditemukan setelah query ulang"); // ← tambah ini untuk debug
+
+$q_kantin = mysqli_query($koneksi, "SELECT * FROM kantin WHERE id_kantin = $id_kantin");
+$data     = mysqli_fetch_assoc($q_kantin);
+if (!$data) die("Data kantin tidak ditemukan setelah query ulang"); // ← tambah ini untuk debug
+
 
 $logo_tampil   = !empty($data['logo'])   ? '../../uploads/' . $data['logo']   : '../../uploads/default-logo.png';
 $banner_tampil = !empty($data['banner']) ? '../../uploads/' . $data['banner'] : '../../uploads/default-banner.jpg';
@@ -200,28 +226,27 @@ $is_kantin_open = kk_is_kantin_open($data);
             <!-- FORM FIELDS -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-                <!-- USERNAME PENJUAL -->
-                <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.1s">
-                    <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
-                        <span class="material-symbols-outlined align-middle text-base mr-1">person</span>
-                        Username Penjual
-                    </label>
-                    <input type="text" name="username"
-                           value="<?= htmlspecialchars($user['username'] ?? '') ?>"
-                           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
-                </div>
+               <!-- USERNAME PENJUAL -->
+<div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.1s">
+    <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
+        <span class="material-symbols-outlined align-middle text-base mr-1">person</span>
+        Username kantin
+    </label>
+    <input type="text" name="username"
+           value="<?= htmlspecialchars($user['username'] ?? '') ?>"
+           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
+</div>
 
-                <!-- NAMA KANTIN -->
-                <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.15s">
-                    <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
-                        <span class="material-symbols-outlined align-middle text-base mr-1">storefront</span>
-                        Nama Kantin
-                    </label>
-                    <input type="text" name="nama_kantin"
-                           value="<?= htmlspecialchars($data['nama_kantin']) ?>"
-                           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
-                </div>
-
+<!-- NAMA KANTIN -->
+<div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.15s">
+    <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
+        <span class="material-symbols-outlined align-middle text-base mr-1">storefront</span>
+        Nama Kantin
+    </label>
+    <input type="text" name="nama_kantin"
+           value="<?= htmlspecialchars($data['nama_kantin']) ?>"
+           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
+</div>
                 <!-- STATUS -->
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.15s">
                     <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
