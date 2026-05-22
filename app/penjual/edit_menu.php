@@ -4,7 +4,7 @@ include(__DIR__ . '/../../config/config.php');
 
 // PROTEKSI
 if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'penjual') {
-    header("Location: ../auth/halaman_login.php");
+    header("Location: ../auth/login.php");
     exit();
 }
 

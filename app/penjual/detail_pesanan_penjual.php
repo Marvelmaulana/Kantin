@@ -3,7 +3,7 @@ session_start();
 include(__DIR__ . '/../../config/config.php');
 
 if (!isset($_SESSION['role']) || $_SESSION['role'] != 'penjual') {
-    header("Location: login.php");
+    header("Location: ../auth/login.php");
     exit;
 }
 
@@ -91,7 +91,7 @@ $query_d = mysqli_query($koneksi, "SELECT detail_transaksi.*, menu.nama_menu, me
             </nav>
 
             <div class="mt-auto pt-4 border-t border-orange-100">
-                <a class="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl font-bold text-sm transition-all" href="../logout.php">
+                <a class="flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl font-bold text-sm transition-all" href="../auth/logout.php">
                     <span class="material-symbols-outlined text-[20px]">logout</span> Logout
                 </a>
             </div>

@@ -4,7 +4,7 @@ include(__DIR__ . '/../../config/config.php');
 
 // 1. PROTEKSI: Cek Login
 if (!isset($_SESSION['id_user'])) {
-    header("Location: login.php");
+    header("Location: ../auth/login.php");
     exit;
 }
 

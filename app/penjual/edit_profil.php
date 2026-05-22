@@ -95,8 +95,8 @@ $data     = mysqli_fetch_assoc($q_kantin);
 if (!$data) die("Data kantin tidak ditemukan setelah query ulang"); // ← tambah ini untuk debug
 
 
-$logo_tampil   = !empty($data['logo'])   ? '../../uploads/' . $data['logo']   : '../../uploads/default-logo.png';
-$banner_tampil = !empty($data['banner']) ? '../../uploads/' . $data['banner'] : '../../uploads/default-banner.jpg';
+$logo_tampil   = !empty($data['logo'])   ? '../../uploads/' . $data['logo']   : '../../uploads/default/default-logo.svg';
+$banner_tampil = !empty($data['banner']) ? '../../uploads/' . $data['banner'] : '../../uploads/default/default-banner.svg';
 $is_kantin_open = kk_is_kantin_open($data);
 ?>
 <!DOCTYPE html>

@@ -5,7 +5,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
 
 // 1. PROTEKSI HALAMAN
 if (!isset($_SESSION['role']) || $_SESSION['role'] != 'penjual') {
-    header("Location: login.php");
+    header("Location: ../auth/login.php");
     exit;
 }
 

@@ -308,7 +308,7 @@ h1,h2,h3,h4 { font-family:'Plus Jakarta Sans',sans-serif; }
             <div class="relative shrink-0">
                 <img src="../../uploads/<?= htmlspecialchars($d['foto'] ?? '') ?>"
                      class="w-11 h-11 rounded-xl object-cover bg-stone-100"
-                     onerror="this.src='../../assets/img/default-food.jpg'">
+                     onerror="this.src='../../public/assets/img/default-food.svg'">
                 <span class="absolute -top-1 -right-1 bg-[var(--brand)] text-white font-black rounded-full flex items-center justify-center"
                       style="width:1rem;height:1rem;font-size:.55rem;">
                     <?= $d['qty'] ?>
