@@ -16,7 +16,15 @@ if (isset($_GET['success']) && $_GET['success'] === 'hapus') {
     $message_type = 'error';
 }
 
-$query = mysqli_query($koneksi, "SELECT k.*, u.username AS pemilik FROM kantin k LEFT JOIN users u ON k.id_user=u.id_user ORDER BY k.id_kantin DESC");
+$search = mysqli_real_escape_string($koneksi, trim($_GET['search'] ?? ''));
+
+$sql = "SELECT k.*, u.username AS pemilik FROM kantin k LEFT JOIN users u ON k.id_user=u.id_user";
+if ($search !== '') {
+    $sql .= " WHERE (k.nama_kantin LIKE '%$search%' OR k.lokasi LIKE '%$search%' OR k.deskripsi LIKE '%$search%' OR u.username LIKE '%$search%')";
+}
+$sql .= " ORDER BY k.id_kantin DESC";
+$query = mysqli_query($koneksi, $sql);
+$total_kantin = mysqli_num_rows($query);
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -48,7 +56,13 @@ $query = mysqli_query($koneksi, "SELECT k.*, u.username AS pemilik FROM kantin k
             <h2 class="text-3xl font-extrabold">Daftar Kantin</h2>
             <p class="text-sm text-slate-500">Kelola data kantin yang terdaftar di sistem.</p>
         </div>
-        <a href="tambah_kantin.php" class="bg-primary-orange text-white px-4 py-2 rounded-2xl font-bold shadow-lg hover:bg-orange-600 transition-all">Tambah Kantin</a>
+        <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
+            <form method="GET" class="relative w-full sm:w-[320px]">
+                <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+                <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari kantin, lokasi, atau pemilik..." class="pl-12 pr-4 py-3 w-full rounded-2xl border border-slate-200 focus:border-primary-orange focus:ring-primary-orange/20" />
+            </form>
+            <a href="tambah_kantin.php" class="bg-primary-orange text-white px-4 py-2 rounded-2xl font-bold shadow-lg hover:bg-orange-600 transition-all">Tambah Kantin</a>
+        </div>
     </header>
     <?php if ($message !== ''): ?>
     <div class="mb-6 px-5 py-4 rounded-2xl border <?= $message_type==='success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700' ?> font-bold text-sm">
@@ -76,11 +90,11 @@ $query = mysqli_query($koneksi, "SELECT k.*, u.username AS pemilik FROM kantin k
             <tbody>
                 <?php while($k = mysqli_fetch_assoc($query)): ?>
                 <tr class="border-t hover:bg-slate-50 transition-all">
-                    <td class="py-4 px-4">#<?= $k['id_kantin'] ?></td>
-                    <td class="py-4 px-4 font-bold"><?= htmlspecialchars($k['nama_kantin']) ?></td>
-                    <td class="py-4 px-4"><?= htmlspecialchars($k['lokasi'] ?: '-') ?></td>
-                    <td class="py-4 px-4"><?= htmlspecialchars($k['pemilik'] ?: '-') ?></td>
-                    <td class="py-4 px-4 text-slate-500"><?= htmlspecialchars($k['deskripsi'] ?: '-') ?></td>
+                    <td class="py-4 px-4">#<?= htmlspecialchars($k['id_kantin'] ?? '-') ?></td>
+                    <td class="py-4 px-4 font-bold"><?= htmlspecialchars($k['nama_kantin'] ?? '-') ?></td>
+                    <td class="py-4 px-4"><?= htmlspecialchars($k['lokasi'] ?? '-') ?></td>
+                    <td class="py-4 px-4"><?= htmlspecialchars($k['pemilik'] ?? '-') ?></td>
+                    <td class="py-4 px-4 text-slate-500"><?= htmlspecialchars($k['deskripsi'] ?? '-') ?></td>
                     <td class="py-4 px-4">
                         <div class="flex flex-wrap gap-2">
                             <a href="edit_kantin.php?id=<?= $k['id_kantin'] ?>" class="px-3 py-2 rounded-2xl bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-primary-orange hover:text-white transition">Edit</a>

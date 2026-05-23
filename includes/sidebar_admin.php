@@ -1,6 +1,13 @@
 <?php
-$current_page = basename($_SERVER['PHP_SELF']);
+// Determine current page reliably (handles query string and different URL structures)
+$request_path = $_SERVER['REQUEST_URI'] ?? ($_SERVER['PHP_SELF'] ?? '');
+$current_page = basename(parse_url($request_path, PHP_URL_PATH));
 ?>
+
+<!-- Ensure icon fonts are available even if page head doesn't include them -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
 
 <button onclick="toggleSidebar()" class="lg:hidden fixed top-4 left-4 z-[60] bg-orange-700/95 border border-orange-600 p-2 rounded-2xl shadow-2xl shadow-orange-500/20 text-white">
     <span class="material-symbols-outlined">menu</span>

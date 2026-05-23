@@ -5,6 +5,10 @@ include(__DIR__ . '/../../includes/language_helper.php');
 include(__DIR__ . '/../../includes/pembeli_helpers.php');
 kk_ensure_buyer_schema($koneksi);
 
+// Initialize message variables to avoid "Undefined variable" warnings
+$message = '';
+$message_type = '';
+
 if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     header("Location: ../auth/login.php"); exit();
 }
