@@ -1,0 +1,143 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>Penjual Kantin</title>
+
+<style>
+
+body{
+font-family:Arial;
+}
+
+.menu{
+border:1px solid #ddd;
+padding:10px;
+margin:10px;
+}
+
+img{
+width:100px;
+border-radius:6px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h2>Kelola Menu</h2>
+
+<h3>Tambah Menu</h3>
+
+<input id="nama" placeholder="Nama makanan">
+<br><br>
+
+<input id="harga" placeholder="Harga">
+<br><br>
+
+<input type="file" id="gambar">
+<br><br>
+
+<button onclick="tambahMenu()">Tambah</button>
+
+<hr>
+
+<h3>Daftar Menu</h3>
+
+<div id="menuList"></div>
+
+<script>
+
+let menu = JSON.parse(localStorage.getItem("menu")) || [];
+
+function tampilMenu(){
+
+let container = document.getElementById("menuList");
+
+container.innerHTML="";
+
+menu.forEach((item,index)=>{
+
+container.innerHTML += `
+<div class="menu">
+
+<img src="${item.gambar}">
+
+<h3>${item.nama}</h3>
+
+<p>Rp ${item.harga}</p>
+
+<button onclick="editMenu(${index})">Edit</button>
+
+<button onclick="hapusMenu(${index})">Hapus</button>
+
+</div>
+`;
+
+});
+
+}
+
+function tambahMenu(){
+
+let nama = document.getElementById("nama").value;
+let harga = document.getElementById("harga").value;
+let file = document.getElementById("gambar").files[0];
+
+let reader = new FileReader();
+
+reader.onload = function(e){
+
+let gambar = e.target.result;
+
+menu.push({
+nama:nama,
+harga:harga,
+gambar:gambar
+});
+
+simpan();
+
+};
+
+reader.readAsDataURL(file);
+
+}
+
+function editMenu(index){
+
+let nama = prompt("Nama baru", menu[index].nama);
+let harga = prompt("Harga baru", menu[index].harga);
+
+menu[index].nama = nama;
+menu[index].harga = harga;
+
+simpan();
+
+}
+
+function hapusMenu(index){
+
+menu.splice(index,1);
+
+simpan();
+
+}
+
+function simpan(){
+
+localStorage.setItem("menu",JSON.stringify(menu));
+
+tampilMenu();
+
+}
+
+tampilMenu();
+
+</script>
+
+</body>
+</html>
+```

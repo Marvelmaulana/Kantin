@@ -8,27 +8,33 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] != 'penjual') {
     exit;
 }
 
-// 2. TANGKAP DATA DARI FORM (POST)
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Ambil data dari input hidden dan select
-    $id_p   = mysqli_real_escape_string($koneksi, $_POST['id_pesanan']);
-    $status = mysqli_real_escape_string($koneksi, $_POST['status_baru']);
-
-    // 3. UPDATE KE TABEL PESANAN (Bukan transaksi)
-    $sql = "UPDATE pesanan SET status = '$status' WHERE id_pesanan = '$id_p'";
-
-    if (mysqli_query($koneksi, $sql)) {
-        // Jika berhasil, balikkan ke halaman pesanan masuk
-        echo "<script>
-                alert('Status pesanan #$id_p berhasil diubah menjadi $status!'); 
-                window.location='pesanan_masuk.php';
-              </script>";
-    } else {
-        echo "Gagal update: " . mysqli_error($koneksi);
-    }
-} else {
-    // Jika mencoba akses file ini langsung tanpa form, tendang balik
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: pesanan_masuk.php");
     exit;
 }
+
+$id_p = (int)($_POST['id_pesanan'] ?? 0);
+$status = trim($_POST['status_baru'] ?? '');
+$id_kantin = (int)($_SESSION['id_kantin'] ?? 0);
+$status_valid = ['Pending', 'Diproses', 'Siap Diambil', 'Selesai', 'Dibatalkan'];
+
+if ($id_p <= 0 || $id_kantin <= 0 || !in_array($status, $status_valid, true)) {
+    header("Location: pesanan_masuk.php?error=Data+tidak+valid");
+    exit;
+}
+
+$stmt = mysqli_prepare($koneksi, "UPDATE pesanan SET status = ? WHERE id_pesanan = ? AND id_kantin = ?");
+mysqli_stmt_bind_param($stmt, 'sii', $status, $id_p, $id_kantin);
+$ok = mysqli_stmt_execute($stmt);
+$affected = mysqli_stmt_affected_rows($stmt);
+mysqli_stmt_close($stmt);
+
+if ($ok && $affected >= 0) {
+    header("Location: " . ($status === 'Selesai' ? 'riwayat_penjual.php?success=selesai' : 'pesanan_masuk.php?success=1'));
+    exit;
+}
+
+$err = urlencode(mysqli_error($koneksi) ?: 'Pesanan tidak ditemukan');
+header("Location: pesanan_masuk.php?error=$err");
+exit;
 ?>

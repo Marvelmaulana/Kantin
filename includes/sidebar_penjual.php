@@ -6,10 +6,23 @@ if (session_status() === PHP_SESSION_NONE) {
 include(__DIR__ . '/../config/config.php');
 
 $current_page = basename($_SERVER['PHP_SELF']);
-$user_display = $_SESSION['username'] ?? 'kantin_user';
+$user_display = trim($_SESSION['username'] ?? '');
 
 $id_kantin = $_SESSION['id_kantin'] ?? 0;
 $id_user = $_SESSION['id_user'] ?? 0;
+
+if (empty($user_display) && $id_user) {
+    $q_user = mysqli_query($koneksi, "SELECT username FROM users WHERE id_user = $id_user LIMIT 1");
+    $user_row = mysqli_fetch_assoc($q_user);
+    if ($user_row && !empty($user_row['username'])) {
+        $user_display = $user_row['username'];
+        $_SESSION['username'] = $user_display;
+    }
+}
+
+if (empty($user_display)) {
+    $user_display = 'kantin_user';
+}
 
 // HITUNG PESANAN MASUK
 $q_notif = mysqli_query($koneksi, "

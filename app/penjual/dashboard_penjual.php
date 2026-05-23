@@ -34,6 +34,31 @@ $q_kantin   = mysqli_query($koneksi, "
 $data_kantin = mysqli_fetch_assoc($q_kantin);
 if (!$data_kantin) die("❌ Kantin tidak ditemukan");
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_operasi'])) {
+    $tipe_operasi = mysqli_real_escape_string($koneksi, $_POST['tipe_operasi'] ?? 'manual');
+    $status_buka = (($_POST['status_buka'] ?? $data_kantin['status_buka'] ?? 'Buka') === 'Tutup') ? 'Tutup' : 'Buka';
+
+    if ($tipe_operasi === 'otomatis') {
+        date_default_timezone_set('Asia/Jakarta');
+        $isOpenNow = kk_is_kantin_open(array_merge($data_kantin, [
+            'jam_buka' => $data_kantin['jam_buka'] ?? '07:00:00',
+            'jam_tutup' => $data_kantin['jam_tutup'] ?? '15:00:00',
+            'tipe_operasi' => 'otomatis'
+        ]), date('H:i'));
+        $status_buka = $isOpenNow ? 'Buka' : 'Tutup';
+    }
+
+    mysqli_query($koneksi, "
+        UPDATE kantin SET
+            tipe_operasi = '$tipe_operasi',
+            status_buka  = '$status_buka'
+        WHERE id_kantin = $id_kantin
+    ");
+
+    header('Location: dashboard_penjual.php?success_mode=1');
+    exit();
+}
+
 $nama_kantin  = $data_kantin['nama_kantin'] ?? 'Kantin Saya';
 $deskripsi    = $data_kantin['deskripsi']   ?? '';
 $rating       = (float)($data_kantin['rating']       ?? 0);
@@ -230,7 +255,7 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
 <!-- ==================================
      MAIN CONTENT
 ================================== -->
-<main class="lg:ml-64 p-6 pb-16 transition-all">
+<main class="lg:ml-72 p-6 pb-16 transition-all">
 
     <!-- HERO BANNER -->
 <div class="relative rounded-3xl overflow-hidden mb-8 shadow-2xl h-72 lg:h-80">
@@ -297,6 +322,39 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
                     </span>
 
                 </div>
+
+                <form method="POST" class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+                    <div class="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
+                        <p class="text-xs uppercase tracking-[0.25em] text-white/70 mb-3">Mode Operasional</p>
+                        <label class="flex items-center gap-3 p-3 rounded-2xl border border-white/20 bg-white/10 cursor-pointer">
+                            <input type="radio" name="tipe_operasi" value="manual" class="h-4 w-4 text-orange-400" <?= ($data_kantin['tipe_operasi'] ?? 'manual') !== 'otomatis' ? 'checked' : '' ?> onchange="updateModeStatus()">
+                            <span class="text-sm text-white">Manual</span>
+                        </label>
+                        <label class="flex items-center gap-3 p-3 rounded-2xl border border-white/20 bg-white/10 cursor-pointer mt-3">
+                            <input type="radio" name="tipe_operasi" value="otomatis" class="h-4 w-4 text-orange-400" <?= ($data_kantin['tipe_operasi'] ?? '') === 'otomatis' ? 'checked' : '' ?> onchange="updateModeStatus()">
+                            <span class="text-sm text-white">Otomatis</span>
+                        </label>
+                    </div>
+                    <div class="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
+                        <p class="text-xs uppercase tracking-[0.25em] text-white/70 mb-3">Ringkasan</p>
+                        <div class="text-sm text-white/80 mb-3">Mode: <span class="font-semibold text-white"><?= ($data_kantin['tipe_operasi'] ?? 'manual') === 'otomatis' ? 'Otomatis' : 'Manual' ?></span></div>
+                        <div class="text-sm text-white/80">Status: <span class="font-semibold <?= $kantin_buka ? 'text-emerald-200' : 'text-red-200' ?>"><?= $kantin_buka ? 'Buka' : 'Tutup' ?></span></div>
+                    </div>
+                    <div class="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
+                        <p class="text-xs uppercase tracking-[0.25em] text-white/70 mb-3">Manual</p>
+                        <div id="manualStatusPanel" class="<?= ($data_kantin['tipe_operasi'] ?? 'manual') === 'otomatis' ? 'hidden' : '' ?>">
+                            <label class="block text-sm font-semibold text-white/80 mb-2">Status manual</label>
+                            <select name="status_buka" class="w-full rounded-2xl border border-white/20 bg-white/80 px-4 py-3 text-sm text-slate-900">
+                                <option value="Buka" <?= ($data_kantin['status_buka'] ?? 'Buka') === 'Buka' ? 'selected' : '' ?>>Buka</option>
+                                <option value="Tutup" <?= ($data_kantin['status_buka'] ?? 'Buka') === 'Tutup' ? 'selected' : '' ?>>Tutup</option>
+                            </select>
+                        </div>
+                        <button type="submit" name="save_operasi" class="mt-4 w-full rounded-2xl bg-orange-500 px-4 py-3 text-sm font-bold text-white hover:bg-orange-600 transition-all">Simpan</button>
+                        <?php if (isset($_GET['success_mode'])): ?>
+                            <div class="mt-3 rounded-2xl bg-emerald-100 px-3 py-2 text-emerald-800 text-sm font-semibold">Perubahan mode tersimpan.</div>
+                        <?php endif; ?>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -757,6 +815,13 @@ function tutupStruk() {
     document.body.style.overflow = '';
 }
 function cetakStruk() { window.print(); }
+
+function updateModeStatus() {
+    const manualPanel = document.getElementById('manualStatusPanel');
+    const tipeOperasi = document.querySelector('input[name="tipe_operasi"]:checked')?.value;
+    if (!manualPanel || !tipeOperasi) return;
+    manualPanel.classList.toggle('hidden', tipeOperasi === 'otomatis');
+}
 
 // Klik backdrop
 document.getElementById('modalStruk').addEventListener('click', function(e) {

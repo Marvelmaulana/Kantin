@@ -4,7 +4,7 @@ include __DIR__ . '/config/config.php';
 
 // 1. PROTEKSI: Hanya Admin
 if (!isset($_SESSION['id_user']) || $_SESSION['role'] !== 'admin') {
-    header("Location: login.php");
+    header("Location: app/auth/login.php");
     exit();
 }
 

@@ -19,19 +19,27 @@ if (!function_exists('kk_ensure_buyer_schema')) {
             ['users', 'bahasa', "ALTER TABLE users ADD COLUMN bahasa VARCHAR(10) NOT NULL DEFAULT 'id'"],
             ['users', 'reset_token', "ALTER TABLE users ADD COLUMN reset_token VARCHAR(100) NULL"],
             ['users', 'reset_expired', "ALTER TABLE users ADD COLUMN reset_expired DATETIME NULL"],
+            ['users', 'kelas', "ALTER TABLE users ADD COLUMN kelas ENUM('10','11','12') NULL"],
             ['menu', 'opsi_pilihan', "ALTER TABLE menu ADD COLUMN opsi_pilihan TEXT NULL"],
+            ['menu', 'foto_menu', "ALTER TABLE menu ADD COLUMN foto_menu VARCHAR(255) NULL"],
             ['keranjang', 'opsi_pilihan', "ALTER TABLE keranjang ADD COLUMN opsi_pilihan VARCHAR(120) NULL"],
             ['detail_pesanan', 'harga', "ALTER TABLE detail_pesanan ADD COLUMN harga DECIMAL(12,2) NOT NULL DEFAULT 0"],
             ['detail_pesanan', 'subtotal', "ALTER TABLE detail_pesanan ADD COLUMN subtotal DECIMAL(12,2) NOT NULL DEFAULT 0"],
             ['detail_pesanan', 'catatan', "ALTER TABLE detail_pesanan ADD COLUMN catatan TEXT NULL"],
             ['detail_pesanan', 'nama_menu', "ALTER TABLE detail_pesanan ADD COLUMN nama_menu VARCHAR(150) NULL"],
+            ['detail_pesanan', 'nama_kantin', "ALTER TABLE detail_pesanan ADD COLUMN nama_kantin VARCHAR(150) NULL"],
             ['detail_pesanan', 'opsi_pilihan', "ALTER TABLE detail_pesanan ADD COLUMN opsi_pilihan VARCHAR(120) NULL"],
             ['pesanan', 'pajak', "ALTER TABLE pesanan ADD COLUMN pajak INT NOT NULL DEFAULT 0"],
+            ['pesanan', 'bukti_pembayaran', "ALTER TABLE pesanan ADD COLUMN bukti_pembayaran VARCHAR(255) NULL"],
+            ['pesanan', 'created_at', "ALTER TABLE pesanan ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP"],
             ['kantin', 'pasword_kantin', "ALTER TABLE kantin ADD COLUMN pasword_kantin VARCHAR(100) NULL"],
             ['kantin', 'jam_buka', "ALTER TABLE kantin ADD COLUMN jam_buka TIME NULL DEFAULT '07:00:00'"],
             ['kantin', 'jam_tutup', "ALTER TABLE kantin ADD COLUMN jam_tutup TIME NULL DEFAULT '15:00:00'"],
             ['kantin', 'status_buka', "ALTER TABLE kantin ADD COLUMN status_buka ENUM('Buka','Tutup') NULL DEFAULT 'Buka'"],
             ['kantin', 'tipe_operasi', "ALTER TABLE kantin ADD COLUMN tipe_operasi ENUM('manual','otomatis') NOT NULL DEFAULT 'manual'"],
+            ['kantin', 'total_ulasan', "ALTER TABLE kantin ADD COLUMN total_ulasan INT NOT NULL DEFAULT 0"],
+            ['kantin', 'total_rating', "ALTER TABLE kantin ADD COLUMN total_rating INT NOT NULL DEFAULT 0"],
+            ['chat_conversations', 'id_order', "ALTER TABLE chat_conversations ADD COLUMN id_order INT NULL"],
         ];
 
         foreach ($alters as [$table, $column, $sql]) {
@@ -92,6 +100,7 @@ if (!function_exists('kk_ensure_buyer_schema')) {
         @mysqli_query($koneksi, "UPDATE kantin SET jam_buka = '07:00:00' WHERE jam_buka IS NULL");
         @mysqli_query($koneksi, "UPDATE kantin SET jam_tutup = '15:00:00' WHERE jam_tutup IS NULL");
         @mysqli_query($koneksi, "UPDATE kantin SET status_buka = 'Buka' WHERE status_buka IS NULL");
+        @mysqli_query($koneksi, "UPDATE kantin SET tipe_operasi = 'manual' WHERE tipe_operasi IS NULL");
     }
 }
 
@@ -154,7 +163,8 @@ if (!function_exists('kk_refresh_kantin_status')) {
             WHEN COALESCE(NULLIF(jam_buka,''),'07:00:00') > COALESCE(NULLIF(jam_tutup,''),'15:00:00')
                  AND ('$nowEsc' >= COALESCE(NULLIF(jam_buka,''),'07:00:00') OR '$nowEsc' <= COALESCE(NULLIF(jam_tutup,''),'15:00:00')) THEN 'Buka'
             ELSE 'Tutup'
-        END";
+        END
+        WHERE tipe_operasi = 'otomatis'";
 
         @mysqli_query($koneksi, $query);
     }
@@ -162,9 +172,9 @@ if (!function_exists('kk_refresh_kantin_status')) {
 
 if (!function_exists('kk_is_kantin_open')) {
     function kk_is_kantin_open($kantin, $now = null) {
-        $status = $kantin['status_buka'] ?? 'Buka';
-        if ($status !== 'Buka') {
-            return false;
+        $tipe_operasi = $kantin['tipe_operasi'] ?? 'manual';
+        if ($tipe_operasi === 'manual') {
+            return ($kantin['status_buka'] ?? 'Buka') === 'Buka';
         }
 
         $now = $now ?: date('H:i');

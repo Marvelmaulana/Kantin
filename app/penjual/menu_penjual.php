@@ -136,7 +136,7 @@ $query = mysqli_query($koneksi, "SELECT * FROM menu WHERE id_kantin = '$id_k' OR
                         </td>
                         <td>
                             <a href="edit_menu.php?id=<?= $m['id_menu']; ?>" class="btn-edit"><?= t('action.edit') ?></a>
-                            <a href="hapus_menu.php?id=<?= $m['id_menu']; ?>" class="btn-hapus"
+                            <a href="proses_menu.php?aksi=hapus&id=<?= $m['id_menu']; ?>" class="btn-hapus"
                                onclick="return confirm('<?= t('seller_menu.delete_confirm') ?>')"><?= t('action.delete') ?></a>
                         </td>
                     </tr>

@@ -84,6 +84,9 @@ include(__DIR__ . '/../../includes/language_helper.php');
                 <p class="mt-10 text-center text-sm text-gray-500">
                     <?= t('auth.no_account') ?> <a class="text-primary font-bold hover:underline" href="daftar.php"><?= t('auth.register_link') ?></a>
                 </p>
+                <p class="mt-3 text-center text-xs text-gray-400">
+                    Admin? <a class="text-primary font-bold hover:underline" href="../admin/login.php">Masuk khusus admin</a>
+                </p>
             </div>
         </div>
     </main>

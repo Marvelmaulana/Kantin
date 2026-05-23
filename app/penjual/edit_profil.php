@@ -28,10 +28,13 @@ if(isset($_POST['simpan'])){
     $username    = mysqli_real_escape_string($koneksi, trim($_POST['username'] ?? ''));
     $nama_kantin = mysqli_real_escape_string($koneksi, trim($_POST['nama_kantin'] ?? ''));
     $deskripsi   = mysqli_real_escape_string($koneksi, trim($_POST['deskripsi'] ?? ''));
-    $jam_buka    = $_POST['jam_buka'] ?? $data['jam_buka'];
-    $jam_tutup   = $_POST['jam_tutup'] ?? $data['jam_tutup'];
+    $jam_buka    = mysqli_real_escape_string($koneksi, $_POST['jam_buka'] ?? $data['jam_buka']);
+    $jam_tutup   = mysqli_real_escape_string($koneksi, $_POST['jam_tutup'] ?? $data['jam_tutup']);
+    $tipe_operasi = mysqli_real_escape_string($koneksi, $_POST['tipe_operasi'] ?? $data['tipe_operasi'] ?? 'manual');
+    $status_buka = ($_POST['status_buka'] ?? $data['status_buka'] ?? 'Buka') === 'Tutup' ? 'Tutup' : 'Buka';
     $logo        = $data['logo'];
     $banner      = $data['banner'];
+    $hasError    = false;
 
     $allowed = ['jpg', 'jpeg', 'png', 'webp'];
 
@@ -53,46 +56,96 @@ if(isset($_POST['simpan'])){
         }
     }
 
+    // ✅ Validasi username tidak boleh kosong
+    if (empty($username)) {
+        $_SESSION['error'] = "Username tidak boleh kosong!";
+        $hasError = true;
+    }
+
+    // ✅ Validasi username: hanya boleh huruf, angka, spasi, titik, dan garis bawah
+    if (!$hasError && !preg_match('/^[a-zA-Z0-9._\s]+$/', $username)) {
+        $_SESSION['error'] = "Nama pengguna hanya boleh berisi huruf, angka, spasi, titik, dan garis bawah.";
+        $hasError = true;
+    }
+
     // ✅ Update username ke tabel users
-    if (!empty($username)) {
+    if (!$hasError && !empty($username) && $username !== $user['username']) {
         // Cek duplikat username
         $cek = mysqli_query($koneksi, "SELECT id_user FROM users WHERE username = '$username' AND id_user != $id_user");
         if (mysqli_num_rows($cek) > 0) {
             $_SESSION['error'] = "Username sudah digunakan!";
+            $hasError = true;
         } else {
             mysqli_query($koneksi, "UPDATE users SET username = '$username' WHERE id_user = $id_user");
-            $_SESSION['username'] = $username; // ✅ update session
+            $_SESSION['username'] = $username;
+            $_SESSION['nama_penjual'] = $username;
+            $user['username'] = $username;
         }
     }
 
     // ✅ Update nama kantin ke tabel kantin
     if (!empty($nama_kantin)) {
+        if ($tipe_operasi === 'otomatis') {
+            date_default_timezone_set('Asia/Jakarta');
+            $isOpenNow = kk_is_kantin_open(array_merge($data, [
+                'jam_buka' => $jam_buka,
+                'jam_tutup' => $jam_tutup,
+                'tipe_operasi' => 'otomatis',
+            ]), date('H:i'));
+            $status_buka = $isOpenNow ? 'Buka' : 'Tutup';
+        }
+
         mysqli_query($koneksi, "
             UPDATE kantin SET
-                nama_kantin = '$nama_kantin',
-                deskripsi   = '$deskripsi',
-                jam_buka    = '$jam_buka',
-                jam_tutup   = '$jam_tutup',
-                logo        = '$logo',
-                banner      = '$banner'
+                nama_kantin  = '$nama_kantin',
+                deskripsi    = '$deskripsi',
+                jam_buka     = '$jam_buka',
+                jam_tutup    = '$jam_tutup',
+                tipe_operasi = '$tipe_operasi',
+                status_buka  = '$status_buka',
+                logo         = '$logo',
+                banner       = '$banner'
             WHERE id_kantin = $id_kantin
         ");
+        $data['nama_kantin']  = $nama_kantin;
+        $data['deskripsi']    = $deskripsi;
+        $data['jam_buka']     = $jam_buka;
+        $data['jam_tutup']    = $jam_tutup;
+        $data['tipe_operasi'] = $tipe_operasi;
+        $data['status_buka']  = $status_buka;
+        $data['logo']         = $logo;
+        $data['banner']       = $banner;
     }
 
-    // ✅ Redirect pakai PHP header, bukan JavaScript
-    $_SESSION['success'] = "Profil berhasil diperbarui!";
-    header("Location: dashboard_penjual.php");
-    exit();
+    if ($hasError) {
+        $user['username'] = $username;
+        $data['nama_kantin']  = $nama_kantin ?: $data['nama_kantin'];
+        $data['deskripsi']    = $deskripsi;
+        $data['jam_buka']     = $jam_buka;
+        $data['jam_tutup']    = $jam_tutup;
+        $data['tipe_operasi'] = $tipe_operasi;
+        $data['status_buka']  = $status_buka;
+        $data['logo']         = $logo;
+        $data['banner']       = $banner;
+    }
+
+    if (!$hasError) {
+        $_SESSION['success'] = "Profil berhasil diperbarui!";
+        header("Location: dashboard_penjual.php");
+        exit();
+    }
 }
 
-// Query ulang agar form selalu tampil data terbaru dari database
-$q_user = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = $id_user");
-$user   = mysqli_fetch_assoc($q_user);
-if (!$user) die("User tidak ditemukan setelah query ulang"); // ← tambah ini untuk debug
+// Query ulang agar form selalu tampil data terbaru dari database kecuali saat ada error validasi
+if (!isset($_POST['simpan']) || !$hasError) {
+    $q_user = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = $id_user");
+    $user   = mysqli_fetch_assoc($q_user);
+    if (!$user) die("User tidak ditemukan setelah query ulang");
 
-$q_kantin = mysqli_query($koneksi, "SELECT * FROM kantin WHERE id_kantin = $id_kantin");
-$data     = mysqli_fetch_assoc($q_kantin);
-if (!$data) die("Data kantin tidak ditemukan setelah query ulang"); // ← tambah ini untuk debug
+    $q_kantin = mysqli_query($koneksi, "SELECT * FROM kantin WHERE id_kantin = $id_kantin");
+    $data     = mysqli_fetch_assoc($q_kantin);
+    if (!$data) die("Data kantin tidak ditemukan setelah query ulang");
+}
 
 
 $logo_tampil   = !empty($data['logo'])   ? '../../uploads/' . $data['logo']   : '../../uploads/default/default-logo.svg';
@@ -178,7 +231,21 @@ $is_kantin_open = kk_is_kantin_open($data);
             </div>
         </div>
 
-        <form method="POST" enctype="multipart/form-data">
+        <?php if (!empty($_SESSION['error'])): ?>
+            <div class="mb-6 rounded-3xl border border-red-200 bg-red-50 p-5 text-sm text-red-700 shadow-sm">
+                <?= htmlspecialchars($_SESSION['error']) ?>
+            </div>
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+
+        <?php if (!empty($_SESSION['success'])): ?>
+            <div class="mb-6 rounded-3xl border border-green-200 bg-green-50 p-5 text-sm text-emerald-700 shadow-sm">
+                <?= htmlspecialchars($_SESSION['success']) ?>
+            </div>
+            <?php unset($_SESSION['success']); ?>
+        <?php endif; ?>
+
+        <form method="POST" enctype="multipart/form-data" onsubmit="return validasiForm()">
 
             <!-- BANNER PREVIEW CARD -->
             <div class="bg-white rounded-3xl shadow-sm border border-orange-50 overflow-hidden mb-6 card-fade" style="animation-delay:.05s">
@@ -232,9 +299,10 @@ $is_kantin_open = kk_is_kantin_open($data);
         <span class="material-symbols-outlined align-middle text-base mr-1">person</span>
         Username kantin
     </label>
-    <input type="text" name="username"
+    <input type="text" name="username" id="usernameInput" pattern="[a-zA-Z0-9._\s]+"
            value="<?= htmlspecialchars($user['username'] ?? '') ?>"
            class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
+    <p class="text-[11px] text-gray-400 mt-2">Huruf, angka, spasi, titik, dan garis bawah saja.</p>
 </div>
 
 <!-- NAMA KANTIN -->
@@ -254,10 +322,13 @@ $is_kantin_open = kk_is_kantin_open($data);
                         Status Kantin
                     </label>
                     <div class="rounded-2xl border border-gray-100 bg-gray-50 px-5 py-3.5 text-gray-800 text-sm font-semibold">
-                        Status akan diperbarui otomatis berdasarkan jam buka dan jam tutup.
+                        Mode operasional sekarang diatur dari Dashboard Penjual.
                     </div>
                     <div class="mt-4 rounded-2xl border border-gray-100 bg-white px-5 py-3.5 text-sm font-semibold text-gray-700">
                         Status saat ini: <span class="font-black text-<?= $is_kantin_open ? 'green' : 'red' ?>-600"><?= $is_kantin_open ? 'Buka' : 'Tutup' ?></span>
+                    </div>
+                    <div class="mt-4 rounded-2xl border border-gray-100 bg-white px-5 py-3.5 text-sm font-semibold text-gray-700">
+                        Mode Operasional: <span class="font-black"><?= ($data['tipe_operasi'] ?? 'manual') === 'otomatis' ? 'Otomatis' : 'Manual' ?></span>
                     </div>
                 </div>
 
@@ -302,12 +373,7 @@ $is_kantin_open = kk_is_kantin_open($data);
                 <div>
                     <p class="font-bold text-orange-700 text-sm mb-1">Info Jam Operasional</p>
                     <p class="text-sm text-gray-500 leading-relaxed">
-                        Kantin akan otomatis tampil buka sesuai jam yang diatur. Di luar jam tersebut, status otomatis menjadi tutup untuk pembeli.
-                    </p>
-                </div>
-            </div>
-
-            <!-- TOMBOL SIMPAN -->
+                            Dalam mode Otomatis, kantin akan buka/tutup sesuai jam yang diatur. Dalam mode Manual, status buka/tutup dapat diatur secara langsung.
             <div class="mt-8 flex gap-4 card-fade" style="animation-delay:.4s">
                 <button type="submit" name="simpan"
                         class="flex items-center gap-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
@@ -325,6 +391,18 @@ $is_kantin_open = kk_is_kantin_open($data);
     </main>
 
     <script>
+    // ✅ Validasi form username
+    function validasiForm() {
+        const username = document.getElementById('usernameInput').value.trim();
+        const usernameRegex = /^[a-zA-Z0-9._\s]+$/;
+        
+        if (!usernameRegex.test(username)) {
+            alert('Nama pengguna hanya boleh berisi huruf, angka, spasi, titik, dan garis bawah.');
+            return false;
+        }
+        return true;
+    }
+
     // Preview gambar sebelum upload
     function previewImage(input, previewId) {
         if (input.files && input.files[0]) {
@@ -335,6 +413,7 @@ $is_kantin_open = kk_is_kantin_open($data);
             reader.readAsDataURL(input.files[0]);
         }
     }
+
     </script>
 
 </body>

@@ -19,6 +19,13 @@ if (isset($_POST['update'])) {
     $email = mysqli_real_escape_string($koneksi, trim($_POST['email'] ?? ''));
     $foto = kk_upload_image('foto_profil', __DIR__ . '/../../uploads/profil');
 
+    // ✅ Validasi username: hanya boleh huruf, angka, spasi, titik, dan garis bawah
+    if (!preg_match('/^[a-zA-Z0-9._\s]+$/', $nama)) {
+        $_SESSION['error'] = "Nama pengguna hanya boleh berisi huruf, angka, spasi, titik, dan garis bawah.";
+        header("Location: edit_profil.php");
+        exit();
+    }
+
     $setFoto = $foto ? ", foto_profil='$foto'" : '';
     $update = mysqli_query($koneksi, "UPDATE users SET username='$nama', email='$email' $setFoto WHERE id_user=$id_user");
     if ($update) {
@@ -26,6 +33,13 @@ if (isset($_POST['update'])) {
         exit();
     }
     $error = mysqli_error($koneksi);
+}
+
+// ✅ Tampilkan session error jika ada
+$sessionError = '';
+if (!empty($_SESSION['error'])) {
+    $sessionError = $_SESSION['error'];
+    unset($_SESSION['error']);
 }
 ?>
 <!DOCTYPE html>
@@ -47,8 +61,10 @@ if (isset($_POST['update'])) {
     </div>
 </header>
 <main class="max-w-xl mx-auto px-5 py-6">
-    <form method="POST" enctype="multipart/form-data" class="bg-white rounded-[2rem] border border-orange-100 shadow-sm p-5 space-y-5">
-        <?php if (!empty($error)): ?><div class="bg-red-50 text-red-600 rounded-2xl p-3 text-sm font-bold"><?= htmlspecialchars($error) ?></div><?php endif; ?>
+    <form method="POST" enctype="multipart/form-data" class="bg-white rounded-[2rem] border border-orange-100 shadow-sm p-5 space-y-5" onsubmit="return validasiForm()">
+        <?php if (!empty($error) || !empty($sessionError)): ?>
+            <div class="bg-red-50 text-red-600 rounded-2xl p-3 text-sm font-bold"><?= htmlspecialchars($error ?: $sessionError) ?></div>
+        <?php endif; ?>
         <label class="flex items-center gap-4 cursor-pointer">
             <div class="w-24 h-24 rounded-3xl bg-orange-50 overflow-hidden flex items-center justify-center text-[#b22204]">
                 <?php if (!empty($user['foto_profil'])): ?>
@@ -65,7 +81,8 @@ if (isset($_POST['update'])) {
         </label>
         <div>
             <label class="text-[11px] font-black uppercase tracking-wider text-stone-400">Username</label>
-            <input type="text" name="username" value="<?= htmlspecialchars($user['username']) ?>" class="mt-2 w-full bg-stone-100 rounded-2xl border-none px-4 py-3 text-sm" required>
+            <input type="text" name="username" id="usernameInput" pattern="[a-zA-Z0-9._\s]+" value="<?= htmlspecialchars($user['username']) ?>" class="mt-2 w-full bg-stone-100 rounded-2xl border-none px-4 py-3 text-sm" required>
+            <p class="text-[10px] text-stone-400 mt-1">Huruf, angka, spasi, titik, dan garis bawah saja.</p>
         </div>
         <div>
             <label class="text-[11px] font-black uppercase tracking-wider text-stone-400">Email</label>
@@ -75,5 +92,18 @@ if (isset($_POST['update'])) {
     </form>
 </main>
 <?php $current_page = 'profile'; include(__DIR__ . '/../../includes/navbar.php'); ?>
+<script>
+    // ✅ Validasi form username
+    function validasiForm() {
+        const username = document.getElementById('usernameInput').value.trim();
+        const usernameRegex = /^[a-zA-Z0-9._\s]+$/;
+        
+        if (!usernameRegex.test(username)) {
+            alert('Nama pengguna hanya boleh berisi huruf, angka, spasi, titik, dan garis bawah.');
+            return false;
+        }
+        return true;
+    }
+</script>
 </body>
 </html>

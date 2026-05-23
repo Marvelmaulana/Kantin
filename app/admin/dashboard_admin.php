@@ -10,10 +10,30 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
 }
 
 // ============================
-// PROSES TAMBAH KANTIN BARU
+// ADMIN PROMOSI KELAS MASSAL
 // ============================
 $message = '';
 $message_type = 'success';
+
+if (isset($_POST['promosi_kelas'])) {
+    mysqli_begin_transaction($koneksi);
+    try {
+        mysqli_query($koneksi, "DELETE FROM users WHERE role = 'pembeli' AND kelas = '12'");
+        mysqli_query($koneksi, "UPDATE users SET kelas = '12' WHERE role = 'pembeli' AND kelas = '11'");
+        mysqli_query($koneksi, "UPDATE users SET kelas = '11' WHERE role = 'pembeli' AND kelas = '10'");
+        mysqli_commit($koneksi);
+        $message = 'Kenaikan kelas massal berhasil. Kelas 12 dihapus, 11 naik ke 12, dan 10 naik ke 11.';
+        $message_type = 'success';
+    } catch (Throwable $e) {
+        mysqli_rollback($koneksi);
+        $message = 'Terjadi kesalahan saat memproses kenaikan kelas. Silakan coba lagi.';
+        $message_type = 'error';
+    }
+}
+
+// ============================
+// PROSES TAMBAH KANTIN BARU
+// ============================
 
 if (isset($_POST['tambah_kantin'])) {
     $nama_kantin = trim($_POST['nama_kantin'] ?? '');
@@ -129,6 +149,11 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
                 <span class="material-symbols-outlined text-orange-500 text-lg">calendar_today</span>
                 <?= date('M d, Y') ?>
             </div>
+            <form method="POST" class="w-full md:w-auto">
+                <button type="submit" name="promosi_kelas" class="bg-white text-primary-orange border border-orange-200 px-4 py-2 rounded-2xl font-bold shadow-glow-card hover:bg-orange-50 transition-all w-full md:w-auto inline-flex items-center justify-center gap-2 text-sm">
+                    <span class="material-symbols-outlined text-base">school</span> Kenaikan Kelas
+                </button>
+            </form>
             <button onclick="window.print()" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-3xl font-black shadow-glow-card flex items-center justify-center gap-2 hover:-translate-y-0.5 transition-all w-full md:w-auto">
                 <span class="material-symbols-outlined text-xl">print</span> <?= t('admin.print_report') ?>
             </button>

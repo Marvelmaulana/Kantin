@@ -33,6 +33,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
     </style>
     <script>
         const passwordNotMatchMsg = '<?= t('auth.password_not_match') ?>';
+        const usernameInvalidMsg = 'Nama pengguna hanya boleh berisi huruf, angka, spasi, titik, dan garis bawah.';
     </script>
 </head>
 <body class="bg-surface text-on-surface antialiased min-h-screen flex flex-col">
@@ -52,18 +53,31 @@ include(__DIR__ . '/../../includes/language_helper.php');
             <p class="text-gray-500 font-medium opacity-80"><?= t('auth.join_community') ?></p>
         </div>
 
-        <form action="proses_daftar.php" method="POST" class="space-y-6" onsubmit="return validasiPassword()">
+        <form action="proses_daftar.php" method="POST" class="space-y-6" onsubmit="return validasiForm()">
             <div class="space-y-2 group">
                 <label class="block text-[10px] uppercase tracking-widest font-bold text-gray-500 px-1"><?= t('auth.full_name') ?></label>
                 <div class="relative bg-surface-container-highest rounded-xl overflow-hidden input-focus-bar transition-all">
-                    <input type="text" name="username" class="w-full bg-transparent border-none focus:ring-0 px-5 py-4 font-medium" placeholder="<?= t('auth.placeholder_fullname') ?>" required/>
+                    <input type="text" name="username" id="usernameInput" pattern="[a-zA-Z0-9._\s]+" class="w-full bg-transparent border-none focus:ring-0 px-5 py-4 font-medium" placeholder="<?= t('auth.placeholder_fullname') ?>" required/>
                 </div>
+                <p class="text-[10px] text-gray-400 mt-1">Huruf, angka, spasi, titik, dan garis bawah saja.</p>
             </div>
 
             <div class="space-y-2">
                 <label class="block text-[10px] uppercase tracking-widest font-bold text-gray-500 px-1"><?= t('auth.email') ?></label>
                 <div class="relative bg-surface-container-highest rounded-xl overflow-hidden input-focus-bar transition-all">
                     <input type="email" name="email" class="w-full bg-transparent border-none focus:ring-0 px-5 py-4 font-medium" placeholder="<?= t('auth.placeholder_email_reg') ?>" required/>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <label class="block text-[10px] uppercase tracking-widest font-bold text-gray-500 px-1">Kelas</label>
+                <div class="relative bg-surface-container-highest rounded-xl overflow-hidden input-focus-bar transition-all">
+                    <select name="kelas" class="w-full bg-transparent border-none focus:ring-0 py-4 px-5 font-medium" required>
+                        <option value="">Pilih kelas</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                    </select>
                 </div>
             </div>
 
@@ -106,9 +120,19 @@ include(__DIR__ . '/../../includes/language_helper.php');
     </footer>
 
     <script>
-        function validasiPassword() {
+        function validasiForm() {
+            const username = document.getElementById('usernameInput').value.trim();
             const p1 = document.getElementById('pass1').value;
             const p2 = document.getElementById('pass2').value;
+            
+            // ✅ Validasi username: hanya huruf, angka, spasi, titik, garis bawah
+            const usernameRegex = /^[a-zA-Z0-9._\s]+$/;
+            if (!usernameRegex.test(username)) {
+                alert(usernameInvalidMsg);
+                return false;
+            }
+            
+            // ✅ Validasi password match
             if (p1 !== p2) {
                 alert(passwordNotMatchMsg);
                 return false;

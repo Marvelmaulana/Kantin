@@ -89,6 +89,7 @@ $query = mysqli_query($koneksi, $query_sql);
                     <tr class="text-[10px] uppercase tracking-[0.15em] text-slate-400 font-black bg-slate-50/50">
                         <th class="py-6 px-8">Informasi Profil</th>
                         <th class="py-6 px-8">Kontak Email</th>
+                        <th class="py-6 px-8">Kelas</th>
                         <th class="py-6 px-8">Status</th>
                     </tr>
                 </thead>
@@ -111,6 +112,9 @@ $query = mysqli_query($koneksi, $query_sql);
                                 <span class="material-symbols-outlined text-[16px]">mail</span>
                                 <span class="text-sm font-medium"><?= htmlspecialchars($user['email']) ?></span>
                             </div>
+                        </td>
+                        <td class="py-6 px-8">
+                            <span class="text-sm font-medium text-slate-600"><?= htmlspecialchars($user['kelas'] ?: '-') ?></span>
                         </td>
                         <td class="py-6 px-8">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-accent-green text-[10px] font-black uppercase rounded-lg border border-green-100">

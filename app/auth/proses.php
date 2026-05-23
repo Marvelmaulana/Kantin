@@ -5,6 +5,8 @@ session_set_cookie_params(3600);
 
 session_start();
 include(__DIR__ . '/../../config/config.php');
+include(__DIR__ . '/../../includes/pembeli_helpers.php');
+kk_ensure_buyer_schema($koneksi);
 
 if (isset($_POST['login_btn'])) {
 
@@ -20,10 +22,15 @@ if (isset($_POST['login_btn'])) {
         // Verifikasi Password
         if (password_verify($password, $data['password'])) {
 
+            if ($data['role'] === 'admin') {
+                echo "<script>alert('Admin harus login melalui halaman khusus admin.'); window.location='login.php';</script>";
+                exit();
+            }
+
             // 1. Set Session Dasar (Role diambil otomatis dari Database)
             $_SESSION['id_user']  = $data['id_user'];
             $_SESSION['username'] = $data['username'];
-            $_SESSION['role']     = $data['role']; // Role: pembeli/penjual/admin
+            $_SESSION['role']     = $data['role']; // Role: pembeli/penjual
             $_SESSION['status']   = "login";
 
             // 2. Load bahasa preference
@@ -31,7 +38,13 @@ if (isset($_POST['login_btn'])) {
             $_SESSION['lang'] = $bahasa;
             $_SESSION['bahasa'] = $bahasa;
 
-            // 3. LOGIKA KHUSUS PENJUAL: Ambil id_kantin
+            // 3. LOGIKA KHUSUS PEMBELI: Pastikan kelas valid
+            if ($data['role'] === 'pembeli' && !in_array($data['kelas'] ?? '', ['10','11','12'], true)) {
+                echo "<script>alert('Akun siswa belum memiliki data kelas. Hubungi admin.'); window.location='login.php';</script>";
+                exit();
+            }
+
+            // 4. LOGIKA KHUSUS PENJUAL: Ambil id_kantin
             if ($data['role'] === 'penjual') {
                 $id_user = $data['id_user'];
                 $query_kantin = mysqli_query($koneksi, "SELECT id_kantin FROM kantin WHERE id_user = '$id_user'");
