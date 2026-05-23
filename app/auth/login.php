@@ -32,7 +32,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
         <div class="flex items-center gap-2">
             <span class="text-primary font-extrabold text-xl font-headline"><?= t('buyer.title') ?></span>
         </div>
-        <a href="#" class="text-primary font-bold"><?= t('auth.help') ?></a>
+        <button id="helpBtn" class="text-primary font-bold bg-transparent border-none cursor-pointer"><?= t('auth.help') ?></button>
     </header>
 
     <main class="min-h-screen flex items-center justify-center pt-20 pb-12 px-4">
@@ -84,7 +84,8 @@ include(__DIR__ . '/../../includes/language_helper.php');
                 <p class="mt-10 text-center text-sm text-gray-500">
                     <?= t('auth.no_account') ?> <a class="text-primary font-bold hover:underline" href="daftar.php"><?= t('auth.register_link') ?></a>
                 </p>
-                <p class="mt-3 text-center text-xs text-gray-400">
+                <!-- Link admin disembunyikan agar hanya admin yang mengetahui URL aksesnya -->
+                <p class="mt-3 text-center text-xs text-gray-400" style="display:none;">
                     Admin? <a class="text-primary font-bold hover:underline" href="../admin/login.php">Masuk khusus admin</a>
                 </p>
             </div>
@@ -107,3 +108,63 @@ include(__DIR__ . '/../../includes/language_helper.php');
     </script>
 </body>
 </html>
+
+<!-- Modal Bantuan Login -->
+<div id="helpModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40">
+    <div class="w-full max-w-2xl mx-4 bg-white rounded-2xl shadow-xl overflow-hidden">
+        <div class="p-6 border-b flex items-start justify-between">
+            <div>
+                <h3 class="text-xl font-bold">Bantuan Login</h3>
+                <p class="text-sm text-gray-500">Petunjuk dan kontak jika mengalami masalah.</p>
+            </div>
+            <button id="helpCloseTop" class="text-gray-400 hover:text-gray-700">✕</button>
+        </div>
+        <div class="p-6 space-y-4 text-sm text-gray-700">
+            <section>
+                <h4 class="font-semibold">Cara Login</h4>
+                <ol class="list-decimal ml-5 mt-2">
+                    <li>Masukkan <strong>username</strong> atau <strong>email</strong> pada kolom pertama.</li>
+                    <li>Masukkan <strong>password</strong> yang terdaftar.</li>
+                    <li>Tekan tombol <strong>Login</strong> untuk masuk.</li>
+                </ol>
+            </section>
+
+            <section>
+                <h4 class="font-semibold">Lupa Password</h4>
+                <p class="mt-2">Gunakan tautan <em>Lupa Password</em> pada formulir untuk mereset kata sandi melalui email.</p>
+            </section>
+            <section>
+                <h4 class="font-semibold">Kontak Dukungan</h4>
+                <p class="mt-2">Jika masih bermasalah, hubungi: <a href="mailto:cukakamu55@gmail.com" class="text-primary"> ADMIN </a></p>
+            </section>
+        </div>
+        <div class="p-4 border-t flex justify-end gap-2">
+            <button id="helpClose" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200">Tutup</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Modal logic
+    (function(){
+        const helpBtn = document.getElementById('helpBtn');
+        const helpModal = document.getElementById('helpModal');
+        const helpClose = document.getElementById('helpClose');
+        const helpCloseTop = document.getElementById('helpCloseTop');
+
+        function openModal() {
+            helpModal.classList.remove('hidden');
+            helpModal.classList.add('flex');
+        }
+        function closeModal() {
+            helpModal.classList.remove('flex');
+            helpModal.classList.add('hidden');
+        }
+
+        if (helpBtn) helpBtn.addEventListener('click', function(e){ e.preventDefault(); openModal(); });
+        if (helpClose) helpClose.addEventListener('click', closeModal);
+        if (helpCloseTop) helpCloseTop.addEventListener('click', closeModal);
+        helpModal && helpModal.addEventListener('click', function(e){ if (e.target === helpModal) closeModal(); });
+        document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModal(); });
+    })();
+</script>

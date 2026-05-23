@@ -87,6 +87,7 @@ if (!function_exists('kk_ensure_core_schema')) {
                 password VARCHAR(255) NOT NULL,
                 role ENUM('admin','penjual','pembeli') NOT NULL DEFAULT 'pembeli',
                 id_kantin INT NULL,
+                nama_kantin VARCHAR(150) NULL,
                 foto_profil VARCHAR(255) NULL,
                 bahasa VARCHAR(10) NOT NULL DEFAULT 'id',
                 reset_token VARCHAR(100) NULL,
@@ -98,6 +99,7 @@ if (!function_exists('kk_ensure_core_schema')) {
                 id_kantin INT AUTO_INCREMENT PRIMARY KEY,
                 id_user INT NULL,
                 nama_kantin VARCHAR(150) NOT NULL,
+                nama_penjual VARCHAR(150) NULL,
                 lokasi VARCHAR(150) NULL,
                 pasword_kantin VARCHAR(100) NULL,
                 deskripsi TEXT NULL,
@@ -261,10 +263,10 @@ if (!function_exists('kk_ensure_core_schema')) {
 
             $seller = kk_fetch_one($koneksi, "SELECT id_user FROM users WHERE username='kantin_demo' LIMIT 1");
             $sellerId = (int)($seller['id_user'] ?? 0);
-            mysqli_query($koneksi, "INSERT INTO kantin (id_user,nama_kantin,deskripsi,jam_buka,jam_tutup,status_buka,tipe_operasi)
-                VALUES ($sellerId,'Kantin Demo','Kantin contoh untuk mencoba aplikasi.','07:00:00','23:59:00','Buka','manual')");
+            mysqli_query($koneksi, "INSERT INTO kantin (id_user,nama_kantin,nama_penjual,deskripsi,jam_buka,jam_tutup,status_buka,tipe_operasi)
+                VALUES ($sellerId,'Kantin Demo',(SELECT username FROM users WHERE id_user=$sellerId),'Kantin contoh untuk mencoba aplikasi.','07:00:00','23:59:00','Buka','manual')");
             $kantinId = (int)mysqli_insert_id($koneksi);
-            mysqli_query($koneksi, "UPDATE users SET id_kantin=$kantinId WHERE id_user=$sellerId");
+            mysqli_query($koneksi, "UPDATE users SET id_kantin=$kantinId, nama_kantin='Kantin Demo' WHERE id_user=$sellerId");
             mysqli_query($koneksi, "INSERT INTO menu (id_kantin,nama_menu,harga,kategori,deskripsi,stok,status) VALUES
                 ($kantinId,'Nasi Goreng Demo',15000,'Makanan','Menu contoh siap pesan.',20,'Tersedia'),
                 ($kantinId,'Es Teh Demo',5000,'Minuman','Minuman contoh.',30,'Tersedia')
@@ -305,13 +307,13 @@ if (!function_exists('kk_ensure_core_schema')) {
             }
 
             if (!$kantin) {
-                mysqli_query($koneksi, "INSERT INTO kantin (id_user,nama_kantin,deskripsi,jam_buka,jam_tutup,status_buka,tipe_operasi)
-                    VALUES ($sellerId,'Kantin Demo','Kantin contoh untuk mencoba aplikasi.','07:00:00','23:59:00','Buka','manual')");
+                mysqli_query($koneksi, "INSERT INTO kantin (id_user,nama_kantin,nama_penjual,deskripsi,jam_buka,jam_tutup,status_buka,tipe_operasi)
+                    VALUES ($sellerId,'Kantin Demo',(SELECT username FROM users WHERE id_user=$sellerId),'Kantin contoh untuk mencoba aplikasi.','07:00:00','23:59:00','Buka','manual')");
                 $kantin = ['id_kantin' => mysqli_insert_id($koneksi)];
             }
 
             $kantinId = (int)$kantin['id_kantin'];
-            mysqli_query($koneksi, "UPDATE users SET id_kantin=$kantinId WHERE id_user=$sellerId");
+            mysqli_query($koneksi, "UPDATE users SET id_kantin=$kantinId, nama_kantin=(SELECT nama_kantin FROM kantin WHERE id_kantin=$kantinId) WHERE id_user=$sellerId");
 
             $menuCount = kk_scalar_query($koneksi, "SELECT COUNT(*) AS total FROM menu WHERE id_kantin=$kantinId", 'total', 0);
             if ((int)$menuCount === 0) {
@@ -325,6 +327,27 @@ if (!function_exists('kk_ensure_core_schema')) {
 }
 
 kk_ensure_core_schema($koneksi);
+
+// --- MIGRASI: pastikan kolom nama_kantin (users) dan nama_penjual (kantin) ada ---
+function kk_column_exists($koneksi, $table, $column) {
+    $table = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$table);
+    $column = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$column);
+    if ($table === '' || $column === '') return false;
+    $res = mysqli_query($koneksi, "SHOW COLUMNS FROM `$table` LIKE '$column'");
+    return $res && mysqli_num_rows($res) > 0;
+}
+
+if (!kk_column_exists($koneksi, 'users', 'nama_kantin')) {
+    mysqli_query($koneksi, "ALTER TABLE users ADD COLUMN nama_kantin VARCHAR(150) NULL");
+}
+
+if (!kk_column_exists($koneksi, 'kantin', 'nama_penjual')) {
+    mysqli_query($koneksi, "ALTER TABLE kantin ADD COLUMN nama_penjual VARCHAR(150) NULL");
+}
+
+// Isi data awal berdasarkan relasi yang ada
+mysqli_query($koneksi, "UPDATE users u JOIN kantin k ON u.id_kantin = k.id_kantin SET u.nama_kantin = k.nama_kantin WHERE u.id_kantin IS NOT NULL");
+mysqli_query($koneksi, "UPDATE kantin k JOIN users u ON k.id_user = u.id_user SET k.nama_penjual = u.username WHERE k.id_user IS NOT NULL");
 
 include_once(__DIR__ . '/../includes/pembeli_helpers.php');
 if (function_exists('kk_ensure_buyer_schema')) {

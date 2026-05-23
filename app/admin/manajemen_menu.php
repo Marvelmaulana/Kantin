@@ -9,6 +9,15 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
 }
 
 // 2. AMBIL DATA MENU
+$message = '';
+$message_type = 'success';
+if (isset($_GET['success']) && $_GET['success'] === 'hapus') {
+    $message = 'Menu berhasil dihapus.';
+} elseif (isset($_GET['error'])) {
+    $message = urldecode($_GET['error']);
+    $message_type = 'error';
+}
+
 $sql = "SELECT menu.*, kantin.nama_kantin 
         FROM menu 
         JOIN kantin ON menu.id_kantin = kantin.id_kantin 
@@ -73,7 +82,19 @@ $query = mysqli_query($koneksi, $sql);
             <a href="tambah_menu.php" class="bg-primary-orange text-white px-5 py-3 rounded-2xl font-bold shadow-lg flex items-center gap-2 hover:scale-105 transition-all text-sm whitespace-nowrap">Tambah Menu</a>
         </div>
     </header>
+    <?php if ($message !== ''): ?>
+    <div class="mb-6 px-5 py-4 rounded-2xl border <?= $message_type==='success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700' ?> font-bold text-sm">
+        <?= $message ?>
+    </div>
+    <?php endif; ?>
 
+    <?php if (mysqli_num_rows($query) === 0): ?>
+    <div class="bg-white rounded-4xl shadow-sm border border-slate-100 p-10 text-center">
+        <span class="material-symbols-outlined text-5xl text-slate-300">restaurant_menu</span>
+        <h3 class="mt-4 text-xl font-bold text-slate-800">Belum ada menu</h3>
+        <p class="mt-2 text-sm text-slate-500">Tambahkan menu baru untuk mengisi katalog kantin.</p>
+    </div>
+    <?php else: ?>
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
         <?php while($menu = mysqli_fetch_assoc($query)): 
             $badge_style = 'bg-slate-100 text-slate-600';
@@ -122,10 +143,15 @@ $query = mysqli_query($koneksi, $sql);
                 <span class="inline-flex items-center justify-center w-max px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-full bg-orange-50 text-orange-700 border border-orange-100">
                     <?= htmlspecialchars($menu['status'] ?? 'Tersedia') ?>
                 </span>
+                <div class="flex flex-wrap gap-3 pt-4">
+                    <a href="edit_menu.php?id=<?= $menu['id_menu'] ?>" class="flex-1 text-center px-4 py-3 rounded-2xl bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-primary-orange hover:text-white transition">Edit</a>
+                    <a href="proses_hapus_menu.php?id=<?= $menu['id_menu'] ?>" onclick="return confirm('Hapus menu ini?')" class="flex-1 text-center px-4 py-3 rounded-2xl bg-red-50 text-red-700 text-sm font-semibold hover:bg-red-600 hover:text-white transition">Hapus</a>
+                </div>
             </div>
         </div>
         <?php endwhile; ?>
     </div>
+    <?php endif; ?>
 </main>
 
 </body>

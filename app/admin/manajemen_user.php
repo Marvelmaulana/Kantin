@@ -62,6 +62,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['promosi_kelas'])) {
 }
 
 // 2. AMBIL DATA USER (PEMBELI)
+// Tampilkan flash message dari query string jika ada
+if ($message === '') {
+    if (isset($_GET['success']) && $_GET['success'] === 'hapus') {
+        $message = 'User berhasil dihapus.';
+        $message_type = 'success';
+    } elseif (isset($_GET['error'])) {
+        $message = urldecode($_GET['error']);
+        $message_type = 'error';
+    }
+}
+
 // Filter pencarian sederhana jika ada
 $search = $_GET['search'] ?? '';
 $query_sql = "SELECT * FROM users WHERE role='pembeli'";
@@ -156,17 +167,18 @@ $query = mysqli_query($koneksi, $query_sql);
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse min-w-[700px]">
                 <thead>
-                    <tr class="text-[10px] uppercase tracking-[0.15em] text-slate-400 font-black bg-slate-50/50">
-                        <th class="py-6 px-8">Informasi Profil</th>
-                        <th class="py-6 px-8">Kontak Email</th>
-                        <th class="py-6 px-8">Kelas</th>
-                        <th class="py-6 px-8">Status</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-50">
-                    <?php while($user = mysqli_fetch_assoc($query)): ?>
-                    <tr class="group hover:bg-bg-soft transition-all">
-                        <td class="py-6 px-8">
+                            <tr class="text-[10px] uppercase tracking-[0.15em] text-slate-400 font-black bg-slate-50/50">
+                            <th class="py-6 px-8">Informasi Profil</th>
+                            <th class="py-6 px-8">Kontak Email</th>
+                            <th class="py-6 px-8">Kelas</th>
+                            <th class="py-6 px-8">Status</th>
+                            <th class="py-6 px-8">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        <?php while($user = mysqli_fetch_assoc($query)): ?>
+                        <tr class="group hover:bg-bg-soft transition-all">
+                            <td class="py-6 px-8">
                             <div class="flex items-center gap-4">
                                 <div class="w-11 h-11 rounded-2xl bg-[#003049] flex items-center justify-center text-white text-xs font-bold uppercase shadow-inner group-hover:scale-110 transition-transform">
                                     <?= substr($user['username'], 0, 2) ?>
@@ -191,6 +203,12 @@ $query = mysqli_query($koneksi, $query_sql);
                                 <span class="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse"></span>
                                 Active <?= $user['role'] ?>
                             </span>
+                        </td>
+                        <td class="py-6 px-8">
+                            <div class="flex flex-wrap gap-2">
+                                <a href="edit_user.php?id=<?= $user['id_user'] ?>" class="px-3 py-2 rounded-2xl bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-primary-orange hover:text-white transition">Edit</a>
+                                <a href="proses_hapus_user.php?id=<?= $user['id_user'] ?>" onclick="return confirm('Hapus user ini?')" class="px-3 py-2 rounded-2xl bg-red-50 text-red-700 text-xs font-semibold hover:bg-red-600 hover:text-white transition">Hapus</a>
+                            </div>
                         </td>
                     </tr>
                     <?php endwhile; ?>
