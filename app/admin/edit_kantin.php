@@ -85,11 +85,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <div>
             <label class="block text-sm font-bold mb-2">Lokasi / Nomor Stand</label>
-            <input name="lokasi" value="<?= htmlspecialchars($kantin['lokasi']) ?>" class="w-full px-4 py-3 border rounded-2xl" />
+            <input name="lokasi" value="<?= htmlspecialchars($kantin['lokasi'] ?? '') ?>" class="w-full px-4 py-3 border rounded-2xl" />
         </div>
         <div>
             <label class="block text-sm font-bold mb-2">Deskripsi Singkat</label>
-            <textarea name="deskripsi" rows="4" class="w-full px-4 py-3 border rounded-2xl"><?= htmlspecialchars($kantin['deskripsi']) ?></textarea>
+            <textarea name="deskripsi" rows="4" class="w-full px-4 py-3 border rounded-2xl"><?= htmlspecialchars($kantin['deskripsi'] ?? '') ?></textarea>
         </div>
         <div class="flex flex-col sm:flex-row gap-3 justify-end">
             <a href="manajemen_kantin.php" class="px-4 py-3 rounded-2xl border border-slate-200 text-slate-700 text-center">Batal</a>
