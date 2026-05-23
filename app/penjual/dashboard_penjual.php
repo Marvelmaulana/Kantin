@@ -342,12 +342,18 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
                     </div>
                     <div class="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
                         <p class="text-xs uppercase tracking-[0.25em] text-white/70 mb-3">Manual</p>
-                        <div id="manualStatusPanel" class="<?= ($data_kantin['tipe_operasi'] ?? 'manual') === 'otomatis' ? 'hidden' : '' ?>">
+                                <div id="manualStatusPanel" class="<?= ($data_kantin['tipe_operasi'] ?? 'manual') === 'otomatis' ? 'hidden' : '' ?>">
                             <label class="block text-sm font-semibold text-white/80 mb-2">Status manual</label>
-                            <select name="status_buka" class="w-full rounded-2xl border border-white/20 bg-white/80 px-4 py-3 text-sm text-slate-900">
-                                <option value="Buka" <?= ($data_kantin['status_buka'] ?? 'Buka') === 'Buka' ? 'selected' : '' ?>>Buka</option>
-                                <option value="Tutup" <?= ($data_kantin['status_buka'] ?? 'Buka') === 'Tutup' ? 'selected' : '' ?>>Tutup</option>
-                            </select>
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs text-white/70">Tutup</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input id="statusToggle" type="checkbox" class="sr-only" <?= ($data_kantin['status_buka'] ?? 'Buka') === 'Buka' ? 'checked' : '' ?> onchange="updateStatusToggle()" />
+                                    <div class="toggle-track w-14 h-8 rounded-full bg-white/30 transition-colors duration-300"></div>
+                                    <div class="toggle-dot absolute left-1 top-1 w-6 h-6 rounded-full bg-white shadow-lg transition-transform duration-300"></div>
+                                </label>
+                                <span id="statusToggleLabel" class="text-xs font-semibold <?= ($data_kantin['status_buka'] ?? 'Buka') === 'Buka' ? 'text-emerald-200' : 'text-red-200' ?>"><?= ($data_kantin['status_buka'] ?? 'Buka') === 'Buka' ? 'Buka' : 'Tutup' ?></span>
+                            </div>
+                            <input type="hidden" name="status_buka" id="statusHidden" value="<?= ($data_kantin['status_buka'] ?? 'Buka') ?>">
                         </div>
                         <button type="submit" name="save_operasi" class="mt-4 w-full rounded-2xl bg-orange-500 px-4 py-3 text-sm font-bold text-white hover:bg-orange-600 transition-all">Simpan</button>
                         <?php if (isset($_GET['success_mode'])): ?>
@@ -822,6 +828,27 @@ function updateModeStatus() {
     if (!manualPanel || !tipeOperasi) return;
     manualPanel.classList.toggle('hidden', tipeOperasi === 'otomatis');
 }
+
+function updateStatusToggle() {
+    const checkbox = document.getElementById('statusToggle');
+    const hidden = document.getElementById('statusHidden');
+    const label = document.getElementById('statusToggleLabel');
+    const track = document.querySelector('.toggle-track');
+    const dot = document.querySelector('.toggle-dot');
+    if (!checkbox || !hidden || !label || !track || !dot) return;
+
+    const isOpen = checkbox.checked;
+    hidden.value = isOpen ? 'Buka' : 'Tutup';
+    label.textContent = isOpen ? 'Buka' : 'Tutup';
+    label.className = isOpen ? 'text-xs font-semibold text-emerald-200' : 'text-xs font-semibold text-red-200';
+    track.classList.toggle('bg-emerald-500/70', isOpen);
+    track.classList.toggle('bg-white/30', !isOpen);
+    dot.classList.toggle('translate-x-6', isOpen);
+}
+
+window.addEventListener('DOMContentLoaded', function() {
+    updateStatusToggle();
+});
 
 // Klik backdrop
 document.getElementById('modalStruk').addEventListener('click', function(e) {

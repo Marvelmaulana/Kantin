@@ -10,28 +10,6 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
 }
 
 // ============================
-// ADMIN PROMOSI KELAS MASSAL
-// ============================
-$message = '';
-$message_type = 'success';
-
-if (isset($_POST['promosi_kelas'])) {
-    mysqli_begin_transaction($koneksi);
-    try {
-        mysqli_query($koneksi, "DELETE FROM users WHERE role = 'pembeli' AND kelas = '12'");
-        mysqli_query($koneksi, "UPDATE users SET kelas = '12' WHERE role = 'pembeli' AND kelas = '11'");
-        mysqli_query($koneksi, "UPDATE users SET kelas = '11' WHERE role = 'pembeli' AND kelas = '10'");
-        mysqli_commit($koneksi);
-        $message = 'Kenaikan kelas massal berhasil. Kelas 12 dihapus, 11 naik ke 12, dan 10 naik ke 11.';
-        $message_type = 'success';
-    } catch (Throwable $e) {
-        mysqli_rollback($koneksi);
-        $message = 'Terjadi kesalahan saat memproses kenaikan kelas. Silakan coba lagi.';
-        $message_type = 'error';
-    }
-}
-
-// ============================
 // PROSES TAMBAH KANTIN BARU
 // ============================
 
@@ -64,14 +42,11 @@ if (isset($_POST['tambah_kantin'])) {
 }
 
 // Statistik
-$total_user       = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM users WHERE role='pembeli'"))['total'] ?? 0;
-$total_penjual    = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM users WHERE role='penjual'"))['total'] ?? 0;
-$pesanan_hari_ini = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan WHERE DATE(tanggal) = CURDATE()"))['total'] ?? 0;
-$total_pendapatan = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT SUM(total_harga) as total FROM pesanan WHERE status='Selesai'"))['total'] ?? 0;
-$total_biaya_admin = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COALESCE(SUM(pajak),0) as total FROM pesanan WHERE status='Selesai'"))['total'] ?? 0;
-
-$target_bulanan = 10000000;
-$persen_target  = ($total_pendapatan > 0) ? min(($total_pendapatan / $target_bulanan) * 100, 100) : 0;
+$jumlah_pembeli   = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM users WHERE role='pembeli'"))['total'] ?? 0;
+$jumlah_penjual   = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM users WHERE role='penjual'"))['total'] ?? 0;
+$jumlah_kantin    = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM kantin"))['total'] ?? 0;
+$jumlah_menu      = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM menu"))['total'] ?? 0;
+$jumlah_transaksi = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi"))['total'] ?? 0;
 
 // Grafik 7 hari
 $grafik_data = [];
@@ -149,11 +124,6 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
                 <span class="material-symbols-outlined text-orange-500 text-lg">calendar_today</span>
                 <?= date('M d, Y') ?>
             </div>
-            <form method="POST" class="w-full md:w-auto">
-                <button type="submit" name="promosi_kelas" class="bg-white text-primary-orange border border-orange-200 px-4 py-2 rounded-2xl font-bold shadow-glow-card hover:bg-orange-50 transition-all w-full md:w-auto inline-flex items-center justify-center gap-2 text-sm">
-                    <span class="material-symbols-outlined text-base">school</span> Kenaikan Kelas
-                </button>
-            </form>
             <button onclick="window.print()" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-6 py-3 rounded-3xl font-black shadow-glow-card flex items-center justify-center gap-2 hover:-translate-y-0.5 transition-all w-full md:w-auto">
                 <span class="material-symbols-outlined text-xl">print</span> <?= t('admin.print_report') ?>
             </button>
@@ -169,27 +139,25 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
     <!-- Statistik Cards -->
     <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-6 mb-10">
         <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card">
-            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">group</span></div>
-            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Total User</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($total_user) ?></h3></div>
+            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">storefront</span></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Kantin</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_kantin) ?></h3></div>
         </div>
         <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card">
             <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">store</span></div>
-            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Total Penjual</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($total_penjual) ?></h3></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Penjual</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_penjual) ?></h3></div>
         </div>
         <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card">
-            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-500 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">shopping_cart</span></div>
-            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Pesanan Baru</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($pesanan_hari_ini) ?></h3></div>
+            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-500 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">group</span></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Pembeli</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_pembeli) ?></h3></div>
         </div>
         <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 shadow-glow-card relative overflow-hidden">
             <div class="absolute -top-10 -right-6 w-24 h-24 rounded-full bg-orange-100/70 blur-2xl"></div>
-            <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">Total Pendapatan</p>
-            <h3 class="text-xl font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_pendapatan,0,',','.') ?></h3>
-            <div class="w-full h-1.5 bg-orange-100 rounded-full mt-4 overflow-hidden"><div class="h-full bg-orange-500 shadow-[0_0_20px_rgba(251,146,60,0.25)]" style="width:<?= $persen_target ?>%"></div></div>
-            <p class="text-[8px] font-black text-orange-600 mt-2 tracking-tighter uppercase"><?= round($persen_target) ?>% CAPAIAN TARGET</p>
+            <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">Jumlah Menu</p>
+            <h3 class="text-xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_menu) ?></h3>
         </div>
         <div class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card">
-            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-400 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">admin_panel_settings</span></div>
-            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Pendapatan Pajak</p><h3 class="text-xl font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_biaya_admin,0,',','.') ?></h3></div>
+            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-400 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">receipt_long</span></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Transaksi</p><h3 class="text-xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_transaksi) ?></h3></div>
         </div>
     </section>
 

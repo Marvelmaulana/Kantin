@@ -24,18 +24,50 @@ $current_page = basename($_SERVER['PHP_SELF']);
             <span class="material-symbols-outlined">grid_view</span>
             <span class="text-sm">Dashboard</span>
         </a>
-        <a href="manajemen_user.php" class="flex items-center gap-4 px-4 py-4 rounded-[28px] font-bold transition-all <?= ($current_page == 'manajemen_user.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white shadow-2xl shadow-orange-400/30 scale-[1.01]' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
-            <span class="material-symbols-outlined">group</span>
-            <span class="text-sm">Management User</span>
-        </a>
-        <a href="manajemen_penjual.php" class="flex items-center gap-4 px-4 py-4 rounded-[28px] font-bold transition-all <?= ($current_page == 'manajemen_penjual.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white shadow-2xl shadow-orange-400/30 scale-[1.01]' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
-            <span class="material-symbols-outlined">store</span>
-            <span class="text-sm">Management Kantin</span>
-        </a>
-        <a href="manajemen_menu.php" class="flex items-center gap-4 px-4 py-4 rounded-[28px] font-bold transition-all <?= ($current_page == 'manajemen_menu.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white shadow-2xl shadow-orange-400/30 scale-[1.01]' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
-            <span class="material-symbols-outlined">restaurant_menu</span>
-            <span class="text-sm">Management Menu</span>
-        </a>
+
+        <div class="px-1">
+            <div class="text-xs font-black text-orange-100 uppercase tracking-wider px-4 py-3">Data Master</div>
+            <a href="manajemen_penjual.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all <?= ($current_page == 'manajemen_penjual.php') ? 'bg-orange-700/90 text-white' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
+                <span class="material-symbols-outlined">store</span>
+                <span class="text-sm">Penjual</span>
+            </a>
+            <a href="manajemen_kantin.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all <?= ($current_page == 'manajemen_kantin.php') ? 'bg-orange-700/90 text-white' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
+                <span class="material-symbols-outlined">storefront</span>
+                <span class="text-sm">Kantin</span>
+            </a>
+            <a href="manajemen_user.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all <?= ($current_page == 'manajemen_user.php') ? 'bg-orange-700/90 text-white' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
+                <span class="material-symbols-outlined">group</span>
+                <span class="text-sm">Pembeli</span>
+            </a>
+        </div>
+
+        <div class="px-1">
+            <div class="text-xs font-black text-orange-100 uppercase tracking-wider px-4 py-3">Manajemen</div>
+            <a href="manajemen_menu.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all <?= ($current_page == 'manajemen_menu.php') ? 'bg-orange-700/90 text-white' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
+                <span class="material-symbols-outlined">restaurant_menu</span>
+                <span class="text-sm">Menu</span>
+            </a>
+        </div>
+
+        <div class="px-1">
+            <div class="text-xs font-black text-orange-100 uppercase tracking-wider px-4 py-3">Laporan</div>
+            <a href="laporan_transaksi.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
+                <span class="material-symbols-outlined">receipt_long</span>
+                <span class="text-sm">Laporan Transaksi</span>
+            </a>
+            <a href="laporan_penjualan.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
+                <span class="material-symbols-outlined">bar_chart</span>
+                <span class="text-sm">Laporan Penjualan</span>
+            </a>
+            <a href="laporan_kantin.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
+                <span class="material-symbols-outlined">domain</span>
+                <span class="text-sm">Laporan Kantin</span>
+            </a>
+            <a href="laporan_pembeli.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
+                <span class="material-symbols-outlined">person</span>
+                <span class="text-sm">Laporan Pembeli</span>
+            </a>
+        </div>
     </nav>
 
     <div class="mt-auto pt-6 border-t border-orange-200 mb-4 flex items-center gap-3">

@@ -65,9 +65,12 @@ $query = mysqli_query($koneksi, $sql);
             </div>
         </div>
         
-        <div class="bg-white px-5 py-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-sm text-sm font-bold text-slate-500">
-            <span class="material-symbols-outlined text-primary-orange">restaurant</span> 
-            <span class="text-primary-orange"><?= mysqli_num_rows($query) ?></span> Produk Aktif
+        <div class="flex items-center gap-3">
+            <div class="bg-white px-5 py-3 rounded-2xl border border-slate-100 flex items-center gap-3 shadow-sm text-sm font-bold text-slate-500">
+                <span class="material-symbols-outlined text-primary-orange">restaurant</span> 
+                <span class="text-primary-orange"><?= mysqli_num_rows($query) ?></span> Produk Aktif
+            </div>
+            <a href="tambah_menu.php" class="bg-primary-orange text-white px-5 py-3 rounded-2xl font-bold shadow-lg flex items-center gap-2 hover:scale-105 transition-all text-sm whitespace-nowrap">Tambah Menu</a>
         </div>
     </header>
 

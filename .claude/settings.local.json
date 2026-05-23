@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\xampp\\\\htdocs\\\\kantin\" -Force)",
+      "Bash(Format-Table Name, Mode, LastWriteTime -AutoSize)",
+      "Bash(python3 -c ' *)"
+    ]
+  }
+}

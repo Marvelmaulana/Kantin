@@ -8,6 +8,59 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
+// Handle tambah user POST
+$message = '';
+$message_type = 'success';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_user'])) {
+    $username = mysqli_real_escape_string($koneksi, trim($_POST['username'] ?? ''));
+    $email    = mysqli_real_escape_string($koneksi, trim($_POST['email'] ?? ''));
+    $password = trim($_POST['password'] ?? '');
+    $role     = $_POST['role'] ?? 'pembeli';
+    $kelas    = $_POST['kelas'] ?? null;
+
+    if ($username === '' || $email === '' || $password === '') {
+        $message = 'Semua kolom wajib diisi.';
+        $message_type = 'error';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $message = 'Format email tidak valid.';
+        $message_type = 'error';
+    } else {
+        $exists = mysqli_query($koneksi, "SELECT id_user FROM users WHERE username='$username' OR email='$email' LIMIT 1");
+        if (mysqli_num_rows($exists) > 0) {
+            $message = 'Username atau email sudah terdaftar.';
+            $message_type = 'error';
+        } else {
+            $hash = password_hash($password, PASSWORD_DEFAULT);
+            $kl = $kelas ? "', kelas='$kelas'" : "";
+            $ins = mysqli_query($koneksi, "INSERT INTO users (username,email,password,role,kelas) VALUES ('$username','$email','$hash','$role', " . ($kelas?"'$kelas'":"NULL") . ")");
+            if ($ins) {
+                $message = 'User berhasil ditambahkan.';
+                $message_type = 'success';
+            } else {
+                $message = 'Gagal menambahkan user: ' . mysqli_error($koneksi);
+                $message_type = 'error';
+            }
+        }
+    }
+}
+
+// Handle promosi kelas (mass)
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['promosi_kelas'])) {
+    mysqli_begin_transaction($koneksi);
+    try {
+        mysqli_query($koneksi, "DELETE FROM users WHERE role = 'pembeli' AND kelas = '12'");
+        mysqli_query($koneksi, "UPDATE users SET kelas = '12' WHERE role = 'pembeli' AND kelas = '11'");
+        mysqli_query($koneksi, "UPDATE users SET kelas = '11' WHERE role = 'pembeli' AND kelas = '10'");
+        mysqli_commit($koneksi);
+        $message = 'Kenaikan kelas massal berhasil.';
+        $message_type = 'success';
+    } catch (Throwable $e) {
+        mysqli_rollback($koneksi);
+        $message = 'Terjadi kesalahan saat memproses kenaikan kelas.';
+        $message_type = 'error';
+    }
+}
+
 // 2. AMBIL DATA USER (PEMBELI)
 // Filter pencarian sederhana jika ada
 $search = $_GET['search'] ?? '';
@@ -71,6 +124,23 @@ $query = mysqli_query($koneksi, $query_sql);
                    class="pl-12 pr-6 py-3 bg-white border border-slate-100 rounded-2xl text-sm focus:outline-none focus:ring-2 focus:ring-primary-orange/20 focus:border-primary-orange w-full md:w-80 shadow-sm transition-all">
         </form>
     </header>
+
+    <?php if ($message !== ''): ?>
+    <div class="mb-6 px-5 py-4 rounded-2xl border <?= $message_type==='success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700' ?> font-bold text-sm">
+        <?= $message ?>
+    </div>
+    <?php endif; ?>
+
+    <div class="flex items-center gap-3 mb-6">
+        <button onclick="openTambahUser()" class="bg-primary-orange text-white px-4 py-3 rounded-2xl font-bold shadow-lg flex items-center gap-2 w-full md:w-auto">
+            <span class="material-symbols-outlined">person_add</span> Tambah User
+        </button>
+        <form method="POST" onsubmit="return confirm('Konfirmasi kenaikan kelas massal?')">
+            <button type="submit" name="promosi_kelas" class="bg-white border border-orange-200 text-primary-orange px-4 py-3 rounded-2xl font-bold shadow-sm w-full md:w-auto">
+                <span class="material-symbols-outlined">school</span> Kenaikan Kelas
+            </button>
+        </form>
+    </div>
 
     <div class="mb-8 inline-flex items-center gap-2 bg-orange-50 px-4 py-2 rounded-xl border border-orange-100">
         <span class="material-symbols-outlined text-primary-orange text-sm">person</span>
@@ -143,6 +213,58 @@ $query = mysqli_query($koneksi, $query_sql);
         </div>
     </div>
 </main>
+</main>
+
+<!-- Modal Tambah User -->
+<div id="modal-tambah-user" class="fixed inset-0 z-[100] hidden items-center justify-center">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" onclick="closeTambahUser()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden modal-anim">
+        <div class="p-6 bg-gradient-to-br from-orange-500 to-orange-600 text-white">
+            <div class="flex items-center justify-between">
+                <h3 class="font-black text-xl">Tambah User Baru</h3>
+                <button onclick="closeTambahUser()" class="text-white">✕</button>
+            </div>
+        </div>
+        <form method="POST" class="p-6 space-y-4">
+            <input type="hidden" name="tambah_user" value="1" />
+            <div>
+                <label class="text-sm font-bold">Username</label>
+                <input name="username" required class="w-full px-3 py-2 border rounded mt-2" />
+            </div>
+            <div>
+                <label class="text-sm font-bold">Email</label>
+                <input name="email" type="email" required class="w-full px-3 py-2 border rounded mt-2" />
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="text-sm font-bold">Password</label>
+                    <input name="password" type="password" required class="w-full px-3 py-2 border rounded mt-2" />
+                </div>
+                <div>
+                    <label class="text-sm font-bold">Role</label>
+                    <select name="role" class="w-full px-3 py-2 border rounded mt-2">
+                        <option value="pembeli">Pembeli</option>
+                        <option value="penjual">Penjual</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+            </div>
+            <div>
+                <label class="text-sm font-bold">Kelas (jika Pembeli)</label>
+                <input name="kelas" class="w-full px-3 py-2 border rounded mt-2" placeholder="10 / 11 / 12" />
+            </div>
+            <div class="flex gap-3 justify-end">
+                <button type="button" onclick="closeTambahUser()" class="px-4 py-2 rounded border">Batal</button>
+                <button type="submit" class="px-4 py-2 rounded bg-primary-orange text-white font-bold">Tambah</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openTambahUser(){ document.getElementById('modal-tambah-user').classList.remove('hidden'); }
+function closeTambahUser(){ document.getElementById('modal-tambah-user').classList.add('hidden'); }
+</script>
 
 </body>
 </html>

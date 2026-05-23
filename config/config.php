@@ -98,6 +98,7 @@ if (!function_exists('kk_ensure_core_schema')) {
                 id_kantin INT AUTO_INCREMENT PRIMARY KEY,
                 id_user INT NULL,
                 nama_kantin VARCHAR(150) NOT NULL,
+                lokasi VARCHAR(150) NULL,
                 pasword_kantin VARCHAR(100) NULL,
                 deskripsi TEXT NULL,
                 logo VARCHAR(255) NULL,

@@ -23,6 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $username = mysqli_real_escape_string($koneksi, trim($_POST['username'] ?? ''));
         $email = mysqli_real_escape_string($koneksi, trim($_POST['email'] ?? ''));
         $nama_kantin = mysqli_real_escape_string($koneksi, trim($_POST['nama_kantin'] ?? ''));
+        $lokasi = mysqli_real_escape_string($koneksi, trim($_POST['lokasi'] ?? ''));
         $deskripsi = mysqli_real_escape_string($koneksi, trim($_POST['deskripsi'] ?? ''));
         $jam_buka = $_POST['jam_buka'] ?? '07:00:00';
         $jam_tutup = $_POST['jam_tutup'] ?? '15:00:00';
@@ -69,44 +70,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     }
                 }
 
-                // Buat user penjual
-                $password = password_hash('kantin123', PASSWORD_DEFAULT);
-                $insert_user = mysqli_query($koneksi, "
-                    INSERT INTO users (username, email, password, role, created_at)
-                    VALUES ('$username', '$email', '$password', 'penjual', NOW())
-                ");
+                // Jika pemilik dipilih (owner_id), gunakan, jika tidak buat akun penjual baru
+                $owner_id = isset($_POST['owner_id']) && $_POST['owner_id'] !== '' ? (int)$_POST['owner_id'] : null;
+                if ($owner_id) {
+                    $id_user = $owner_id;
+                } else {
+                    $password = password_hash('kantin123', PASSWORD_DEFAULT);
+                    $insert_user = mysqli_query($koneksi, "INSERT INTO users (username, email, password, role, created_at) VALUES ('$username', '$email', '$password', 'penjual', NOW())");
+                    if ($insert_user) {
+                        $id_user = mysqli_insert_id($koneksi);
+                    } else {
+                        $message = 'Gagal membuat user: ' . mysqli_error($koneksi);
+                        $message_type = 'error';
+                        // stop process
+                        $id_user = null;
+                    }
+                }
 
-                if ($insert_user) {
-                    $id_user = mysqli_insert_id($koneksi);
+                if ($id_user) {
                     $logo_insert = $logo ? "'$logo'" : 'NULL';
                     $banner_insert = $banner ? "'$banner'" : 'NULL';
-                    
+                    $lokasi_insert = $lokasi !== '' ? "'$lokasi'" : 'NULL';
                     // Buat kantin
-                    $insert_kantin = mysqli_query($koneksi, "
-                        INSERT INTO kantin (
-                            id_user,
-                            nama_kantin,
-                            deskripsi,
-                            logo,
-                            banner,
-                            jam_buka,
-                            jam_tutup,
-                            tipe_operasi,
-                            status_buka,
-                            created_at
-                        ) VALUES (
-                            $id_user,
-                            '$nama_kantin',
-                            '$deskripsi',
-                            $logo_insert,
-                            $banner_insert,
-                            '$jam_buka',
-                            '$jam_tutup',
-                            '$tipe_operasi',
-                            '$status_buka',
-                            NOW()
-                        )
-                    ");
+                    $insert_kantin = mysqli_query($koneksi, "INSERT INTO kantin (id_user,nama_kantin,lokasi,deskripsi,logo,banner,jam_buka,jam_tutup,tipe_operasi,status_buka,created_at) VALUES ($id_user,'$nama_kantin',$lokasi_insert,'$deskripsi',$logo_insert,$banner_insert,'$jam_buka','$jam_tutup','$tipe_operasi','$status_buka',NOW())");
 
                     if ($insert_kantin) {
                         $kantin_id = mysqli_insert_id($koneksi);
@@ -117,12 +103,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     } else {
                         $message = 'Gagal membuat kantin: ' . mysqli_error($koneksi);
                         $message_type = 'error';
-                        // Hapus user jika gagal buat kantin
-                        mysqli_query($koneksi, "DELETE FROM users WHERE id_user = $id_user");
+                        // Hapus user jika kita yang membuatnya
+                        if (!$owner_id && isset($id_user)) {
+                            mysqli_query($koneksi, "DELETE FROM users WHERE id_user = $id_user");
+                        }
                     }
-                } else {
-                    $message = 'Gagal membuat user: ' . mysqli_error($koneksi);
-                    $message_type = 'error';
                 }
             }
         }
@@ -133,6 +118,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 if (!isset($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
+
+// Ambil daftar penjual untuk opsi pemilik (jika ada)
+$penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHERE role='penjual' ORDER BY username ASC");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -258,6 +246,16 @@ if (!isset($_SESSION['csrf_token'])) {
                                class="w-full px-4 py-3 border border-slate-100 rounded-2xl focus:outline-none focus:border-primary-orange focus:ring-2 focus:ring-orange-100 transition-all bg-slate-50">
                         <p class="text-xs text-slate-400 mt-1">Email unik untuk setiap penjual</p>
                     </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-600 mb-2">Atau Pilih Pemilik (opsional)</label>
+                        <select name="owner_id" class="w-full px-4 py-3 border border-slate-100 rounded-2xl bg-white text-sm">
+                            <option value="">-- Buat akun baru (isi username & email) --</option>
+                            <?php while($p = mysqli_fetch_assoc($penjual_list)): ?>
+                                <option value="<?= $p['id_user'] ?>"><?= htmlspecialchars($p['username']) ?></option>
+                            <?php endwhile; ?>
+                        </select>
+                        <p class="text-xs text-slate-400 mt-1">Pilih pemilik jika sudah ada akun penjual.</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -282,6 +280,12 @@ if (!isset($_SESSION['csrf_token'])) {
                     <input type="text" name="nama_kantin" required
                            placeholder="Contoh: Kantin Makan Enak"
                            class="w-full px-4 py-3 border border-slate-100 rounded-2xl focus:outline-none focus:border-primary-orange focus:ring-2 focus:ring-orange-100 transition-all bg-slate-50">
+                </div>
+
+                <!-- Lokasi / Nomor Stand -->
+                <div>
+                    <label class="block text-sm font-bold text-slate-600 mb-2">Lokasi / Nomor Kantin</label>
+                    <input type="text" name="lokasi" placeholder="Contoh: Blok A / No. Stand 12" class="w-full px-4 py-3 border border-slate-100 rounded-2xl bg-slate-50" />
                 </div>
 
                 <!-- Deskripsi -->
