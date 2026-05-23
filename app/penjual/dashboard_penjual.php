@@ -27,12 +27,13 @@ $_SESSION['nama_penjual'] = $user_data['username'];
 // DATA KANTIN
 // ================================
 $q_kantin   = mysqli_query($koneksi, "
-    SELECT k.*, u.username as nama_penjual
+    SELECT k.*, COALESCE(k.nama_penjual, u.username) as nama_penjual
     FROM kantin k LEFT JOIN users u ON k.id_user = u.id_user
     WHERE k.id_kantin = $id_kantin LIMIT 1
 ");
 $data_kantin = mysqli_fetch_assoc($q_kantin);
 if (!$data_kantin) die("❌ Kantin tidak ditemukan");
+$_SESSION['nama_kantin'] = $data_kantin['nama_kantin'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_operasi'])) {
     $tipe_operasi = mysqli_real_escape_string($koneksi, $_POST['tipe_operasi'] ?? 'manual');

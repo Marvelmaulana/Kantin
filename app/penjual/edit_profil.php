@@ -77,6 +77,7 @@ if(isset($_POST['simpan'])){
             $hasError = true;
         } else {
             mysqli_query($koneksi, "UPDATE users SET username = '$username' WHERE id_user = $id_user");
+            mysqli_query($koneksi, "UPDATE kantin SET nama_penjual = '$username' WHERE id_kantin = $id_kantin");
             $_SESSION['username'] = $username;
             $_SESSION['nama_penjual'] = $username;
             $user['username'] = $username;
@@ -107,6 +108,8 @@ if(isset($_POST['simpan'])){
                 banner       = '$banner'
             WHERE id_kantin = $id_kantin
         ");
+        mysqli_query($koneksi, "UPDATE users SET nama_kantin = '$nama_kantin' WHERE id_user = $id_user");
+        $_SESSION['nama_kantin'] = $nama_kantin;
         $data['nama_kantin']  = $nama_kantin;
         $data['deskripsi']    = $deskripsi;
         $data['jam_buka']     = $jam_buka;

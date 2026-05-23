@@ -26,8 +26,17 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     <input type="text" name="user_input" required class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" placeholder="Username atau Email" />
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold text-slate-600 mb-2">Password</label>
-                    <input type="password" name="password" required class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" placeholder="Password" />
+                    <div class="flex items-center justify-between mb-2">
+                        <label class="block text-sm font-semibold text-slate-600">Password</label>
+                        <a href="../auth/lupa_password.php" class="text-sm font-semibold text-orange-500 hover:underline">Lupa Password?</a>
+                    </div>
+                    <div class="relative">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">lock</span>
+                        <input id="adminPassword" type="password" name="password" required class="w-full rounded-2xl border border-slate-200 px-4 py-3 pl-11 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" placeholder="Password" />
+                        <button type="button" id="toggleAdminPassword" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-orange-500">
+                            <span id="adminEyeIcon" class="material-symbols-outlined">visibility</span>
+                        </button>
+                    </div>
                 </div>
                 <button type="submit" name="login_btn" class="w-full rounded-2xl bg-orange-500 px-4 py-3 text-sm font-bold text-white hover:bg-orange-600 transition-all">Masuk Admin</button>
             </form>
@@ -36,5 +45,22 @@ include(__DIR__ . '/../../includes/language_helper.php');
             </div>
         </div>
     </div>
+    <script>
+        const toggleAdminPassword = document.getElementById('toggleAdminPassword');
+        const adminPassword = document.getElementById('adminPassword');
+        const adminEyeIcon = document.getElementById('adminEyeIcon');
+
+        if (toggleAdminPassword && adminPassword && adminEyeIcon) {
+            toggleAdminPassword.addEventListener('click', function() {
+                if (adminPassword.type === 'password') {
+                    adminPassword.type = 'text';
+                    adminEyeIcon.textContent = 'visibility_off';
+                } else {
+                    adminPassword.type = 'password';
+                    adminEyeIcon.textContent = 'visibility';
+                }
+            });
+        }
+    </script>
 </body>
 </html>

@@ -52,9 +52,15 @@ if (isset($_POST['login_btn'])) {
 
                 if ($data_kantin) {
                     $_SESSION['id_kantin'] = $data_kantin['id_kantin'];
-                    // Pastikan nama kantin selalu sama dengan username akun penjual saat login
+                    $_SESSION['nama_penjual'] = $data['username'];
                     $safe_username = mysqli_real_escape_string($koneksi, $data['username']);
-                    mysqli_query($koneksi, "UPDATE kantin SET nama_kantin='$safe_username' WHERE id_kantin='{$data_kantin['id_kantin']}'");
+                    mysqli_query($koneksi, "UPDATE kantin SET nama_penjual='$safe_username' WHERE id_kantin='{$data_kantin['id_kantin']}'");
+                    $kantin_name = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT nama_kantin FROM kantin WHERE id_kantin='{$data_kantin['id_kantin']}'"));
+                    if ($kantin_name) {
+                        $_SESSION['nama_kantin'] = $kantin_name['nama_kantin'];
+                        $safe_kantin_name = mysqli_real_escape_string($koneksi, $kantin_name['nama_kantin']);
+                        mysqli_query($koneksi, "UPDATE users SET nama_kantin='$safe_kantin_name' WHERE id_user=$id_user");
+                    }
                 } else {
                     // Jika rolenya penjual tapi belum ada data di tabel kantin
                     echo "<script>alert('Akun penjual belum memiliki data kantin!'); window.location='login.php';</script>";
