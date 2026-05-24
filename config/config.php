@@ -100,7 +100,6 @@ if (!function_exists('kk_ensure_core_schema')) {
                 id_user INT NULL,
                 nama_kantin VARCHAR(150) NOT NULL,
                 nama_penjual VARCHAR(150) NULL,
-                lokasi VARCHAR(150) NULL,
                 pasword_kantin VARCHAR(100) NULL,
                 deskripsi TEXT NULL,
                 logo VARCHAR(255) NULL,
@@ -343,6 +342,10 @@ if (!kk_column_exists($koneksi, 'users', 'nama_kantin')) {
 
 if (!kk_column_exists($koneksi, 'kantin', 'nama_penjual')) {
     mysqli_query($koneksi, "ALTER TABLE kantin ADD COLUMN nama_penjual VARCHAR(150) NULL");
+}
+
+if (kk_column_exists($koneksi, 'kantin', 'lokasi')) {
+    mysqli_query($koneksi, "ALTER TABLE kantin DROP COLUMN lokasi");
 }
 
 // Isi data awal berdasarkan relasi yang ada

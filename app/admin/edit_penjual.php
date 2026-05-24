@@ -54,7 +54,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $hash = password_hash($password, PASSWORD_DEFAULT);
                     $set_password = ", password='$hash'";
                 }
-                $updated = mysqli_query($koneksi, "UPDATE users SET username='$username', email='$email', id_kantin=" . ($id_kantin>0?$id_kantin:'NULL') . "$set_password WHERE id_user=$id_user AND role='penjual'");
+                $nama_kantin_sql = $id_kantin > 0 ? "(SELECT nama_kantin FROM kantin WHERE id_kantin=$id_kantin)" : 'NULL';
+                $updated = mysqli_query($koneksi, "UPDATE users SET username='$username', email='$email', id_kantin=" . ($id_kantin>0?$id_kantin:'NULL') . ", nama_kantin=$nama_kantin_sql $set_password WHERE id_user=$id_user AND role='penjual'");
                 if (!$updated) {
                     throw new Exception(mysqli_error($koneksi));
                 }
@@ -100,7 +101,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
             <h2 class="text-3xl font-extrabold">Edit Penjual</h2>
-            <p class="text-slate-500">Perbarui akun penjual dan lokasi stand.</p>
+            <p class="text-slate-500">Perbarui akun penjual dan tautkan ke kantin yang tersedia.</p>
         </div>
         <a href="manajemen_penjual.php" class="px-4 py-2 rounded-2xl bg-slate-100 text-slate-700">Kembali</a>
     </header>

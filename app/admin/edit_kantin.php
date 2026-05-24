@@ -18,20 +18,33 @@ if (!$kantin) {
     exit();
 }
 
+$penjual_list = mysqli_query($koneksi, "SELECT u.id_user, u.username FROM users u LEFT JOIN kantin k ON k.id_user = u.id_user WHERE u.role='penjual' AND (k.id_user IS NULL OR u.id_user = " . intval($kantin['id_user']) . ") ORDER BY u.username ASC");
+
 $message = '';
 $message_type = 'success';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nama_kantin = mysqli_real_escape_string($koneksi, trim($_POST['nama_kantin'] ?? ''));
-    $lokasi = mysqli_real_escape_string($koneksi, trim($_POST['lokasi'] ?? ''));
     $deskripsi = mysqli_real_escape_string($koneksi, trim($_POST['deskripsi'] ?? ''));
 
+    $owner_id = isset($_POST['owner_id']) && $_POST['owner_id'] !== '' ? (int)$_POST['owner_id'] : null;
     if ($nama_kantin === '') {
         $message = 'Nama kantin wajib diisi.';
         $message_type = 'error';
+    } elseif ($owner_id && mysqli_num_rows(mysqli_query($koneksi, "SELECT id_user FROM users WHERE id_user=$owner_id AND role='penjual' LIMIT 1")) === 0) {
+        $message = 'Pemilik tidak valid atau bukan penjual.';
+        $message_type = 'error';
     } else {
-        $updated = mysqli_query($koneksi, "UPDATE kantin SET nama_kantin='$nama_kantin', lokasi='$lokasi', deskripsi='$deskripsi' WHERE id_kantin=$id_kantin");
+        $old_owner_id = (int)($kantin['id_user'] ?? 0);
+        $new_owner_sql = $owner_id ? $owner_id : 'NULL';
+        $updated = mysqli_query($koneksi, "UPDATE kantin SET nama_kantin='$nama_kantin', id_user=$new_owner_sql, deskripsi='$deskripsi' WHERE id_kantin=$id_kantin");
         if ($updated) {
+            if ($old_owner_id && $old_owner_id !== $owner_id) {
+                mysqli_query($koneksi, "UPDATE users SET id_kantin=NULL, nama_kantin=NULL WHERE id_user=$old_owner_id AND role='penjual' AND id_kantin=$id_kantin");
+            }
+            if ($owner_id) {
+                mysqli_query($koneksi, "UPDATE users SET id_kantin=$id_kantin, nama_kantin='$nama_kantin' WHERE id_user=$owner_id AND role='penjual'");
+            }
             $message = 'Data kantin berhasil diperbarui.';
             $message_type = 'success';
             $kantin = kk_fetch_one($koneksi, "SELECT * FROM kantin WHERE id_kantin=$id_kantin LIMIT 1");
@@ -69,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
             <h2 class="text-3xl font-extrabold">Edit Kantin</h2>
-            <p class="text-slate-500">Perbarui informasi kantin dan lokasi.</p>
+            <p class="text-slate-500">Perbarui informasi kantin dan pemilik.</p>
         </div>
         <a href="manajemen_kantin.php" class="px-4 py-2 rounded-2xl bg-slate-100 text-slate-700">Kembali</a>
     </header>
@@ -84,8 +97,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input name="nama_kantin" value="<?= htmlspecialchars($kantin['nama_kantin']) ?>" required class="w-full px-4 py-3 border rounded-2xl" />
         </div>
         <div>
+<<<<<<< HEAD
             <label class="block text-sm font-bold mb-2">Lokasi / Nomor Stand</label>
             <input name="lokasi" value="<?= htmlspecialchars($kantin['lokasi'] ?? '') ?>" class="w-full px-4 py-3 border rounded-2xl" />
+=======
+            <label class="block text-sm font-bold mb-2">Pemilik Kantin</label>
+            <select name="owner_id" required class="w-full px-4 py-3 border rounded-2xl bg-white">
+                <option value="">Pilih pemilik penjual</option>
+                <?php while ($p = mysqli_fetch_assoc($penjual_list)): ?>
+                    <option value="<?= $p['id_user'] ?>" <?= ((int)$kantin['id_user'] === (int)$p['id_user']) ? 'selected' : '' ?>><?= htmlspecialchars($p['username']) ?></option>
+                <?php endwhile; ?>
+            </select>
+            <p class="text-xs text-slate-500 mt-2">Pemilik ini akan menjadi akun penjual yang mengelola kantin.</p>
+>>>>>>> b27740e (Refactor kantin owner relation and sync penjual/kantin fields)
         </div>
         <div>
             <label class="block text-sm font-bold mb-2">Deskripsi Singkat</label>

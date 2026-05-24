@@ -17,11 +17,12 @@ if ($id_kantin <= 0) {
 }
 
 $q_kantin = mysqli_query($koneksi, "
-    SELECT k.*,
+    SELECT k.*, u.username AS pemilik,
            COALESCE(AVG(rm.nilai_rating),0) AS avg_rating,
            COUNT(rm.id_rating) AS total_rating,
            COUNT(DISTINCT m.id_menu) AS total_menu
     FROM kantin k
+    LEFT JOIN users u ON k.id_user = u.id_user
     LEFT JOIN menu m ON k.id_kantin=m.id_kantin AND COALESCE(m.status,'Tersedia') <> 'Habis'
     LEFT JOIN rating_menu rm ON m.id_menu=rm.id_menu
     WHERE k.id_kantin=$id_kantin
@@ -142,9 +143,21 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#fffdfc}.headline{font-f
                         <?= (float)$kantin['avg_rating'] > 0 ? round($kantin['avg_rating'],1).' ★' : 'Belum ada rating' ?> (<?= (int)$kantin['total_rating'] ?> ulasan)
                     </span>
                 </div>
+                <div class="mt-4 flex flex-wrap gap-3 text-white/90 text-sm">
+                    <div class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-2">
+                        <span class="material-symbols-outlined text-base">person</span>
+                        <span class="font-semibold">Pemilik: <?= htmlspecialchars($kantin['pemilik'] ?: 'Belum ditetapkan') ?></span>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
+    <?php if (!empty($kantin['deskripsi'])): ?>
+    <section class="bg-white rounded-[2rem] p-6 md:p-8 shadow-sm border border-orange-100">
+        <h3 class="headline font-black text-lg mb-3">Tentang Kantin</h3>
+        <p class="text-sm text-stone-600 leading-relaxed"><?= htmlspecialchars($kantin['deskripsi']) ?></p>
+    </section>
+    <?php endif; ?>
 
     <section>
         <div class="flex items-center justify-between mb-4">

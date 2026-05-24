@@ -13,6 +13,9 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     header("Location: ../auth/login.php"); exit();
 }
 
+$message = '';
+$message_type = 'success';
+
 // ============================
 // PROSES TAMBAH KANTIN BARU
 // ============================
@@ -20,9 +23,13 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
 if (isset($_POST['tambah_kantin'])) {
     $nama_kantin = trim($_POST['nama_kantin'] ?? '');
     $deskripsi   = trim($_POST['deskripsi']   ?? '');
+    $owner_id    = isset($_POST['owner_id']) && $_POST['owner_id'] !== '' ? (int)$_POST['owner_id'] : null;
 
     if ($nama_kantin === '') {
         $message = t('admin.name_required');
+        $message_type = 'error';
+    } elseif (!$owner_id) {
+        $message = 'Pilih pemilik penjual untuk kantin baru.';
         $message_type = 'error';
     } else {
         $safe_nama = mysqli_real_escape_string($koneksi, $nama_kantin);
@@ -31,9 +38,14 @@ if (isset($_POST['tambah_kantin'])) {
         if (mysqli_num_rows($cek) > 0) {
             $message = t('admin.name_exists');
             $message_type = 'error';
+        } elseif (mysqli_num_rows(mysqli_query($koneksi, "SELECT id_user FROM users WHERE id_user=$owner_id AND role='penjual' LIMIT 1")) === 0) {
+            $message = 'Pemilik tidak valid atau bukan penjual.';
+            $message_type = 'error';
         } else {
-            $ins = mysqli_query($koneksi, "INSERT INTO kantin (nama_kantin, id_user, deskripsi) VALUES ('$safe_nama', 0, '$safe_desk')");
+            $ins = mysqli_query($koneksi, "INSERT INTO kantin (nama_kantin, id_user, deskripsi) VALUES ('$safe_nama', $owner_id, '$safe_desk')");
             if ($ins) {
+                $kantinId = mysqli_insert_id($koneksi);
+                mysqli_query($koneksi, "UPDATE users SET id_kantin = $kantinId, nama_kantin = '$safe_nama' WHERE id_user = $owner_id AND role='penjual'");
                 $message = "Kantin \"" . htmlspecialchars($nama_kantin) . "\" " . t('admin.kantin_added');
                 $message_type = 'success';
                 $_POST = [];
@@ -78,10 +90,10 @@ while ($row = mysqli_fetch_assoc($res_kat)) {
 
 // Data kantin + jumlah penjual
 $res_kantin = mysqli_query($koneksi, "
-    SELECT k.id_kantin, k.nama_kantin, k.deskripsi,
+    SELECT k.id_kantin, k.nama_kantin, k.deskripsi, u.username AS pemilik,
            COUNT(u.id_user) AS jumlah_penjual
     FROM kantin k
-    LEFT JOIN users u ON u.id_kantin=k.id_kantin AND u.role='penjual'
+    LEFT JOIN users u ON u.id_user=k.id_user AND u.role='penjual'
     GROUP BY k.id_kantin ORDER BY k.id_kantin ASC
 ");
 $daftar_kantin = [];
@@ -308,7 +320,11 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
                 <p class="text-xs text-slate-400 font-medium leading-relaxed -mt-1"><?= htmlspecialchars($k['deskripsi']) ?></p>
                 <?php endif; ?>
 
-                <div>
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center mb-1.5">
+                        <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Pemilik</p>
+                        <p class="text-[10px] font-bold text-slate-700"><?= htmlspecialchars($k['pemilik'] ?: 'Belum ditetapkan') ?></p>
+                    </div>
                     <div class="flex justify-between items-center mb-1.5">
                         <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Slot Penjual</p>
                         <p class="text-[10px] font-black <?= $penuh ? 'text-orange-600' : 'text-primary-orange' ?>"><?= $jml ?> / 5</p>
@@ -358,6 +374,17 @@ while ($row = mysqli_fetch_assoc($res_kantin)) { $daftar_kantin[] = $row; }
                 <textarea name="deskripsi" rows="3"
                           class="w-full px-4 py-3 rounded-2xl border border-slate-100 bg-slate-50 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-orange/20 focus:border-primary-orange resize-none"
                           placeholder="Deskripsi singkat kantin..."></textarea>
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Pilih Pemilik</label>
+                <select name="owner_id" required class="w-full px-4 py-3 rounded-2xl border border-slate-100 bg-white text-sm">
+                    <option value="">Pilih akun penjual</option>
+                    <?php $owner_result = mysqli_query($koneksi, "SELECT id_user, username FROM users WHERE role='penjual' AND id_user NOT IN (SELECT id_user FROM kantin WHERE id_user IS NOT NULL) ORDER BY username ASC"); ?>
+                    <?php while ($p = mysqli_fetch_assoc($owner_result)): ?>
+                        <option value="<?= $p['id_user'] ?>"><?= htmlspecialchars($p['username']) ?></option>
+                    <?php endwhile; ?>
+                </select>
+                <p class="text-[10px] text-slate-400 mt-2">Pilih pemilik kantin yang sudah terdaftar sebagai penjual.</p>
             </div>
             <div class="flex gap-3 pt-2">
                 <button type="button" onclick="closeModalKantin()"

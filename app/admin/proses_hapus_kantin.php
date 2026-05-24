@@ -28,7 +28,7 @@ try {
     mysqli_query($koneksi, "DELETE FROM menu WHERE id_kantin=$id_kantin");
     mysqli_query($koneksi, "DELETE FROM kantin WHERE id_kantin=$id_kantin");
     if ($id_user > 0) {
-        mysqli_query($koneksi, "UPDATE users SET id_kantin=NULL WHERE id_user=$id_user AND role='penjual'");
+        mysqli_query($koneksi, "UPDATE users SET id_kantin=NULL, nama_kantin=NULL WHERE id_user=$id_user AND role='penjual' AND id_kantin=$id_kantin");
     }
     mysqli_commit($koneksi);
     header('Location: manajemen_kantin.php?success=hapus');

@@ -81,7 +81,6 @@ $total_kantin = mysqli_num_rows($query);
                 <tr class="text-sm text-slate-500 uppercase">
                     <th class="py-3 px-4">ID</th>
                     <th class="py-3 px-4">Nama Kantin</th>
-                    <th class="py-3 px-4">Lokasi</th>
                     <th class="py-3 px-4">Pemilik</th>
                     <th class="py-3 px-4">Deskripsi</th>
                     <th class="py-3 px-4">Aksi</th>
@@ -90,11 +89,18 @@ $total_kantin = mysqli_num_rows($query);
             <tbody>
                 <?php while($k = mysqli_fetch_assoc($query)): ?>
                 <tr class="border-t hover:bg-slate-50 transition-all">
+<<<<<<< HEAD
                     <td class="py-4 px-4">#<?= htmlspecialchars($k['id_kantin'] ?? '-') ?></td>
                     <td class="py-4 px-4 font-bold"><?= htmlspecialchars($k['nama_kantin'] ?? '-') ?></td>
                     <td class="py-4 px-4"><?= htmlspecialchars($k['lokasi'] ?? '-') ?></td>
                     <td class="py-4 px-4"><?= htmlspecialchars($k['pemilik'] ?? '-') ?></td>
                     <td class="py-4 px-4 text-slate-500"><?= htmlspecialchars($k['deskripsi'] ?? '-') ?></td>
+=======
+                    <td class="py-4 px-4">#<?= $k['id_kantin'] ?></td>
+                    <td class="py-4 px-4 font-bold"><?= htmlspecialchars($k['nama_kantin']) ?></td>
+                    <td class="py-4 px-4"><?= htmlspecialchars($k['pemilik'] ?: '-') ?></td>
+                    <td class="py-4 px-4 text-slate-500"><?= htmlspecialchars($k['deskripsi'] ?: '-') ?></td>
+>>>>>>> b27740e (Refactor kantin owner relation and sync penjual/kantin fields)
                     <td class="py-4 px-4">
                         <div class="flex flex-wrap gap-2">
                             <a href="edit_kantin.php?id=<?= $k['id_kantin'] ?>" class="px-3 py-2 rounded-2xl bg-slate-100 text-slate-700 text-xs font-semibold hover:bg-primary-orange hover:text-white transition">Edit</a>

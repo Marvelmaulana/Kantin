@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $new_id = mysqli_insert_id($koneksi);
                 if ($id_kantin > 0) {
                     mysqli_query($koneksi, "UPDATE kantin SET id_user=$new_id WHERE id_kantin=$id_kantin");
+                    mysqli_query($koneksi, "UPDATE users SET nama_kantin=(SELECT nama_kantin FROM kantin WHERE id_kantin=$id_kantin) WHERE id_user=$new_id");
                 }
                 $message = 'Penjual berhasil ditambahkan.';
                 $message_type = 'success';
