@@ -107,16 +107,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <p class="text-xs text-slate-500 mt-2">Pemilik ini akan menjadi akun penjual yang mengelola kantin.</p>
         </div>
         <div>
-            <label class="block text-sm font-bold mb-2">Pemilik Kantin</label>
-            <select name="owner_id" required class="w-full px-4 py-3 border rounded-2xl bg-white">
-                <option value="">Pilih pemilik penjual</option>
-                <?php while ($p = mysqli_fetch_assoc($penjual_list)): ?>
-                    <option value="<?= $p['id_user'] ?>" <?= ((int)$kantin['id_user'] === (int)$p['id_user']) ? 'selected' : '' ?>><?= htmlspecialchars($p['username']) ?></option>
-                <?php endwhile; ?>
-            </select>
-            <p class="text-xs text-slate-500 mt-2">Pemilik ini akan menjadi akun penjual yang mengelola kantin.</p>
-        </div>
-        <div>
             <label class="block text-sm font-bold mb-2">Deskripsi Singkat</label>
             <textarea name="deskripsi" rows="4" class="w-full px-4 py-3 border rounded-2xl"><?= htmlspecialchars($kantin['deskripsi'] ?? '') ?></textarea>
         </div>
