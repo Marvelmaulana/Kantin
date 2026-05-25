@@ -46,7 +46,7 @@ $total_kantin = mysqli_num_rows($query);
         }
     </script>
 </head>
-<body class="text-slate-800 flex">
+<body class="text-slate-800 flex overflow-x-hidden">
 
 <?php include '../../includes/sidebar_admin.php'; ?>
 

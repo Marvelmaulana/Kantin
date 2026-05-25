@@ -138,11 +138,11 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
         }
     </style>
 </head>
-<body class="text-slate-800 flex min-h-screen">
+<body class="text-slate-800 flex min-h-screen overflow-x-hidden">
 
 <?php include '../../includes/sidebar_admin.php'; ?>
 
-<main class="flex-1 w-full lg:ml-72 p-4 md:p-6 lg:p-8">
+<main class="flex-1 w-full lg:ml-72 p-4 md:p-6 lg:p-8 overflow-x-hidden max-w-full">
     <!-- Header -->
     <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8 mt-14 lg:mt-0">
         <div>

@@ -73,7 +73,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     </script>
 </head>
-<body class="text-slate-800 flex">
+<body class="text-slate-800 flex overflow-x-hidden">
 <?php include '../../includes/sidebar_admin.php'; ?>
 <main class="flex-1 w-full lg:ml-72 p-6 md:p-10 min-h-screen">
     <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">

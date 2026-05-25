@@ -13,6 +13,17 @@ $total_pajak = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COALESCE(SUM(ju
 $total_transaksi = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi"))['total'] ?? 0;
 $pajak_bulan_ini = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COALESCE(SUM(jumlah_pajak), 0) as total FROM transaksi WHERE MONTH(tanggal) = MONTH(NOW()) AND YEAR(tanggal) = YEAR(NOW())"))['total'] ?? 0;
 $transaksi_bulan_ini = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi WHERE MONTH(tanggal) = MONTH(NOW()) AND YEAR(tanggal) = YEAR(NOW())"))['total'] ?? 0;
+$res = mysqli_query($koneksi, "SELECT COALESCE(SUM(jumlah_pajak), 0) as total FROM transaksi");
+$total_pajak = ($res && $row = mysqli_fetch_assoc($res)) ? $row['total'] : 0;
+
+$res = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi");
+$total_transaksi = ($res && $row = mysqli_fetch_assoc($res)) ? $row['total'] : 0;
+
+$res = mysqli_query($koneksi, "SELECT COALESCE(SUM(jumlah_pajak), 0) as total FROM transaksi WHERE MONTH(tanggal) = MONTH(NOW()) AND YEAR(tanggal) = YEAR(NOW())");
+$pajak_bulan_ini = ($res && $row = mysqli_fetch_assoc($res)) ? $row['total'] : 0;
+
+$res = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi WHERE MONTH(tanggal) = MONTH(NOW()) AND YEAR(tanggal) = YEAR(NOW())");
+$transaksi_bulan_ini = ($res && $row = mysqli_fetch_assoc($res)) ? $row['total'] : 0;
 
 // Grafik 7 hari
 $grafik_data = [];
@@ -92,6 +103,11 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
 <?php include '../../includes/sidebar_admin.php'; ?>
 
 <main class="flex-1 w-full lg:ml-72 p-6 md:p-10">
+<body class="text-slate-800 overflow-x-hidden">
+
+<?php include '../../includes/sidebar_admin.php'; ?>
+
+<main class="flex-1 w-full lg:ml-72 p-4 md:p-6 lg:p-8 overflow-x-hidden max-w-full">
     <header class="mb-10 mt-14 lg:mt-0">
         <div class="flex items-center gap-3 mb-4">
             <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white shadow-lg">
@@ -128,6 +144,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
             <div class="flex items-center justify-between mb-2">
                 <span class="text-[9px] font-black text-orange-500 uppercase tracking-widest">Rata-rata Pajak</span>
                 <span class="material-symbols-outlined text-lg text-orange-500">average</span>
+                <span class="material-symbols-outlined text-lg text-orange-500">calculate</span>
             </div>
             <h3 class="text-2xl font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_transaksi > 0 ? $total_pajak / $total_transaksi : 0, 0, ',', '.') ?></h3>
             <p class="text-[11px] text-slate-400 mt-1">per transaksi</p>
@@ -153,6 +170,12 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
             <?php foreach($grafik_data as $g): $height = ($g['nilai'] / $max_val) * 100; ?>
             <div class="flex-1 flex flex-col items-center gap-4 group relative">
                 <div class="absolute -top-10 bg-[#2a2a2a] text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Rp<?= number_format($g['nilai']) ?></div>
+    <div class="bg-white p-6 rounded-xl border border-orange-100 shadow-glow-card mb-8 overflow-hidden">
+        <h3 class="text-base font-extrabold text-[#2a2a2a] mb-4">Pendapatan 7 Hari Terakhir</h3>
+        <div class="flex items-end justify-between h-40 gap-1.5 overflow-x-hidden">
+            <?php foreach($grafik_data as $g): $height = ($g['nilai'] / $max_val) * 100; ?>
+            <div class="flex-1 flex flex-col items-center gap-4 group relative min-w-0">
+                <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-[#2a2a2a] text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">Rp<?= number_format($g['nilai']) ?></div>
                 <div class="w-full max-w-[14px] bg-slate-100 rounded-full relative h-48 overflow-hidden">
                     <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-orange-500 to-orange-400 rounded-full transition-all duration-1000" style="height:<?= $height ?>%"></div>
                 </div>
@@ -165,6 +188,8 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
     <!-- Filter -->
     <div class="bg-white p-5 rounded-xl border border-orange-100 mb-6">
         <form method="GET" class="flex flex-wrap gap-4">
+    <div class="bg-white p-5 rounded-xl border border-orange-100 mb-6 overflow-x-hidden">
+        <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
                 <label class="block text-xs font-bold text-slate-600 mb-2">Tanggal</label>
                 <input type="date" name="tanggal" value="<?= htmlspecialchars($filterTanggal) ?>" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
@@ -189,6 +214,15 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                 </a>
                 <button type="button" onclick="window.print()" class="bg-slate-600 text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-slate-700 transition-all">
                     <span class="material-symbols-outlined inline mr-1 text-sm">print</span>Cetak
+            <div class="flex flex-col sm:flex-row gap-2 lg:col-span-5">
+                <button type="submit" class="bg-primary-orange text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-orange-600 transition-all flex items-center justify-center gap-1 flex-1 sm:flex-none">
+                    <span class="material-symbols-outlined text-sm">search</span>Filter
+                </button>
+                <a href="laporan_pendapatan_admin.php" class="bg-slate-200 text-slate-700 px-5 py-2 rounded-lg font-bold text-sm hover:bg-slate-300 transition-all flex items-center justify-center gap-1 flex-1 sm:flex-none">
+                    <span class="material-symbols-outlined text-sm">refresh</span>Reset
+                </a>
+                <button type="button" onclick="window.print()" class="bg-slate-600 text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-slate-700 transition-all flex items-center justify-center gap-1 flex-1 sm:flex-none">
+                    <span class="material-symbols-outlined text-sm">print</span>Cetak
                 </button>
             </div>
         </form>
@@ -210,6 +244,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                         <th class="px-4 py-2 text-left font-bold text-slate-700">Kantin</th>
                         <th class="px-4 py-2 text-right font-bold text-slate-700">Total Pesanan</th>
                         <th class="px-4 py-2 text-right font-bold text-slate-700">Biaya Layanan (500)</th>
+                        <th class="px-4 py-2 text-right font-bold text-slate-700">Pajak (1000)</th>
                         <th class="px-4 py-2 text-left font-bold text-slate-700">Metode</th>
                     </tr>
                 </thead>
@@ -231,7 +266,11 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                             <td class="px-6 py-4 text-right font-bold text-slate-900">Rp <?= number_format($detail['total_harga'] ?? 0, 0, ',', '.') ?></td>
                             <td class="px-6 py-4 text-right">
                                 <span class="px-3 py-1 rounded-full text-sm font-bold text-white bg-gradient-to-r from-yellow-400 to-orange-500">
+<<<<<<< HEAD
                                     Rp <?= number_format($detail['jumlah_pajak'] ?? 500, 0, ',', '.') ?>
+=======
+                                    Rp <?= number_format($detail['jumlah_pajak'] ?? 1000, 0, ',', '.') ?>
+>>>>>>> 2e6b11f (pesan perubahan)
                                 </span>
                             </td>
                             <td class="px-6 py-4">

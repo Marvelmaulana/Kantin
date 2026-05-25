@@ -196,7 +196,7 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
         ::-webkit-scrollbar-thumb:hover { background: #E25E3E; }
     </style>
 </head>
-<body class="text-slate-800 flex">
+<body class="text-slate-800 flex overflow-x-hidden">
 
 <?php include '../../includes/sidebar_admin.php'; ?>
 

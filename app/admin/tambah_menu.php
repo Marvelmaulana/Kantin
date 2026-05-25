@@ -57,7 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_menu'])) {
     <title>Tambah Menu - Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="text-slate-800 flex">
+<body class="text-slate-800 flex overflow-x-hidden">
 
 <?php include '../../includes/sidebar_admin.php'; ?>
 

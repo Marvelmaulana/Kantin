@@ -281,6 +281,9 @@ if (!function_exists('kk_upload_url')) {
 // Fungsi untuk membuat entry transaksi (biaya layanan) ketika pesanan diselesaikan
 if (!function_exists('kk_create_transaction')) {
     function kk_create_transaction($koneksi, $id_pesanan, $jumlah_pajak = 500, $metode_pembayaran = 'Cash') {
+// Fungsi untuk membuat entry transaksi (pajak) ketika pesanan diselesaikan
+if (!function_exists('kk_create_transaction')) {
+    function kk_create_transaction($koneksi, $id_pesanan, $jumlah_pajak = 1000, $metode_pembayaran = 'Cash') {
         if (!$id_pesanan) return false;
         
         // Cek apakah transaksi sudah ada untuk pesanan ini
@@ -314,6 +317,10 @@ if (!function_exists('kk_create_transaction')) {
 if (!function_exists('kk_checkout_tax')) {
     function kk_checkout_tax() {
         return 500; // Biaya layanan tetap 500 per transaksi
+// Fungsi untuk mendapatkan pajak checkout
+if (!function_exists('kk_checkout_tax')) {
+    function kk_checkout_tax() {
+        return 1000; // Pajak tetap 1000 per transaksi
     }
 }
 ?>

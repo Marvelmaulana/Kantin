@@ -57,11 +57,11 @@ $current_page = basename(parse_url($request_path, PHP_URL_PATH));
 
         <div class="px-1">
             <div class="text-xs font-black text-orange-100 uppercase tracking-wider px-4 py-3">Laporan</div>
-            <a href="laporan_transaksi.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
+            <a href="laporan_transaksi.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all <?= ($current_page == 'laporan_transaksi.php') ? 'bg-orange-700/90 text-white' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
                 <span class="material-symbols-outlined">receipt_long</span>
                 <span class="text-sm">Laporan Transaksi</span>
             </a>
-            <a href="laporan_penjualan.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
+            <a href="laporan_penjualan.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all <?= ($current_page == 'laporan_penjualan.php') ? 'bg-orange-700/90 text-white' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
                 <span class="material-symbols-outlined">bar_chart</span>
                 <span class="text-sm">Laporan Penjualan</span>
             </a>
@@ -70,10 +70,15 @@ $current_page = basename(parse_url($request_path, PHP_URL_PATH));
                 <span class="text-sm">Pendapatan Admin</span>
             </a>
             <a href="laporan_kantin.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
+            <a href="laporan_pendapatan_admin.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all <?= ($current_page == 'laporan_pendapatan_admin.php') ? 'bg-orange-700/90 text-white' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
+                <span class="material-symbols-outlined">attach_money</span>
+                <span class="text-sm">Pendapatan Admin</span>
+            </a>
+            <a href="laporan_kantin.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all <?= ($current_page == 'laporan_kantin.php') ? 'bg-orange-700/90 text-white' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
                 <span class="material-symbols-outlined">domain</span>
                 <span class="text-sm">Laporan Kantin</span>
             </a>
-            <a href="laporan_pembeli.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
+            <a href="laporan_pembeli.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all <?= ($current_page == 'laporan_pembeli.php') ? 'bg-orange-700/90 text-white' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
                 <span class="material-symbols-outlined">person</span>
                 <span class="text-sm">Laporan Pembeli</span>
             </a>
@@ -95,6 +100,27 @@ $current_page = basename(parse_url($request_path, PHP_URL_PATH));
 </aside>
 
 <script>
+    // Restore sidebar scroll position saat halaman load
+    window.addEventListener('load', function() {
+        const nav = document.querySelector('nav');
+        if (nav) {
+            const savedScrollPos = sessionStorage.getItem('sidebar-scroll-pos');
+            if (savedScrollPos !== null) {
+                nav.scrollTop = parseInt(savedScrollPos);
+            }
+        }
+    });
+
+    // Simpan scroll position sebelum navigasi
+    document.querySelectorAll('nav a').forEach(link => {
+        link.addEventListener('click', function() {
+            const nav = document.querySelector('nav');
+            if (nav) {
+                sessionStorage.setItem('sidebar-scroll-pos', nav.scrollTop);
+            }
+        });
+    });
+
     function toggleSidebar() {
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('overlay');

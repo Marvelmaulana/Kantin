@@ -90,7 +90,7 @@ if (!$max_val || $max_val <= 0) {
         .overflow-x-auto { -webkit-overflow-scrolling: touch; }
     </style>
 </head>
-<body class="bg-bg-soft text-slate-800 flex">
+<body class="bg-bg-soft text-slate-800 flex overflow-x-hidden">
 
 <?php include '../../includes/sidebar_admin.php'; ?>
 
@@ -99,6 +99,11 @@ if (!$max_val || $max_val <= 0) {
         <div>
             <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#2a2a2a] tracking-tight"><?= t('admin.dashboard_overview') ?></h2>
             <p class="text-orange-700 font-semibold text-sm sm:text-base mt-2"><?= t('admin.dashboard_subtitle') ?></p>
+<main class="flex-1 w-full lg:ml-72 p-4 md:p-6 lg:p-8 overflow-x-hidden max-w-full">
+    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 mt-14 lg:mt-0">
+        <div>
+            <h2 class="text-3xl md:text-4xl font-extrabold text-[#2a2a2a] tracking-tight"><?= t('admin.dashboard_overview') ?></h2>
+            <p class="text-orange-700 font-semibold mt-2"><?= t('admin.dashboard_subtitle') ?></p>
         </div>
         <div class="flex flex-wrap items-center gap-3 sm:gap-4 w-full sm:w-auto">
             <div class="bg-white px-4 sm:px-5 py-2 sm:py-3 rounded-2xl border border-orange-100 flex items-center gap-2 sm:gap-3 shadow-glow-card text-xs sm:text-sm font-bold text-orange-700">
@@ -271,6 +276,48 @@ if (!$max_val || $max_val <= 0) {
                         </tbody>
                     </table>
                 </div>
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
+        <a href="manajemen_kantin.php" class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
+            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">storefront</span></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Kantin</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_kantin) ?></h3></div>
+        </a>
+        <a href="manajemen_penjual.php" class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
+            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">store</span></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Penjual</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_penjual) ?></h3></div>
+        </a>
+        <a href="manajemen_user.php" class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
+            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-500 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">group</span></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Pembeli</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_pembeli) ?></h3></div>
+        </a>
+        <a href="manajemen_menu.php" class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 shadow-glow-card relative overflow-hidden hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
+            <div class="absolute -top-10 -right-6 w-24 h-24 rounded-full bg-orange-100/70 blur-2xl"></div>
+            <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">Jumlah Menu</p>
+            <h3 class="text-xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_menu) ?></h3>
+        </a>
+        <a href="laporan_transaksi.php" class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
+            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-400 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">receipt_long</span></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Transaksi</p><h3 class="text-xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_transaksi) ?></h3></div>
+        </a>
+        <a href="laporan_penjualan.php" class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
+            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">attach_money</span></div>
+            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Pendapatan Admin</p><h3 class="text-xl font-extrabold text-[#2a2a2a]">Rp <?= number_format($pendapatan_admin, 0, ',', '.') ?></h3></div>
+        </a>
+    </section>
+
+    <!-- Grafik -->
+    <div class="grid grid-cols-1 gap-8 mb-10">
+        <div class="bg-white p-8 md:p-10 rounded-4xl shadow-sm border border-slate-50">
+            <h4 class="text-xl font-extrabold text-[#003049] mb-8"><?= t('admin.sales_statistics') ?></h4>
+            <div class="flex items-end justify-between h-64 gap-2">
+                <?php foreach($grafik_data as $g): $height = ($g['nilai'] / $max_val) * 100; ?>
+                <div class="flex-1 flex flex-col items-center gap-4 group relative">
+                    <div class="absolute -top-10 bg-[#003049] text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Rp<?= number_format($g['nilai']) ?></div>
+                    <div class="w-full max-w-[12px] bg-slate-50 rounded-full relative h-48 overflow-hidden">
+                        <div class="absolute bottom-0 left-0 w-full bg-primary-orange rounded-full transition-all duration-1000" style="height:<?= $height ?>%"></div>
+                    </div>
+                    <span class="text-[10px] font-black <?= $g['is_today'] ? 'text-primary-orange' : 'text-slate-300' ?>"><?= $g['label'] ?></span>
+                </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </div>

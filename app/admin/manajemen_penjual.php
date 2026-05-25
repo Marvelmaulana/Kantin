@@ -57,7 +57,7 @@ $total_penjual = mysqli_num_rows($query);
         ::-webkit-scrollbar-thumb { background: #E25E3E; border-radius: 10px; }
     </style>
 </head>
-<body class="text-slate-800 flex">
+<body class="text-slate-800 flex overflow-x-hidden">
 
 <?php include '../../includes/sidebar_admin.php'; ?>
 
