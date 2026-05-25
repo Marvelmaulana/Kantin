@@ -20,7 +20,7 @@ $search = mysqli_real_escape_string($koneksi, trim($_GET['search'] ?? ''));
 
 $sql = "SELECT k.*, u.username AS pemilik FROM kantin k LEFT JOIN users u ON k.id_user=u.id_user";
 if ($search !== '') {
-    $sql .= " WHERE (k.nama_kantin LIKE '%$search%' OR k.lokasi LIKE '%$search%' OR k.deskripsi LIKE '%$search%' OR u.username LIKE '%$search%')";
+    $sql .= " WHERE (k.nama_kantin LIKE '%$search%' OR k.deskripsi LIKE '%$search%' OR u.username LIKE '%$search%')";
 }
 $sql .= " ORDER BY k.id_kantin DESC";
 $query = mysqli_query($koneksi, $sql);
@@ -59,7 +59,7 @@ $total_kantin = mysqli_num_rows($query);
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
             <form method="GET" class="relative w-full sm:w-[320px]">
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
-                <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari kantin, lokasi, atau pemilik..." class="pl-12 pr-4 py-3 w-full rounded-2xl border border-slate-200 focus:border-primary-orange focus:ring-primary-orange/20" />
+                <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari kantin atau pemilik..." class="pl-12 pr-4 py-3 w-full rounded-2xl border border-slate-200 focus:border-primary-orange focus:ring-primary-orange/20" />
             </form>
             <a href="tambah_kantin.php" class="bg-primary-orange text-white px-4 py-2 rounded-2xl font-bold shadow-lg hover:bg-orange-600 transition-all">Tambah Kantin</a>
         </div>
