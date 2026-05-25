@@ -40,7 +40,6 @@ if (isset($koneksi) && $koneksi) {
 }
 ?>
 <style>
-/* Gen-Z Buyer Sidebar Styles */
 @media (min-width:1024px){
     body{padding-left:18rem!important;padding-bottom:2rem!important;}
     body>header{left:18rem!important;right:0!important;width:auto!important;max-width:none!important;}
