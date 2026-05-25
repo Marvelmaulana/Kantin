@@ -22,7 +22,6 @@ $current_page = basename(parse_url($request_path, PHP_URL_PATH));
         </div>
         <div>
             <h1 class="text-2xl font-black text-white leading-tight tracking-wide">Kantin Kita</h1>
-            <p class="text-[9px] font-extrabold text-orange-100 uppercase tracking-[0.25em] mt-1">Gen-Z Kantin Vibes</p>
         </div>
     </div>
 
@@ -65,6 +64,10 @@ $current_page = basename(parse_url($request_path, PHP_URL_PATH));
             <a href="laporan_penjualan.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
                 <span class="material-symbols-outlined">bar_chart</span>
                 <span class="text-sm">Laporan Penjualan</span>
+            </a>
+            <a href="laporan_pendapatan_admin.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
+                <span class="material-symbols-outlined">attach_money</span>
+                <span class="text-sm">Pendapatan Admin</span>
             </a>
             <a href="laporan_kantin.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
                 <span class="material-symbols-outlined">domain</span>

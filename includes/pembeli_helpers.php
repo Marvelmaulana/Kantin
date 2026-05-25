@@ -207,7 +207,7 @@ if (!function_exists('kk_is_menu_available')) {
 
 if (!function_exists('kk_checkout_tax')) {
     function kk_checkout_tax() {
-        return 1000;
+        return 500;
     }
 }
 
@@ -275,6 +275,45 @@ if (!function_exists('kk_upload_url')) {
         }
 
         return $fallbacks[$kind] ?? $fallbacks['menu'];
+    }
+}
+
+// Fungsi untuk membuat entry transaksi (biaya layanan) ketika pesanan diselesaikan
+if (!function_exists('kk_create_transaction')) {
+    function kk_create_transaction($koneksi, $id_pesanan, $jumlah_pajak = 500, $metode_pembayaran = 'Cash') {
+        if (!$id_pesanan) return false;
+        
+        // Cek apakah transaksi sudah ada untuk pesanan ini
+        $cek = mysqli_query($koneksi, "SELECT id_transaksi FROM transaksi WHERE id_pesanan = $id_pesanan LIMIT 1");
+        if ($cek && mysqli_num_rows($cek) > 0) {
+            return true; // Transaksi sudah ada
+        }
+        
+        $jumlah_pajak = max(0, (float)$jumlah_pajak);
+        $metode = mysqli_real_escape_string($koneksi, $metode_pembayaran ?: 'Cash');
+        
+        // Ambil data pesanan
+        $q = mysqli_query($koneksi, "SELECT id_user, id_kantin, total_harga FROM pesanan WHERE id_pesanan = $id_pesanan");
+        if (!$q || mysqli_num_rows($q) === 0) {
+            return false;
+        }
+        
+        $pesanan = mysqli_fetch_assoc($q);
+        
+        // Buat entry transaksi
+        $result = mysqli_query($koneksi, "
+            INSERT INTO transaksi (id_user, id_kantin, id_pesanan, total_harga, jumlah_pajak, metode_pembayaran, tanggal, status)
+            VALUES ({$pesanan['id_user']}, {$pesanan['id_kantin']}, $id_pesanan, {$pesanan['total_harga']}, $jumlah_pajak, '$metode', NOW(), 'Berhasil')
+        ");
+        
+        return $result ? true : false;
+    }
+}
+
+// Fungsi untuk mendapatkan biaya layanan checkout
+if (!function_exists('kk_checkout_tax')) {
+    function kk_checkout_tax() {
+        return 500; // Biaya layanan tetap 500 per transaksi
     }
 }
 ?>

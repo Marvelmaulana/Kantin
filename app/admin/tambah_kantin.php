@@ -96,21 +96,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         }
                     }
                 }
-                    $logo_insert = $logo ? "'$logo'" : 'NULL';
-                    $banner_insert = $banner ? "'$banner'" : 'NULL';
-                    $insert_kantin = mysqli_query($koneksi, "INSERT INTO kantin (id_user,nama_kantin,deskripsi,logo,banner,jam_buka,jam_tutup,tipe_operasi,status_buka,created_at) VALUES ($id_user,'$nama_kantin','$deskripsi',$logo_insert,$banner_insert,'$jam_buka','$jam_tutup','$tipe_operasi','$status_buka',NOW())");
+                
+                $logo_insert = $logo ? "'$logo'" : 'NULL';
+                $banner_insert = $banner ? "'$banner'" : 'NULL';
+                $insert_kantin = mysqli_query($koneksi, "INSERT INTO kantin (id_user,nama_kantin,deskripsi,logo,banner,jam_buka,jam_tutup,tipe_operasi,status_buka,created_at) VALUES ($id_user,'$nama_kantin','$deskripsi',$logo_insert,$banner_insert,'$jam_buka','$jam_tutup','$tipe_operasi','$status_buka',NOW())");
 
-                    if ($insert_kantin) {
-                        $kantin_id = mysqli_insert_id($koneksi);
-                        mysqli_query($koneksi, "UPDATE users SET id_kantin = $kantin_id, nama_kantin = '$nama_kantin' WHERE id_user = $id_user AND role='penjual'");
-                        $message = 'Kantin berhasil ditambahkan! Password default: kantin123';
-                        $message_type = 'success';
-                    } else {
-                        $message = 'Gagal membuat kantin: ' . mysqli_error($koneksi);
-                        $message_type = 'error';
-                        if (!$owner_id && isset($id_user)) {
-                            mysqli_query($koneksi, "DELETE FROM users WHERE id_user = $id_user");
-                        }
+                if ($insert_kantin) {
+                    $kantin_id = mysqli_insert_id($koneksi);
+                    mysqli_query($koneksi, "UPDATE users SET id_kantin = $kantin_id, nama_kantin = '$nama_kantin' WHERE id_user = $id_user AND role='penjual'");
+                    $message = 'Kantin berhasil ditambahkan! Password default: kantin123';
+                    $message_type = 'success';
+                } else {
+                    $message = 'Gagal membuat kantin: ' . mysqli_error($koneksi);
+                    $message_type = 'error';
+                    if (!$owner_id && isset($id_user)) {
+                        mysqli_query($koneksi, "DELETE FROM users WHERE id_user = $id_user");
                     }
                 }
             }
@@ -180,21 +180,35 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
             height: 100%;
             object-fit: cover;
         }
+        
+        /* Responsive utilities */
+        @media (max-width: 640px) {
+            main { padding: 1rem !important; }
+            .space-y-8 > * + * { margin-top: 1.5rem !important; }
+            .grid { gap: 1rem !important; }
+            button, a { font-size: 0.875rem !important; padding: 0.75rem 1rem !important; }
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f3f4f6; }
+        ::-webkit-scrollbar-thumb { background: #FF8C20; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #E25E3E; }
     </style>
 </head>
 <body class="text-slate-800 flex">
 
 <?php include '../../includes/sidebar_admin.php'; ?>
 
-<main class="flex-1 w-full lg:ml-72 p-4 md:p-10 min-h-screen">
-    <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 mt-14 lg:mt-0">
-        <div class="flex items-center gap-4">
-            <a href="manajemen_penjual.php" class="hidden md:flex w-12 h-12 rounded-2xl bg-white border border-slate-100 items-center justify-center text-slate-400 hover:text-primary-orange transition-all shadow-sm">
-                <span class="material-symbols-outlined">arrow_back</span>
+<main class="flex-1 w-full lg:ml-72 p-4 sm:p-6 md:p-10 min-h-screen">
+    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-10 mt-14 lg:mt-0">
+        <div class="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+            <a href="manajemen_penjual.php" class="flex w-10 sm:w-12 h-10 sm:h-12 rounded-2xl bg-white border border-slate-100 items-center justify-center text-slate-400 hover:text-primary-orange transition-all shadow-sm flex-shrink-0">
+                <span class="material-symbols-outlined text-lg sm:text-2xl">arrow_back</span>
             </a>
-            <div>
-                <h2 class="text-3xl font-extrabold text-[#003049]">Tambah Kantin Baru</h2>
-                <p class="text-slate-400 font-medium text-sm">Mendaftarkan penjual dan kantin baru ke platform</p>
+            <div class="flex-1 min-w-0">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-[#003049] truncate">Tambah Kantin Baru</h2>
+                <p class="text-slate-400 font-medium text-xs sm:text-sm mt-1 line-clamp-1">Mendaftarkan penjual dan kantin baru ke platform</p>
             </div>
         </div>
     </header>
@@ -410,14 +424,14 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
         </div>
 
         <!-- TOMBOL -->
-        <div class="flex gap-4 pb-10">
-            <button type="submit" class="bg-gradient-to-r from-primary-orange to-red-500 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+        <div class="flex flex-col sm:flex-row gap-3 pb-10">
+            <button type="submit" class="flex-1 sm:flex-none bg-gradient-to-r from-primary-orange to-red-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-bold text-sm sm:text-base shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
                 <span class="material-symbols-outlined">add_business</span>
-                Tambahkan Kantin
+                <span>Tambahkan Kantin</span>
             </button>
-            <a href="manajemen_penjual.php" class="bg-slate-100 text-slate-600 px-8 py-4 rounded-2xl font-bold hover:bg-slate-200 transition-all flex items-center justify-center gap-2">
+            <a href="manajemen_penjual.php" class="flex-1 sm:flex-none bg-slate-100 text-slate-600 px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-bold text-sm sm:text-base hover:bg-slate-200 transition-all flex items-center justify-center gap-2">
                 <span class="material-symbols-outlined">arrow_back</span>
-                Batal
+                <span>Batal</span>
             </a>
         </div>
     </form>

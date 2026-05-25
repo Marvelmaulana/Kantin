@@ -7,52 +7,62 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
-// Ambil data transaksi
-$query_transaksi = mysqli_query($koneksi, "
-    SELECT t.*, u.username, u.email,
-           k.nama_kantin,
-           COUNT(dp.id_detail) as total_item
-    FROM transaksi t
-    LEFT JOIN users u ON t.id_user = u.id_user
-    LEFT JOIN kantin k ON t.id_kantin = k.id_kantin
-    LEFT JOIN detail_transaksi dt ON t.id_transaksi = dt.id_transaksi
-    LEFT JOIN detail_pesanan dp ON dp.id_pesanan IN (SELECT id_pesanan FROM pesanan WHERE id_user = t.id_user)
-    GROUP BY t.id_transaksi
-    ORDER BY t.tanggal DESC
-    LIMIT 100
-");
-
-// Statistik
-$total_transaksi = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi"))['total'] ?? 0;
-$total_pendapatan = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COALESCE(SUM(total_harga),0) as total FROM transaksi WHERE status='Selesai'"))['total'] ?? 0;
-$transaksi_pending = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi WHERE status='Pending'"))['total'] ?? 0;
-$transaksi_selesai = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi WHERE status='Selesai'"))['total'] ?? 0;
-
-// Filter
+// === FILTER INPUT ===
 $filter_status = $_GET['status'] ?? '';
-$filterTanggal = $_GET['tanggal'] ?? '';
+$filter_tanggal = $_GET['tanggal'] ?? '';
+$halaman = isset($_GET['halaman']) ? max(1, (int)$_GET['halaman']) : 1;
+$per_halaman = 10;
+$offset = ($halaman - 1) * $per_halaman;
 
-$where = [];
+// === BUILD WHERE CLAUSE ===
+$where_conditions = [];
 if ($filter_status) {
     $safe_status = mysqli_real_escape_string($koneksi, $filter_status);
-    $where[] = "t.status = '$safe_status'";
+    $where_conditions[] = "t.status = '$safe_status'";
 }
-if ($filterTanggal) {
-    $safe_tanggal = mysqli_real_escape_string($koneksi, $filterTanggal);
-    $where[] = "DATE(t.tanggal) = '$safe_tanggal'";
+if ($filter_tanggal) {
+    $safe_tanggal = mysqli_real_escape_string($koneksi, $filter_tanggal);
+    $where_conditions[] = "DATE(t.tanggal) = '$safe_tanggal'";
 }
 
-$where_sql = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
+$where_clause = count($where_conditions) > 0 ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
 
-$query_filtered = mysqli_query($koneksi, "
-    SELECT t.*, u.username, u.email, k.nama_kantin
+// === STATISTIK (DENGAN FILTER) ===
+$stat_total = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi t $where_clause"))['total'] ?? 0;
+
+$stat_selesai = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi t WHERE t.status='Selesai' AND " . ($where_clause ? str_replace('WHERE ', '', $where_clause) : '1=1')))['total'] ?? 0;
+
+$stat_pending = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi t WHERE t.status='Pending' AND " . ($where_clause ? str_replace('WHERE ', '', $where_clause) : '1=1')))['total'] ?? 0;
+
+$result_pendapatan = mysqli_query($koneksi, "SELECT COALESCE(SUM(t.total_harga), 0) as total FROM transaksi t WHERE t.status='Selesai' AND " . ($where_clause ? str_replace('WHERE ', '', $where_clause) : '1=1'));
+$stat_pendapatan = $result_pendapatan ? mysqli_fetch_assoc($result_pendapatan)['total'] : 0;
+
+// === QUERY DATA TRANSAKSI (DENGAN PAGINATION) ===
+$query_data = mysqli_query($koneksi, "
+    SELECT t.id_transaksi, t.id_user, t.id_kantin, t.total_harga, t.status, t.tanggal,
+           u.username, u.email,
+           k.nama_kantin
     FROM transaksi t
     LEFT JOIN users u ON t.id_user = u.id_user
     LEFT JOIN kantin k ON t.id_kantin = k.id_kantin
-    $where_sql
+    $where_clause
     ORDER BY t.tanggal DESC
-    LIMIT 100
+    LIMIT $offset, $per_halaman
 ");
+
+if (!$query_data) {
+    die("Error query data: " . mysqli_error($koneksi));
+}
+
+// === HITUNG TOTAL HALAMAN ===
+$result_count = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi t $where_clause");
+$total_data = $result_count ? mysqli_fetch_assoc($result_count)['total'] : 0;
+$total_halaman = ceil($total_data / $per_halaman);
+
+// Pastikan halaman tidak melebihi total
+if ($halaman > $total_halaman && $total_halaman > 0) {
+    $halaman = $total_halaman;
+}
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -126,7 +136,7 @@ $query_filtered = mysqli_query($koneksi, "
                 </div>
                 <div>
                     <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Total Transaksi</p>
-                    <h3 class="text-lg md:text-xl font-extrabold text-[#2a2a2a]"><?= number_format($total_transaksi) ?></h3>
+                    <h3 class="text-lg md:text-xl font-extrabold text-[#2a2a2a]"><?= number_format($stat_total) ?></h3>
                 </div>
             </div>
         </div>
@@ -137,7 +147,7 @@ $query_filtered = mysqli_query($koneksi, "
                 </div>
                 <div>
                     <p class="text-[10px] font-black text-green-500 uppercase tracking-widest">Selesai</p>
-                    <h3 class="text-lg md:text-xl font-extrabold text-[#2a2a2a]"><?= number_format($transaksi_selesai) ?></h3>
+                    <h3 class="text-lg md:text-xl font-extrabold text-[#2a2a2a]"><?= number_format($stat_selesai) ?></h3>
                 </div>
             </div>
         </div>
@@ -148,7 +158,7 @@ $query_filtered = mysqli_query($koneksi, "
                 </div>
                 <div>
                     <p class="text-[10px] font-black text-yellow-500 uppercase tracking-widest">Pending</p>
-                    <h3 class="text-lg md:text-xl font-extrabold text-[#2a2a2a]"><?= number_format($transaksi_pending) ?></h3>
+                    <h3 class="text-lg md:text-xl font-extrabold text-[#2a2a2a]"><?= number_format($stat_pending) ?></h3>
                 </div>
             </div>
         </div>
@@ -159,7 +169,7 @@ $query_filtered = mysqli_query($koneksi, "
                 </div>
                 <div>
                     <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">Total Pendapatan</p>
-                    <h3 class="text-sm md:text-lg font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_pendapatan, 0, ',', '.') ?></h3>
+                    <h3 class="text-sm md:text-lg font-extrabold text-[#2a2a2a]">Rp <?= number_format($stat_pendapatan, 0, ',', '.') ?></h3>
                 </div>
             </div>
         </div>
@@ -180,7 +190,7 @@ $query_filtered = mysqli_query($koneksi, "
             </div>
             <div class="flex-1">
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Tanggal</label>
-                <input type="date" name="tanggal" value="<?= htmlspecialchars($filterTanggal) ?>" class="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-orange/20">
+                <input type="date" name="tanggal" value="<?= htmlspecialchars($filter_tanggal) ?>" class="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-orange/20">
             </div>
             <div class="flex items-end gap-2">
                 <button type="submit" class="bg-primary-orange text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all text-sm whitespace-nowrap">
@@ -199,7 +209,7 @@ $query_filtered = mysqli_query($koneksi, "
             <h3 class="font-extrabold text-[#003049] text-lg flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary-orange">list_alt</span>
                 Data Transaksi
-                <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-xl text-xs font-bold ml-2"><?= mysqli_num_rows($query_filtered) ?></span>
+                <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-xl text-xs font-bold ml-2"><?= number_format($total_data) ?></span>
             </h3>
         </div>
 
@@ -207,18 +217,21 @@ $query_filtered = mysqli_query($koneksi, "
             <table class="w-full mobile-card">
                 <thead class="bg-slate-50 text-xs font-black text-slate-500 uppercase tracking-wider">
                     <tr>
+                        <th class="px-4 py-4 text-left">No</th>
                         <th class="px-4 py-4 text-left">ID</th>
                         <th class="px-4 py-4 text-left">Pengguna</th>
                         <th class="px-4 py-4 text-left hidden sm:table-cell">Kantin</th>
                         <th class="px-4 py-4 text-left">Tanggal</th>
-                        <th class="px-4 py-4 text-left">Total</th>
+                        <th class="px-4 py-4 text-right">Total</th>
                         <th class="px-4 py-4 text-left">Status</th>
                         <th class="px-4 py-4 text-center">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
-                    <?php if (mysqli_num_rows($query_filtered) > 0): ?>
-                        <?php while ($row = mysqli_fetch_assoc($query_filtered)):
+                    <?php if (mysqli_num_rows($query_data) > 0): ?>
+                        <?php 
+                        $no = $offset + 1;
+                        while ($row = mysqli_fetch_assoc($query_data)):
                             $statusClass = match($row['status']) {
                                 'Selesai' => 'bg-green-100 text-green-700',
                                 'Diproses' => 'bg-blue-100 text-blue-700',
@@ -228,7 +241,10 @@ $query_filtered = mysqli_query($koneksi, "
                             };
                         ?>
                         <tr class="hover:bg-orange-50/50 transition-colors">
-                            <td class="px-4 py-4" data-label="ID">#<?= $row['id_transaksi'] ?></td>
+                            <td class="px-4 py-4 font-bold text-slate-500" data-label="No"><?= $no++ ?></td>
+                            <td class="px-4 py-4" data-label="ID">
+                                <span class="font-bold text-primary-orange">#<?= htmlspecialchars($row['id_transaksi']) ?></span>
+                            </td>
                             <td class="px-4 py-4" data-label="Pengguna">
                                 <div class="flex items-center gap-3">
                                     <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-xs font-bold uppercase shrink-0">
@@ -240,15 +256,17 @@ $query_filtered = mysqli_query($koneksi, "
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-4 hidden sm:table-cell" data-label="Kantin"><?= htmlspecialchars($row['nama_kantin'] ?? '-') ?></td>
+                            <td class="px-4 py-4 hidden sm:table-cell" data-label="Kantin">
+                                <span class="text-sm font-semibold"><?= htmlspecialchars($row['nama_kantin'] ?? '-') ?></span>
+                            </td>
                             <td class="px-4 py-4" data-label="Tanggal">
                                 <div>
                                     <p class="text-sm font-semibold"><?= date('d M Y', strtotime($row['tanggal'])) ?></p>
                                     <p class="text-xs text-slate-400"><?= date('H:i', strtotime($row['tanggal'])) ?></p>
                                 </div>
                             </td>
-                            <td class="px-4 py-4" data-label="Total">
-                                <span class="font-bold text-primary-orange">Rp <?= number_format($row['total_harga'], 0, ',', '.') ?></span>
+                            <td class="px-4 py-4 text-right" data-label="Total">
+                                <span class="font-bold text-primary-orange text-sm">Rp <?= number_format($row['total_harga'], 0, ',', '.') ?></span>
                             </td>
                             <td class="px-4 py-4" data-label="Status">
                                 <span class="px-3 py-1.5 rounded-lg text-xs font-bold <?= $statusClass ?>">
@@ -256,15 +274,17 @@ $query_filtered = mysqli_query($koneksi, "
                                 </span>
                             </td>
                             <td class="px-4 py-4 text-center" data-label="Aksi">
-                                <a href="detail_transaksi.php?id=<?= $row['id_transaksi'] ?>" class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-orange-100 text-primary-orange hover:bg-primary-orange hover:text-white transition-all">
-                                    <span class="material-symbols-outlined text-sm">visibility</span>
-                                </a>
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="detail_transaksi.php?id=<?= $row['id_transaksi'] ?>" class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-orange-100 text-primary-orange hover:bg-primary-orange hover:text-white transition-all" title="Lihat Detail">
+                                        <span class="material-symbols-outlined text-sm">visibility</span>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="7" class="px-4 py-16 text-center">
+                            <td colspan="8" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center text-slate-300">
                                     <span class="material-symbols-outlined text-5xl">receipt_long</span>
                                     <p class="mt-3 font-bold text-slate-400">Belum ada transaksi</p>
@@ -275,6 +295,53 @@ $query_filtered = mysqli_query($koneksi, "
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination -->
+        <?php if ($total_halaman > 1): ?>
+        <div class="px-4 md:px-6 py-4 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p class="text-sm text-slate-500 font-semibold">
+                Menampilkan <?= $offset + 1 ?> - <?= min($offset + $per_halaman, $total_data) ?> dari <?= number_format($total_data) ?> data
+            </p>
+            <div class="flex items-center gap-2">
+                <?php if ($halaman > 1): ?>
+                    <a href="?halaman=1<?= $filter_status ? '&status=' . urlencode($filter_status) : '' ?><?= $filter_tanggal ? '&tanggal=' . urlencode($filter_tanggal) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-all text-sm">
+                        &laquo; Awal
+                    </a>
+                    <a href="?halaman=<?= $halaman - 1 ?><?= $filter_status ? '&status=' . urlencode($filter_status) : '' ?><?= $filter_tanggal ? '&tanggal=' . urlencode($filter_tanggal) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-all text-sm">
+                        &lsaquo; Sebelumnya
+                    </a>
+                <?php endif; ?>
+                
+                <div class="flex items-center gap-1">
+                    <?php
+                    $start_page = max(1, $halaman - 2);
+                    $end_page = min($total_halaman, $halaman + 2);
+                    
+                    for ($i = $start_page; $i <= $end_page; $i++):
+                    ?>
+                        <?php if ($i == $halaman): ?>
+                            <span class="px-3 py-2 rounded-lg bg-primary-orange text-white font-bold text-sm">
+                                <?= $i ?>
+                            </span>
+                        <?php else: ?>
+                            <a href="?halaman=<?= $i ?><?= $filter_status ? '&status=' . urlencode($filter_status) : '' ?><?= $filter_tanggal ? '&tanggal=' . urlencode($filter_tanggal) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-all text-sm">
+                                <?= $i ?>
+                            </a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+                </div>
+                
+                <?php if ($halaman < $total_halaman): ?>
+                    <a href="?halaman=<?= $halaman + 1 ?><?= $filter_status ? '&status=' . urlencode($filter_status) : '' ?><?= $filter_tanggal ? '&tanggal=' . urlencode($filter_tanggal) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-all text-sm">
+                        Selanjutnya &rsaquo;
+                    </a>
+                    <a href="?halaman=<?= $total_halaman ?><?= $filter_status ? '&status=' . urlencode($filter_status) : '' ?><?= $filter_tanggal ? '&tanggal=' . urlencode($filter_tanggal) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-all text-sm">
+                        Akhir &raquo;
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 </main>
 </body>
