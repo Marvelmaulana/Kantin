@@ -68,7 +68,6 @@ if (!$max_val || $max_val <= 0) {
         body { font-family:'Plus Jakarta Sans',sans-serif; background: radial-gradient(circle at top left, rgba(251,146,60,.20), transparent 32%), radial-gradient(circle at 80% 20%, rgba(255,183,3,.12), transparent 25%), linear-gradient(180deg,#fff7f1 0%,#fff2e7 38%,#fff9f3 100%); }
         ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-thumb{background:#FF8C20;border-radius:10px}
         .glow-card{box-shadow:0 25px 80px rgba(251,146,60,0.16);}
-        .badge-genz{background:linear-gradient(135deg,#ffb703,#fb8500);color:#fff;}
         .box-fade{animation:fadein .25s ease-out forwards}
         @keyframes fadein{from{opacity:0;transform:scale(.97) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
         .modal-anim{animation:fadein .2s ease-out forwards}

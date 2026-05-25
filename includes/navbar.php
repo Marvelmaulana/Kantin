@@ -100,7 +100,6 @@ if (isset($koneksi) && $koneksi) {
     .kk-buyer-sidebar{width:88vw;}
 }
 
-/* Mobile Bottom Nav - Gen Z Style */
 .kk-mobile-nav {
     background: rgba(255,255,255,0.98);
     backdrop-filter: blur(18px);
@@ -188,7 +187,6 @@ if (isset($koneksi) && $koneksi) {
     </div>
 </aside>
 
-<!-- Mobile Bottom Navigation - Gen Z Style -->
 <nav class="kk-mobile-nav fixed bottom-0 left-0 right-0 z-[70] bg-white/98 backdrop-blur-xl border-t-2 border-orange-100 px-2 pt-2 pb-5 hidden grid-cols-5 gap-1">
     <?php foreach ($buyerNav as [$key, $href, $icon, $label]):
         $active = ($current_page === $key) || ($navBase === $href);
