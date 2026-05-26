@@ -1,4 +1,9 @@
 <?php
+/**
+ * Login Process Handler
+ * Proses login untuk siswa, guru, dan penjual
+ */
+
 // Set session timeout 1 jam
 ini_set('session.gc_maxlifetime', 3600);
 session_set_cookie_params(3600);
@@ -6,78 +11,76 @@ session_set_cookie_params(3600);
 session_start();
 include(__DIR__ . '/../../config/config.php');
 include(__DIR__ . '/../../includes/pembeli_helpers.php');
+include(__DIR__ . '/../../includes/auth_helpers.php');
+
 kk_ensure_buyer_schema($koneksi);
 
 if (isset($_POST['login_btn'])) {
 
-    // Simplified login - only username/email and password
+    // Ambil input dari form
     $user_input_raw = trim($_POST['user_input'] ?? '');
-    $user_input = mysqli_real_escape_string($koneksi, $user_input_raw);
-    $password = mysqli_real_escape_string($koneksi, trim($_POST['password'] ?? ''));
+    $password_raw = trim($_POST['password'] ?? '');
 
-    if (!$user_input || !$password) {
-        echo "<script>alert('Username/Email dan Password tidak boleh kosong!'); window.location='login.php';</script>";
+    // Validasi input tidak kosong
+    if (empty($user_input_raw)) {
+        echo "<script>alert('Username atau Email tidak boleh kosong!'); window.location='login.php';</script>";
         exit();
     }
 
-    // Try to find user (both siswa pembeli and guru penjual)
-    $query = mysqli_query($koneksi, "SELECT * FROM users WHERE (username='$user_input' OR email='$user_input') LIMIT 1");
-    $data = mysqli_fetch_assoc($query);
+    if (empty($password_raw)) {
+        echo "<script>alert('Password tidak boleh kosong!'); window.location='login.php';</script>";
+        exit();
+    }
 
-    if ($data) {
-        // Verify Password
-        if (password_verify($password, $data['password'])) {
-            // Login successful
-            $_SESSION['id_user']  = $data['id_user'];
-            $_SESSION['username'] = $data['username'];
-            $_SESSION['role']     = $data['role'];
-            $_SESSION['status']   = "login";
+    // Escape input untuk keamanan
+    $user_input = mysqli_real_escape_string($koneksi, $user_input_raw);
 
-            // Load language preference
-            $bahasa = $data['bahasa'] ?? 'id';
-            $_SESSION['lang'] = $bahasa;
-            $_SESSION['bahasa'] = $bahasa;
+    // Cari user berdasarkan username atau email
+    $user_data = get_user_by_username_or_email($koneksi, $user_input);
 
-            // Set kelas if available (for students)
-            if (!empty($data['kelas'])) {
-                $_SESSION['kelas'] = $data['kelas'];
-            }
-
-            // If role is penjual (seller), get kantin info
-            if ($data['role'] === 'penjual') {
-                $id_user = $data['id_user'];
-                $query_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kantin WHERE id_penjual = '$id_user' LIMIT 1");
+    if ($user_data) {
+        // Verifikasi password dengan password_verify (secure)
+        if (verify_password($password_raw, $user_data['password'])) {
+            // ✅ Login berhasil - buat session
+            if (create_user_session($user_data)) {
                 
-                if (!$query_kantin) {
-                    echo "<script>alert('Error: Koneksi database gagal: " . mysqli_error($koneksi) . "'); window.location='login.php';</script>";
-                    exit();
+                // Jika penjual, ambil data kantin
+                if ($user_data['role'] === 'penjual') {
+                    $id_user = $user_data['id_user'];
+                    $query_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kantin WHERE id_penjual = '$id_user' LIMIT 1");
+                    
+                    if ($query_kantin) {
+                        $data_kantin = mysqli_fetch_assoc($query_kantin);
+                        if ($data_kantin) {
+                            $_SESSION['id_kantin'] = $data_kantin['id_kantin'];
+                            $_SESSION['nama_kantin'] = $data_kantin['nama_kantin'];
+                        } else {
+                            // Penjual tidak punya kantin
+                            echo "<script>alert('Akun penjual belum memiliki data kantin. Hubungi admin untuk setup kantin Anda.'); window.location='login.php';</script>";
+                            exit();
+                        }
+                    } else {
+                        echo "<script>alert('Error: Database query gagal'); window.location='login.php';</script>";
+                        exit();
+                    }
                 }
-                
-                $data_kantin = mysqli_fetch_assoc($query_kantin);
 
-                if ($data_kantin) {
-                    $_SESSION['id_kantin'] = $data_kantin['id_kantin'];
-                    $_SESSION['nama_kantin'] = $data_kantin['nama_kantin'];
-                    $_SESSION['nama_penjual'] = $data['username'];
-                } else {
-                    echo "<script>alert('Akun penjual belum memiliki data kantin. Hubungi admin untuk mendaftarkan kantin Anda.'); window.location='login.php';</script>";
-                    exit();
-                }
+                // Redirect ke loading page yang akan redirect ke dashboard sesuai role
+                header("Location: loading.php");
+                exit();
+            } else {
+                echo "<script>alert('Gagal membuat session. Silakan coba lagi.'); window.location='login.php';</script>";
+                exit();
             }
-
-            // Redirect to loading.php
-            header("Location: loading.php");
-            exit();
-
         } else {
-            echo "<script>alert('Password salah!'); window.location='login.php';</script>";
+            // ❌ Password salah
+            echo "<script>alert('Password salah! Periksa kembali password Anda.'); window.location='login.php';</script>";
             exit();
         }
     } else {
-        echo "<script>alert('Pengguna tidak ditemukan!'); window.location='login.php';</script>";
+        // ❌ User tidak ditemukan
+        echo "<script>alert('Username atau email tidak terdaftar. Periksa kembali atau daftar akun baru.'); window.location='login.php';</script>";
         exit();
-    }
-}
     }
 }
 ?>

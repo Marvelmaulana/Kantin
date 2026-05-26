@@ -194,13 +194,14 @@ include(__DIR__ . '/../../includes/language_helper.php');
                                 type="text" 
                                 name="username" 
                                 id="usernameInput" 
-                                pattern="[a-zA-Z0-9._\s]+" 
-                                class="input-field w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange" 
-                                placeholder="Nama tampilan (huruf, angka, titik, garis bawah)" 
+                                class="input-field w-full pl-11 pr-12 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange" 
+                                placeholder="nama_pengguna (tanpa spasi)" 
                                 required 
                             />
+                            <span id="usernameStatus" class="absolute right-3 top-1/2 -translate-y-1/2 text-lg select-none"></span>
                         </div>
-                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1">Contoh: john_doe, siswa.2024</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1">Hanya huruf, angka, underscore. Contoh: john_doe, siswa2024</p>
+                        <p id="usernameError" class="text-[10px] text-red-500 mt-1 px-1 hidden"></p>
                     </div>
 
                     <!-- Step 3: Email -->
@@ -214,11 +215,14 @@ include(__DIR__ . '/../../includes/language_helper.php');
                                 type="email" 
                                 name="email" 
                                 id="emailInput" 
-                                class="input-field w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange" 
-                                placeholder="nama@sekolah.com" 
+                                class="input-field w-full pl-11 pr-12 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange" 
+                                placeholder="nama@gmail.com" 
                                 required 
                             />
+                            <span id="emailStatus" class="absolute right-3 top-1/2 -translate-y-1/2 text-lg select-none"></span>
                         </div>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1">Email harus menggunakan format @gmail.com</p>
+                        <p id="emailError" class="text-[10px] text-red-500 mt-1 px-1 hidden"></p>
                     </div>
 
                     <!-- Step 4: Class Selection (Only for Siswa) -->
@@ -252,12 +256,20 @@ include(__DIR__ . '/../../includes/language_helper.php');
                                 type="password" 
                                 name="password" 
                                 id="passwordInput" 
-                                class="input-field w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange" 
+                                class="input-field w-full pl-11 pr-12 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange" 
                                 placeholder="Minimal 8 karakter" 
                                 required 
                             />
+                            <button 
+                                type="button" 
+                                onclick="togglePasswordField('passwordInput', 'passwordEyeIcon')" 
+                                class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 smooth-transition hover:bg-slate-100 dark:hover:bg-slate-800/50" 
+                                title="Tampilkan Password"
+                            >
+                                <span id="passwordEyeIcon" class="material-symbols-outlined text-lg select-none">visibility</span>
+                            </button>
                         </div>
-                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1">Gunakan kombinasi huruf besar, kecil, angka</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1">Gunakan kombinasi huruf besar, kecil, angka, dan simbol</p>
                     </div>
 
                     <!-- Confirm Password -->
@@ -269,12 +281,22 @@ include(__DIR__ . '/../../includes/language_helper.php');
                             <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg select-none pointer-events-none">verified_user</span>
                             <input 
                                 type="password" 
+                                name="confirm_password" 
                                 id="confirmPasswordInput" 
-                                class="input-field w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange" 
+                                class="input-field w-full pl-11 pr-12 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange" 
                                 placeholder="Ulangi password Anda" 
                                 required 
                             />
+                            <button 
+                                type="button" 
+                                onclick="togglePasswordField('confirmPasswordInput', 'confirmEyeIcon')" 
+                                class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 smooth-transition hover:bg-slate-100 dark:hover:bg-slate-800/50" 
+                                title="Tampilkan Password"
+                            >
+                                <span id="confirmEyeIcon" class="material-symbols-outlined text-lg select-none">visibility</span>
+                            </button>
                         </div>
+                        <p id="passwordMatchStatus" class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1"></p>
                     </div>
 
                     <!-- Terms Checkbox -->
@@ -330,6 +352,20 @@ include(__DIR__ . '/../../includes/language_helper.php');
 
     <!-- Scripts -->
     <script>
+        // Fungsi toggle password visibility
+        window.togglePasswordField = function(fieldId, iconId) {
+            const field = document.getElementById(fieldId);
+            const icon = document.getElementById(iconId);
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                field.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
             // --- Dark Mode Toggle ---
             const darkModeToggle = document.getElementById('darkModeToggle');
@@ -383,6 +419,103 @@ include(__DIR__ . '/../../includes/language_helper.php');
                 }
             };
 
+            // --- Realtime Username Validation ---
+            const usernameInput = document.getElementById('usernameInput');
+            const usernameError = document.getElementById('usernameError');
+            const usernameStatus = document.getElementById('usernameStatus');
+
+            usernameInput.addEventListener('input', function() {
+                const username = this.value.trim();
+                usernameError.classList.add('hidden');
+                usernameStatus.textContent = '';
+
+                if (username === '') return;
+
+                // Cek spasi
+                if (username.includes(' ')) {
+                    usernameError.textContent = '❌ Username tidak boleh mengandung spasi';
+                    usernameError.classList.remove('hidden');
+                    usernameStatus.textContent = '❌';
+                    return;
+                }
+
+                // Cek format (hanya huruf, angka, underscore)
+                if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                    usernameError.textContent = '❌ Hanya huruf, angka, dan underscore yang diizinkan';
+                    usernameError.classList.remove('hidden');
+                    usernameStatus.textContent = '❌';
+                    return;
+                }
+
+                // Cek panjang
+                if (username.length < 3) {
+                    usernameError.textContent = '❌ Minimal 3 karakter';
+                    usernameError.classList.remove('hidden');
+                    usernameStatus.textContent = '❌';
+                    return;
+                }
+
+                // Jika semua validasi passed
+                usernameStatus.textContent = '✅';
+                usernameError.classList.add('hidden');
+            });
+
+            // --- Realtime Email Validation ---
+            const emailInput = document.getElementById('emailInput');
+            const emailError = document.getElementById('emailError');
+            const emailStatus = document.getElementById('emailStatus');
+
+            emailInput.addEventListener('input', function() {
+                const email = this.value.trim().toLowerCase();
+                emailError.classList.add('hidden');
+                emailStatus.textContent = '';
+
+                if (email === '') return;
+
+                // Cek format @gmail.com
+                if (!email.endsWith('@gmail.com')) {
+                    emailError.textContent = '❌ Email harus menggunakan @gmail.com';
+                    emailError.classList.remove('hidden');
+                    emailStatus.textContent = '❌';
+                    return;
+                }
+
+                // Cek format email valid
+                if (!/^[a-zA-Z0-9._-]+@gmail\.com$/.test(email)) {
+                    emailError.textContent = '❌ Format email tidak valid';
+                    emailError.classList.remove('hidden');
+                    emailStatus.textContent = '❌';
+                    return;
+                }
+
+                // Jika semua validasi passed
+                emailStatus.textContent = '✅';
+                emailError.classList.add('hidden');
+            });
+
+            // --- Realtime Password Match Check ---
+            const passwordInput = document.getElementById('passwordInput');
+            const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+            const passwordMatchStatus = document.getElementById('passwordMatchStatus');
+
+            function checkPasswordMatch() {
+                if (confirmPasswordInput.value === '') {
+                    passwordMatchStatus.textContent = '';
+                    return;
+                }
+
+                if (passwordInput.value !== confirmPasswordInput.value) {
+                    passwordMatchStatus.textContent = '❌ Password tidak cocok';
+                    passwordMatchStatus.className = 'text-[10px] text-red-500 mt-1.5 px-1';
+                } else {
+                    passwordMatchStatus.textContent = '✅ Password cocok';
+                    passwordMatchStatus.className = 'text-[10px] text-green-500 mt-1.5 px-1';
+                }
+            }
+
+            passwordInput.addEventListener('change', checkPasswordMatch);
+            confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+
             // --- Form Validation and Submission ---
             const registerForm = document.getElementById('registerForm');
             const errorAlert = document.getElementById('errorAlert');
@@ -405,21 +538,25 @@ include(__DIR__ . '/../../includes/language_helper.php');
                 event.preventDefault();
                 errorAlert.classList.add('hidden');
 
-                const username = document.getElementById('usernameInput').value.trim();
-                const email = document.getElementById('emailInput').value.trim();
-                const password = document.getElementById('passwordInput').value;
-                const confirmPassword = document.getElementById('confirmPasswordInput').value;
+                const username = usernameInput.value.trim();
+                const email = emailInput.value.trim().toLowerCase();
+                const password = passwordInput.value;
+                const confirmPassword = confirmPasswordInput.value;
                 const userType = document.getElementById('userTypeInput').value;
                 const kelasSelect = document.getElementById('kelasSelect');
                 const termsCheckbox = document.getElementById('termsCheckbox');
 
-                // Validasi Username
+                // ✅ Validasi Username (tidak boleh spasi)
                 if (!username) {
                     showErrorAlert('Username tidak boleh kosong');
                     return false;
                 }
-                if (!/^[a-zA-Z0-9._\s]+$/.test(username)) {
-                    showErrorAlert('Username hanya boleh berisi huruf, angka, titik, dan garis bawah');
+                if (username.includes(' ')) {
+                    showErrorAlert('Username tidak boleh mengandung spasi');
+                    return false;
+                }
+                if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                    showErrorAlert('Username hanya boleh berisi huruf, angka, dan underscore');
                     return false;
                 }
                 if (username.length < 3) {
@@ -427,17 +564,21 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     return false;
                 }
 
-                // Validasi Email
+                // ✅ Validasi Email (@gmail.com)
                 if (!email) {
                     showErrorAlert('Email tidak boleh kosong');
                     return false;
                 }
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                if (!email.endsWith('@gmail.com')) {
+                    showErrorAlert('Email harus menggunakan format @gmail.com');
+                    return false;
+                }
+                if (!/^[a-zA-Z0-9._-]+@gmail\.com$/.test(email)) {
                     showErrorAlert('Format email tidak valid');
                     return false;
                 }
 
-                // Validasi Kelas (hanya untuk Siswa)
+                // ✅ Validasi Kelas (hanya untuk Siswa)
                 if (userType === 'siswa') {
                     if (!kelasSelect.value) {
                         showErrorAlert('Silakan pilih kelas Anda');
@@ -445,7 +586,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     }
                 }
 
-                // Validasi Password
+                // ✅ Validasi Password
                 if (!password) {
                     showErrorAlert('Password tidak boleh kosong');
                     return false;
@@ -455,19 +596,23 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     return false;
                 }
 
-                // Validasi Confirm Password
+                // ✅ Validasi Confirm Password
+                if (!confirmPassword) {
+                    showErrorAlert('Konfirmasi password tidak boleh kosong');
+                    return false;
+                }
                 if (password !== confirmPassword) {
                     showErrorAlert('Password tidak cocok');
                     return false;
                 }
 
-                // Validasi Terms
+                // ✅ Validasi Terms
                 if (!termsCheckbox.checked) {
                     showErrorAlert('Anda harus menyetujui syarat dan ketentuan');
                     return false;
                 }
 
-                // Submit Form
+                // ✅ All validations passed - Submit Form
                 submitBtn.disabled = true;
                 btnSpinner.classList.remove('hidden');
                 btnText.textContent = 'Mendaftar...';
