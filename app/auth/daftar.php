@@ -235,6 +235,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                             <select 
                                 name="kelas" 
                                 id="kelasSelect" 
+                                required
                                 class="input-field w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange"
                             >
                                 <option value="">Pilih Kelas Anda</option>
