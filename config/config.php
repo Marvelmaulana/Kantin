@@ -348,9 +348,6 @@ if (kk_column_exists($koneksi, 'kantin', 'lokasi')) {
     mysqli_query($koneksi, "ALTER TABLE kantin DROP COLUMN lokasi");
 }
 
-// Tambahkan kolom untuk pendapatan admin (biaya layanan dan metode pembayaran)
-if (!kk_column_exists($koneksi, 'transaksi', 'jumlah_pajak')) {
-    mysqli_query($koneksi, "ALTER TABLE transaksi ADD COLUMN jumlah_pajak DECIMAL(12,2) NOT NULL DEFAULT 500");
 // Tambahkan kolom untuk pendapatan admin (pajak dan metode pembayaran)
 if (!kk_column_exists($koneksi, 'transaksi', 'jumlah_pajak')) {
     mysqli_query($koneksi, "ALTER TABLE transaksi ADD COLUMN jumlah_pajak DECIMAL(12,2) NOT NULL DEFAULT 1000");

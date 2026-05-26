@@ -65,41 +65,98 @@ if (!$max_val || $max_val <= 0) {
         tailwind.config = { theme: { extend: { colors: { 'bg-soft':'#FFF4EB','primary-orange':'#E25E3E','primary-orange-dark':'#C2410C','accent-orange':'#fb8500','neon-orange':'#ffb703' }, borderRadius:{'4xl':'2.5rem'} } } }
     </script>
     <style>
-        body { font-family:'Plus Jakarta Sans',sans-serif; background: radial-gradient(circle at top left, rgba(251,146,60,.20), transparent 32%), radial-gradient(circle at 80% 20%, rgba(255,183,3,.12), transparent 25%), linear-gradient(180deg,#fff7f1 0%,#fff2e7 38%,#fff9f3 100%); }
+        body { font-family:'Plus Jakarta Sans',sans-serif; background: radial-gradient(circle at top left, rgba(251,146,60,.20), transparent 32%), radial-gradient(circle at 80% 20%, rgba(255,183,3,.12), transparent 25%), linear-gradient(180deg,#fff7f1 0%,#fff2e7 38%,#fff9f3 100%); margin: 0; padding: 0; }
         ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-thumb{background:#FF8C20;border-radius:10px}
         .glow-card{box-shadow:0 25px 80px rgba(251,146,60,0.16);}
         .box-fade{animation:fadein .25s ease-out forwards}
         @keyframes fadein{from{opacity:0;transform:scale(.97) translateY(10px)}to{opacity:1;transform:scale(1) translateY(0)}}
         .modal-anim{animation:fadein .2s ease-out forwards}
         
+        /* Sidebar responsive */
+        #sidebar { transform: translateX(-100%) !important; transition: transform 0.3s ease-in-out !important; width: 18rem !important; flex-shrink: 0; }
+        #overlay { display: none !important; }
+        @media (min-width: 1024px) {
+            #sidebar { transform: translateX(0) !important; width: 18rem !important; }
+            #overlay { display: none !important; }
+            main { margin-left: 18rem !important; width: calc(100% - 18rem) !important; }
+            body { display: flex; }
+        }
+        #sidebar.active { transform: translateX(0) !important; }
+        #overlay.active { display: block !important; }
+        
         /* Responsive Mobile */
+        @media (max-width: 1023px) {
+            main { margin-left: 0 !important; width: 100% !important; }
+            body { overflow-x: hidden; }
+            #sidebar { position: fixed; left: 0; top: 0; }
+        }
+        
         @media (max-width: 768px) {
             main { padding: 1rem !important; }
             .grid { gap: 1rem !important; }
+            header { flex-direction: column !important; }
         }
         
         @media (max-width: 640px) {
-            header { margin-top: 3.5rem !important; }
+            main { padding: 0.75rem !important; margin-top: 3.5rem !important; }
+            header { margin-top: 4rem !important; }
             .text-3xl { font-size: 1.875rem; }
             .text-4xl { font-size: 2.25rem; }
             .p-8, .p-10 { padding: 1.5rem !important; }
             table { font-size: 0.75rem; }
+            .grid-cols-1 { gap: 0.75rem !important; }
         }
         
         /* Table scrolling on mobile */
         .overflow-x-auto { -webkit-overflow-scrolling: touch; }
     </style>
+    <script>
+        // Initialize sidebar state based on viewport
+        function initSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('active');
+                sidebar.style.transform = 'translateX(0)';
+            } else {
+                sidebar.classList.remove('active');
+                sidebar.style.transform = 'translateX(-100%)';
+            }
+        }
+        
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('overlay');
+            sidebar.classList.toggle('active');
+            overlay.classList.toggle('hidden');
+            if (sidebar.classList.contains('active')) {
+                sidebar.style.transform = 'translateX(0)';
+            } else {
+                sidebar.style.transform = 'translateX(-100%)';
+            }
+        }
+        
+        // Close sidebar on link click
+        document.addEventListener('DOMContentLoaded', function() {
+            initSidebar();
+            const navLinks = document.querySelectorAll('#sidebar a');
+            navLinks.forEach(link => {
+                link.addEventListener('click', function() {
+                    if (window.innerWidth < 1024) {
+                        toggleSidebar();
+                    }
+                });
+            });
+        });
+        
+        // Handle window resize
+        window.addEventListener('resize', initSidebar);
+    </script>
 </head>
 <body class="bg-bg-soft text-slate-800 flex overflow-x-hidden">
 
 <?php include '../../includes/sidebar_admin.php'; ?>
 
-<main class="flex-1 w-full lg:ml-72 p-4 md:p-6 lg:p-10">
-    <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-10 mt-14 lg:mt-0">
-        <div>
-            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-[#2a2a2a] tracking-tight"><?= t('admin.dashboard_overview') ?></h2>
-            <p class="text-orange-700 font-semibold text-sm sm:text-base mt-2"><?= t('admin.dashboard_subtitle') ?></p>
-<main class="flex-1 w-full lg:ml-72 p-4 md:p-6 lg:p-8 overflow-x-hidden max-w-full">
+<main class="w-full lg:w-auto p-4 md:p-6 lg:p-8 overflow-x-hidden transition-all duration-300">
     <header class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10 mt-14 lg:mt-0">
         <div>
             <h2 class="text-3xl md:text-4xl font-extrabold text-[#2a2a2a] tracking-tight"><?= t('admin.dashboard_overview') ?></h2>
@@ -276,48 +333,26 @@ if (!$max_val || $max_val <= 0) {
                         </tbody>
                     </table>
                 </div>
-    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6 mb-10">
-        <a href="manajemen_kantin.php" class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">storefront</span></div>
-            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Kantin</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_kantin) ?></h3></div>
-        </a>
-        <a href="manajemen_penjual.php" class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">store</span></div>
-            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Penjual</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_penjual) ?></h3></div>
-        </a>
-        <a href="manajemen_user.php" class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-500 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">group</span></div>
-            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Pembeli</p><h3 class="text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_pembeli) ?></h3></div>
-        </a>
-        <a href="manajemen_menu.php" class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 shadow-glow-card relative overflow-hidden hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <div class="absolute -top-10 -right-6 w-24 h-24 rounded-full bg-orange-100/70 blur-2xl"></div>
-            <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">Jumlah Menu</p>
-            <h3 class="text-xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_menu) ?></h3>
-        </a>
-        <a href="laporan_transaksi.php" class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-400 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">receipt_long</span></div>
-            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Transaksi</p><h3 class="text-xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_transaksi) ?></h3></div>
-        </a>
-        <a href="laporan_penjualan.php" class="bg-white/90 backdrop-blur-xl p-8 rounded-[2rem] border border-orange-100 flex items-center gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <div class="w-16 h-16 rounded-[24px] bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-3xl">attach_money</span></div>
-            <div><p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Pendapatan Admin</p><h3 class="text-xl font-extrabold text-[#2a2a2a]">Rp <?= number_format($pendapatan_admin, 0, ',', '.') ?></h3></div>
-        </a>
-    </section>
+            </div>
+        </div>
+    </div>
 
-    <!-- Grafik -->
-    <div class="grid grid-cols-1 gap-8 mb-10">
-        <div class="bg-white p-8 md:p-10 rounded-4xl shadow-sm border border-slate-50">
-            <h4 class="text-xl font-extrabold text-[#003049] mb-8"><?= t('admin.sales_statistics') ?></h4>
-            <div class="flex items-end justify-between h-64 gap-2">
-                <?php foreach($grafik_data as $g): $height = ($g['nilai'] / $max_val) * 100; ?>
-                <div class="flex-1 flex flex-col items-center gap-4 group relative">
-                    <div class="absolute -top-10 bg-[#003049] text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">Rp<?= number_format($g['nilai']) ?></div>
-                    <div class="w-full max-w-[12px] bg-slate-50 rounded-full relative h-48 overflow-hidden">
-                        <div class="absolute bottom-0 left-0 w-full bg-primary-orange rounded-full transition-all duration-1000" style="height:<?= $height ?>%"></div>
+    <!-- Grafik Penjualan -->
+    <div class="grid grid-cols-1 gap-6 sm:gap-8 mt-8 sm:mt-10">
+        <div class="bg-white p-4 sm:p-6 md:p-10 rounded-2xl lg:rounded-4xl shadow-sm border border-slate-50">
+            <h4 class="text-base sm:text-lg md:text-xl font-extrabold text-[#003049] mb-6 sm:mb-8"><?= t('admin.sales_statistics') ?></h4>
+            <div class="w-full overflow-x-auto">
+                <div class="flex items-end justify-between h-40 sm:h-48 md:h-64 gap-1.5 sm:gap-2 md:gap-3 min-w-max py-4">
+                    <?php foreach($grafik_data as $g): $height = ($g['nilai'] / $max_val) * 100; ?>
+                    <div class="flex-1 min-w-[30px] sm:min-w-[40px] md:min-w-[60px] flex flex-col items-center gap-2 sm:gap-4 group relative">
+                        <div class="absolute -top-8 sm:-top-10 bg-[#003049] text-white text-[8px] sm:text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Rp<?= number_format($g['nilai']) ?></div>
+                        <div class="w-full max-w-[8px] sm:max-w-[10px] md:max-w-[12px] bg-slate-50 rounded-full relative h-32 sm:h-40 md:h-48 overflow-hidden">
+                            <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-primary-orange to-orange-400 rounded-full transition-all duration-1000" style="height:<?= $height ?>%"></div>
+                        </div>
+                        <span class="text-[8px] sm:text-[9px] md:text-[10px] font-black <?= $g['is_today'] ? 'text-primary-orange' : 'text-slate-300' ?>"><?= $g['label'] ?></span>
                     </div>
-                    <span class="text-[10px] font-black <?= $g['is_today'] ? 'text-primary-orange' : 'text-slate-300' ?>"><?= $g['label'] ?></span>
+                    <?php endforeach; ?>
                 </div>
-                <?php endforeach; ?>
             </div>
         </div>
     </div>
