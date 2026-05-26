@@ -8,43 +8,7 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
-// Statistik Pendapatan Admin
-$total_pajak = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COALESCE(SUM(jumlah_pajak), 0) as total FROM transaksi"))['total'] ?? 0;
-$total_transaksi = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi"))['total'] ?? 0;
-$pajak_bulan_ini = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COALESCE(SUM(jumlah_pajak), 0) as total FROM transaksi WHERE MONTH(tanggal) = MONTH(NOW()) AND YEAR(tanggal) = YEAR(NOW())"))['total'] ?? 0;
-$transaksi_bulan_ini = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi WHERE MONTH(tanggal) = MONTH(NOW()) AND YEAR(tanggal) = YEAR(NOW())"))['total'] ?? 0;
-$res = mysqli_query($koneksi, "SELECT COALESCE(SUM(jumlah_pajak), 0) as total FROM transaksi");
-$total_pajak = ($res && $row = mysqli_fetch_assoc($res)) ? $row['total'] : 0;
-
-$res = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi");
-$total_transaksi = ($res && $row = mysqli_fetch_assoc($res)) ? $row['total'] : 0;
-
-$res = mysqli_query($koneksi, "SELECT COALESCE(SUM(jumlah_pajak), 0) as total FROM transaksi WHERE MONTH(tanggal) = MONTH(NOW()) AND YEAR(tanggal) = YEAR(NOW())");
-$pajak_bulan_ini = ($res && $row = mysqli_fetch_assoc($res)) ? $row['total'] : 0;
-
-$res = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi WHERE MONTH(tanggal) = MONTH(NOW()) AND YEAR(tanggal) = YEAR(NOW())");
-$transaksi_bulan_ini = ($res && $row = mysqli_fetch_assoc($res)) ? $row['total'] : 0;
-
-// Grafik 7 hari
-$grafik_data = [];
-$days_label  = ['Mon'=>'SEN','Tue'=>'SEL','Wed'=>'RAB','Thu'=>'KAM','Fri'=>'JUM','Sat'=>'SAB','Sun'=>'MIN'];
-for ($i = 6; $i >= 0; $i--) {
-    $date   = date('Y-m-d', strtotime("-$i days"));
-    $day_en = date('D', strtotime($date));
-    $res_g  = mysqli_query($koneksi, "SELECT COALESCE(SUM(jumlah_pajak), 0) as total FROM transaksi WHERE DATE(tanggal)='$date'");
-    $nilai_grafik = 0;
-    if ($res_g) {
-        $row = mysqli_fetch_assoc($res_g);
-        $nilai_grafik = $row['total'] ?? 0;
-    }
-    $grafik_data[] = ['label'=>$days_label[$day_en], 'nilai'=>$nilai_grafik, 'is_today'=>($i==0)];
-}
-$max_val = max(array_column($grafik_data, 'nilai'));
-if (!$max_val || $max_val <= 0) {
-    $max_val = 1;
-}
-
-// Filter
+// === FILTER INPUT ===
 $filterTanggal = $_GET['tanggal'] ?? '';
 $filterKantin = $_GET['kantin'] ?? '';
 
@@ -60,7 +24,88 @@ if ($filterKantin) {
 
 $where_sql = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
 
-// Detail transaksi
+// === STATISTIK PENDAPATAN ADMIN (DENGAN FILTER) ===
+$stat_pajak_q = mysqli_query($koneksi, "
+    SELECT COALESCE(SUM(t.jumlah_pajak), 0) as total 
+    FROM transaksi t
+    LEFT JOIN pesanan p ON t.id_pesanan = p.id_pesanan
+    $where_sql
+");
+$total_pajak = $stat_pajak_q ? mysqli_fetch_assoc($stat_pajak_q)['total'] : 0;
+
+$stat_transaksi_q = mysqli_query($koneksi, "
+    SELECT COUNT(*) as total 
+    FROM transaksi t
+    LEFT JOIN pesanan p ON t.id_pesanan = p.id_pesanan
+    $where_sql
+");
+$total_transaksi = $stat_transaksi_q ? mysqli_fetch_assoc($stat_transaksi_q)['total'] : 0;
+
+// Filter khusus bulan ini dengan mempertahankan filter kantin jika dipilih
+$where_bulan_ini = $where;
+$where_bulan_ini[] = "MONTH(t.tanggal) = MONTH(NOW()) AND YEAR(t.tanggal) = YEAR(NOW())";
+$where_bulan_ini_sql = 'WHERE ' . implode(' AND ', $where_bulan_ini);
+
+$stat_transaksi_bulan_ini_q = mysqli_query($koneksi, "
+    SELECT COUNT(*) as total 
+    FROM transaksi t
+    LEFT JOIN pesanan p ON t.id_pesanan = p.id_pesanan
+    $where_bulan_ini_sql
+");
+$transaksi_bulan_ini = $stat_transaksi_bulan_ini_q ? mysqli_fetch_assoc($stat_transaksi_bulan_ini_q)['total'] : 0;
+
+// === PAGINATION ===
+$halaman = isset($_GET['halaman']) ? max(1, (int)$_GET['halaman']) : 1;
+$per_halaman = 10;
+$offset = ($halaman - 1) * $per_halaman;
+
+// Hitung total data terfilter
+$result_count = mysqli_query($koneksi, "
+    SELECT COUNT(*) as total 
+    FROM transaksi t
+    LEFT JOIN pesanan p ON t.id_pesanan = p.id_pesanan
+    $where_sql
+");
+$total_data = $result_count ? mysqli_fetch_assoc($result_count)['total'] : 0;
+$total_halaman = ceil($total_data / $per_halaman);
+
+if ($halaman > $total_halaman && $total_halaman > 0) {
+    $halaman = $total_halaman;
+    $offset = ($halaman - 1) * $per_halaman;
+}
+
+// === GRAFIK 7 HARI (DENGAN FILTER KANTIN) ===
+$grafik_data = [];
+$days_label  = ['Mon'=>'SEN','Tue'=>'SEL','Wed'=>'RAB','Thu'=>'KAM','Fri'=>'JUM','Sat'=>'SAB','Sun'=>'MIN'];
+for ($i = 6; $i >= 0; $i--) {
+    $date   = date('Y-m-d', strtotime("-$i days"));
+    $day_en = date('D', strtotime($date));
+    
+    $query_g = "
+        SELECT COALESCE(SUM(t.jumlah_pajak), 0) as total 
+        FROM transaksi t
+        LEFT JOIN pesanan p ON t.id_pesanan = p.id_pesanan
+        WHERE DATE(t.tanggal)='$date'
+    ";
+    if ($filterKantin) {
+        $safe_kantin = mysqli_real_escape_string($koneksi, $filterKantin);
+        $query_g .= " AND p.id_kantin = '$safe_kantin'";
+    }
+    
+    $res_g = mysqli_query($koneksi, $query_g);
+    $nilai_grafik = 0;
+    if ($res_g) {
+        $row = mysqli_fetch_assoc($res_g);
+        $nilai_grafik = $row['total'] ?? 0;
+    }
+    $grafik_data[] = ['label'=>$days_label[$day_en], 'nilai'=>$nilai_grafik, 'is_today'=>($i==0)];
+}
+$max_val = max(array_column($grafik_data, 'nilai'));
+if (!$max_val || $max_val <= 0) {
+    $max_val = 1;
+}
+
+// === DETAIL DATA (DENGAN PAGINATION) ===
 $query_detail = mysqli_query($koneksi, "
     SELECT t.id_transaksi, t.tanggal, t.jumlah_pajak, t.metode_pembayaran,
            p.id_pesanan, p.total_harga, u.username, k.nama_kantin
@@ -70,7 +115,7 @@ $query_detail = mysqli_query($koneksi, "
     LEFT JOIN kantin k ON p.id_kantin = k.id_kantin
     $where_sql
     ORDER BY t.tanggal DESC
-    LIMIT 500
+    LIMIT $offset, $per_halaman
 ");
 
 // Daftar kantin untuk filter
@@ -86,197 +131,244 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
     <script>
-        tailwind.config = { theme: { extend: { colors: { 'primary-orange':'#E25E3E','accent-orange':'#fb8500','neon-orange':'#ffb703' } } } }
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'bg-soft': '#FFF4EB',
+                        'primary-orange': '#E25E3E',
+                        'primary-orange-dark': '#C2410C',
+                        'accent-orange': '#fb8500',
+                        'neon-orange': '#ffb703'
+                    },
+                    borderRadius: {
+                        '4xl': '2.5rem'
+                    }
+                }
+            }
+        }
     </script>
     <style>
-        body { font-family:'Plus Jakarta Sans',sans-serif; background: linear-gradient(135deg, #fff7f1 0%, #fff2e7 100%); }
+        body { font-family:'Plus Jakarta Sans',sans-serif; background: radial-gradient(circle at top left, rgba(251,146,60,.20), transparent 32%), radial-gradient(circle at 80% 20%, rgba(255,183,3,.12), transparent 25%), linear-gradient(180deg,#fff7f1 0%,#fff2e7 38%,#fff9f3 100%); }
         ::-webkit-scrollbar{width:6px;height:6px} ::-webkit-scrollbar-thumb{background:#FF8C20;border-radius:10px}
-        .glow-card{box-shadow:0 25px 80px rgba(226,94,62,0.12);}
-        table { width: 100%; }
-        thead { background: #f3f4f6; }
-        tbody tr { border-bottom: 1px solid #e5e7eb; }
-        tbody tr:hover { background: #faf9f8; }
+        .glow-card{box-shadow:0 25px 80px rgba(251,146,60,0.16);}
+        .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .table-container table { min-width: 600px; }
+        @media (max-width: 640px) {
+            .mobile-card { display: block !important; }
+            .mobile-card thead { display: none; }
+            .mobile-card tbody tr { display: block; margin-bottom: 1rem; background: white; border-radius: 1rem; padding: 1rem; box-shadow: 0 4px 15px rgba(251,146,60,0.1); }
+            .mobile-card tbody td { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid #f1f1f1; }
+            .mobile-card tbody td:last-child { border-bottom: none; }
+            .mobile-card tbody td::before { content: attr(data-label); font-weight: 700; color: #666; width: 40%; }
+        }
     </style>
 </head>
-<body class="text-slate-800">
-
-<?php include '../../includes/sidebar_admin.php'; ?>
-
-<main class="flex-1 w-full lg:ml-72 p-6 md:p-10">
-<body class="text-slate-800 overflow-x-hidden">
+<body class="text-slate-800 flex min-h-screen overflow-x-hidden">
 
 <?php include '../../includes/sidebar_admin.php'; ?>
 
 <main class="flex-1 w-full lg:ml-72 p-4 md:p-6 lg:p-8 overflow-x-hidden max-w-full">
-    <header class="mb-10 mt-14 lg:mt-0">
-        <div class="flex items-center gap-3 mb-4">
-            <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white shadow-lg">
-                <span class="material-symbols-outlined text-2xl">attach_money</span>
-            </div>
-            <div>
-                <h2 class="text-3xl md:text-4xl font-extrabold text-[#2a2a2a] tracking-tight">Pendapatan Admin</h2>
-                <p class="text-orange-700 font-semibold mt-1">Laporan pendapatan dari pajak transaksi</p>
-            </div>
+    <!-- Header -->
+    <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8 mt-14 lg:mt-0">
+        <div>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-[#2a2a2a] tracking-tight">Laporan Pendapatan Admin</h2>
+            <p class="text-orange-700 font-semibold mt-1 text-sm md:text-base">Kelola dan lihat pendapatan dari pajak transaksi</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+            <button onclick="window.print()" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2.5 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 hover:-translate-y-0.5 transition-all text-sm w-full sm:w-auto">
+                <span class="material-symbols-outlined text-lg">print</span> Cetak
+            </button>
         </div>
     </header>
 
-    <!-- Statistik Cards -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white p-5 rounded-xl border border-orange-100 shadow-glow-card">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[9px] font-black text-orange-500 uppercase tracking-widest">Total Pendapatan</span>
-                <span class="material-symbols-outlined text-lg text-orange-500">trending_up</span>
-            </div>
-            <h3 class="text-2xl font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_pajak, 0, ',', '.') ?></h3>
-            <p class="text-[11px] text-slate-400 mt-1"><?= number_format($total_transaksi) ?> transaksi</p>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl border border-orange-100 shadow-glow-card">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[9px] font-black text-orange-500 uppercase tracking-widest">Bulan Ini</span>
-                <span class="material-symbols-outlined text-lg text-orange-500">calendar_month</span>
-            </div>
-            <h3 class="text-2xl font-extrabold text-[#2a2a2a]">Rp <?= number_format($pajak_bulan_ini, 0, ',', '.') ?></h3>
-            <p class="text-[11px] text-slate-400 mt-1"><?= number_format($transaksi_bulan_ini) ?> transaksi</p>
-        </div>
-
-        <div class="bg-white p-5 rounded-xl border border-orange-100 shadow-glow-card">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[9px] font-black text-orange-500 uppercase tracking-widest">Rata-rata Pajak</span>
-                <span class="material-symbols-outlined text-lg text-orange-500">average</span>
-                <span class="material-symbols-outlined text-lg text-orange-500">calculate</span>
-            </div>
-            <h3 class="text-2xl font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_transaksi > 0 ? $total_pajak / $total_transaksi : 0, 0, ',', '.') ?></h3>
-            <p class="text-[11px] text-slate-400 mt-1">per transaksi</p>
-        </div>
-
-        <div class="bg-gradient-to-br from-yellow-50 to-orange-50 p-5 rounded-xl border border-orange-200 shadow-glow-card">
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[9px] font-black text-orange-600 uppercase tracking-widest">Target Bulan</span>
-                <span class="material-symbols-outlined text-lg text-orange-600">flag</span>
-            </div>
-            <h3 class="text-xl font-extrabold text-orange-700">Rp 50.000.000</h3>
-            <div class="w-full bg-orange-100 rounded-full h-1.5 mt-1.5">
-                <div class="bg-gradient-to-r from-yellow-400 to-orange-500 h-1.5 rounded-full" style="width: <?= min(($pajak_bulan_ini / 50000000) * 100, 100) ?>%"></div>
-            </div>
-            <p class="text-[10px] text-slate-500 mt-1"><?= number_format(min(($pajak_bulan_ini / 50000000) * 100, 100), 1) ?>% dari target</p>
-        </div>
-    </section>
-
-    <!-- Grafik 7 Hari Terakhir -->
-    <div class="bg-white p-6 rounded-xl border border-orange-100 shadow-glow-card mb-8">
-        <h3 class="text-base font-extrabold text-[#2a2a2a] mb-4">Pendapatan 7 Hari Terakhir</h3>
-        <div class="flex items-end justify-between h-40 gap-1.5">
-            <?php foreach($grafik_data as $g): $height = ($g['nilai'] / $max_val) * 100; ?>
-            <div class="flex-1 flex flex-col items-center gap-4 group relative">
-                <div class="absolute -top-10 bg-[#2a2a2a] text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Rp<?= number_format($g['nilai']) ?></div>
-    <div class="bg-white p-6 rounded-xl border border-orange-100 shadow-glow-card mb-8 overflow-hidden">
-        <h3 class="text-base font-extrabold text-[#2a2a2a] mb-4">Pendapatan 7 Hari Terakhir</h3>
-        <div class="flex items-end justify-between h-40 gap-1.5 overflow-x-hidden">
-            <?php foreach($grafik_data as $g): $height = ($g['nilai'] / $max_val) * 100; ?>
-            <div class="flex-1 flex flex-col items-center gap-4 group relative min-w-0">
-                <div class="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-[#2a2a2a] text-white text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">Rp<?= number_format($g['nilai']) ?></div>
-                <div class="w-full max-w-[14px] bg-slate-100 rounded-full relative h-48 overflow-hidden">
-                    <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-orange-500 to-orange-400 rounded-full transition-all duration-1000" style="height:<?= $height ?>%"></div>
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div class="bg-white/90 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-orange-100 shadow-glow-card">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shrink-0">
+                    <span class="material-symbols-outlined text-xl md:text-2xl">receipt_long</span>
                 </div>
-                <span class="text-[10px] font-black <?= $g['is_today'] ? 'text-primary-orange font-bold' : 'text-slate-400' ?>"><?= $g['label'] ?></span>
+                <div>
+                    <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Total Transaksi</p>
+                    <h3 class="text-lg md:text-xl font-extrabold text-[#2a2a2a]"><?= number_format($total_transaksi) ?></h3>
+                </div>
             </div>
-            <?php endforeach; ?>
+        </div>
+        <div class="bg-white/90 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-orange-100 shadow-glow-card">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-yellow-400 to-yellow-600 flex items-center justify-center text-white shrink-0">
+                    <span class="material-symbols-outlined text-xl md:text-2xl">calendar_month</span>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-yellow-500 uppercase tracking-widest">Bulan Ini</p>
+                    <h3 class="text-base md:text-lg font-extrabold text-[#2a2a2a]"><?= number_format($transaksi_bulan_ini) ?> trx</h3>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white/90 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-orange-100 shadow-glow-card">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white shrink-0">
+                    <span class="material-symbols-outlined text-xl md:text-2xl">calculate</span>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">Rata-Rata Pajak</p>
+                    <h3 class="text-base md:text-lg font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_transaksi > 0 ? $total_pajak / $total_transaksi : 0, 0, ',', '.') ?></h3>
+                </div>
+            </div>
+        </div>
+        <div class="bg-white/90 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-orange-100 shadow-glow-card">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white shrink-0">
+                    <span class="material-symbols-outlined text-xl md:text-2xl">trending_up</span>
+                </div>
+                <div>
+                    <p class="text-[10px] font-black text-green-500 uppercase tracking-widest">Total Pendapatan</p>
+                    <h3 class="text-sm md:text-lg font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_pajak, 0, ',', '.') ?></h3>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Filter -->
-    <div class="bg-white p-5 rounded-xl border border-orange-100 mb-6">
-        <form method="GET" class="flex flex-wrap gap-4">
-    <div class="bg-white p-5 rounded-xl border border-orange-100 mb-6 overflow-x-hidden">
-        <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-            <div>
-                <label class="block text-xs font-bold text-slate-600 mb-2">Tanggal</label>
-                <input type="date" name="tanggal" value="<?= htmlspecialchars($filterTanggal) ?>" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
+    <div class="bg-white rounded-2xl p-4 md:p-6 mb-6 shadow-sm border border-slate-50">
+        <form method="GET" class="flex flex-col sm:flex-row gap-4">
+            <div class="flex-1">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Tanggal</label>
+                <input type="date" name="tanggal" value="<?= htmlspecialchars($filterTanggal) ?>" class="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-orange/20">
             </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-600 mb-2">Kantin</label>
-                <select name="kantin" class="px-4 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-orange-400">
+            <div class="flex-1">
+                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Kantin</label>
+                <select name="kantin" class="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-orange/20">
                     <option value="">Semua Kantin</option>
-                    <?php while ($kantin = mysqli_fetch_assoc($daftar_kantin)): ?>
+                    <?php 
+                    // Reset pointer if needed
+                    mysqli_data_seek($daftar_kantin, 0);
+                    while ($kantin = mysqli_fetch_assoc($daftar_kantin)): 
+                    ?>
                         <option value="<?= $kantin['id_kantin'] ?>" <?= $filterKantin == $kantin['id_kantin'] ? 'selected' : '' ?>>
                             <?= htmlspecialchars($kantin['nama_kantin']) ?>
                         </option>
                     <?php endwhile; ?>
                 </select>
             </div>
-            <div class="flex gap-2 items-end">
-                <button type="submit" class="bg-primary-orange text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-orange-600 transition-all">
-                    <span class="material-symbols-outlined inline mr-1 text-sm">search</span>Filter
+            <div class="flex items-end gap-2">
+                <button type="submit" class="bg-primary-orange text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all text-sm whitespace-nowrap flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-sm">search</span> Filter
                 </button>
-                <a href="laporan_pendapatan_admin.php" class="bg-slate-200 text-slate-700 px-5 py-2 rounded-lg font-bold text-sm hover:bg-slate-300 transition-all">
-                    <span class="material-symbols-outlined inline mr-1 text-sm">refresh</span>Reset
+                <a href="laporan_pendapatan_admin.php" class="bg-slate-200 text-slate-600 px-4 py-3 rounded-xl font-bold hover:bg-slate-300 transition-all text-sm">
+                    Reset
                 </a>
-                <button type="button" onclick="window.print()" class="bg-slate-600 text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-slate-700 transition-all">
-                    <span class="material-symbols-outlined inline mr-1 text-sm">print</span>Cetak
-            <div class="flex flex-col sm:flex-row gap-2 lg:col-span-5">
-                <button type="submit" class="bg-primary-orange text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-orange-600 transition-all flex items-center justify-center gap-1 flex-1 sm:flex-none">
-                    <span class="material-symbols-outlined text-sm">search</span>Filter
-                </button>
-                <a href="laporan_pendapatan_admin.php" class="bg-slate-200 text-slate-700 px-5 py-2 rounded-lg font-bold text-sm hover:bg-slate-300 transition-all flex items-center justify-center gap-1 flex-1 sm:flex-none">
-                    <span class="material-symbols-outlined text-sm">refresh</span>Reset
-                </a>
-                <button type="button" onclick="window.print()" class="bg-slate-600 text-white px-5 py-2 rounded-lg font-bold text-sm hover:bg-slate-700 transition-all flex items-center justify-center gap-1 flex-1 sm:flex-none">
-                    <span class="material-symbols-outlined text-sm">print</span>Cetak
-                </button>
             </div>
         </form>
     </div>
 
-    <!-- Tabel Detail -->
-    <div class="bg-white rounded-xl border border-orange-100 shadow-glow-card overflow-hidden">
-        <div class="p-4 border-b border-orange-100 bg-gradient-to-r from-orange-50 to-yellow-50">
-            <h3 class="text-base font-extrabold text-[#2a2a2a]">Detail Pajak Transaksi</h3>
-            <p class="text-[10px] text-slate-500 mt-0.5">Rincian pajak dari setiap transaksi yang berhasil</p>
+    <!-- Grafik Pendapatan 7 Hari -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-50 p-4 md:p-6 mb-6">
+        <div class="mb-4">
+            <h4 class="text-base font-extrabold text-[#003049] flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary-orange">bar_chart</span>
+                Tren Pendapatan Pajak 7 Hari Terakhir
+            </h4>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Ringkasan total pendapatan pajak per hari</p>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full text-xs">
-                <thead>
-                    <tr class="bg-slate-50 border-b border-slate-200">
-                        <th class="px-4 py-2 text-left font-bold text-slate-700">ID Transaksi</th>
-                        <th class="px-4 py-2 text-left font-bold text-slate-700">Tanggal</th>
-                        <th class="px-4 py-2 text-left font-bold text-slate-700">Pembeli</th>
-                        <th class="px-4 py-2 text-left font-bold text-slate-700">Kantin</th>
-                        <th class="px-4 py-2 text-right font-bold text-slate-700">Total Pesanan</th>
-                        <th class="px-4 py-2 text-right font-bold text-slate-700">Biaya Layanan (500)</th>
-                        <th class="px-4 py-2 text-right font-bold text-slate-700">Pajak (1000)</th>
-                        <th class="px-4 py-2 text-left font-bold text-slate-700">Metode</th>
+        <div class="overflow-x-auto pb-2">
+            <div class="flex items-end justify-between h-32 sm:h-40 md:h-56 gap-1 sm:gap-2 min-w-[300px] sm:min-w-full">
+                <?php foreach($grafik_data as $g): $height = ($g['nilai'] / $max_val) * 100; ?>
+                <div class="flex-1 flex flex-col items-center gap-1 sm:gap-2 group relative">
+                    <div class="absolute -top-6 sm:-top-8 bg-[#003049] text-white text-[8px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
+                        Rp<?= number_format($g['nilai'], 0, ',', '.') ?>
+                    </div>
+                    <div class="w-full bg-slate-100 rounded-t relative flex-1 overflow-hidden min-h-[20px]">
+                        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-primary-orange to-orange-400 rounded-t transition-all duration-700 ease-out" style="height:<?= $height ?>%"></div>
+                    </div>
+                    <span class="text-[7px] sm:text-[9px] font-black <?= $g['is_today'] ? 'text-primary-orange font-bold' : 'text-slate-400' ?>"><?= $g['label'] ?></span>
+                </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-50 overflow-hidden">
+        <div class="p-4 md:p-6 border-b border-slate-50">
+            <h3 class="font-extrabold text-[#003049] text-lg flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary-orange">table_chart</span>
+                Detail Pajak Transaksi
+                <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-xl text-xs font-bold ml-2"><?= number_format($total_data) ?></span>
+            </h3>
+        </div>
+        <div class="table-container">
+            <table class="w-full text-sm mobile-card">
+                <thead class="bg-slate-50 text-xs font-black text-slate-500 uppercase tracking-wider">
+                    <tr>
+                        <th class="px-4 py-4 text-left">No</th>
+                        <th class="px-4 py-4 text-left">ID</th>
+                        <th class="px-4 py-4 text-left">Pembeli</th>
+                        <th class="px-4 py-4 text-left hidden sm:table-cell">Kantin</th>
+                        <th class="px-4 py-4 text-left">Tanggal</th>
+                        <th class="px-4 py-4 text-right">Total</th>
+                        <th class="px-4 py-4 text-right">Pajak</th>
+                        <th class="px-4 py-4 text-left">Metode</th>
+                        <th class="px-4 py-4 text-center">Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="divide-y divide-slate-100">
                     <?php if (!$query_detail || mysqli_num_rows($query_detail) === 0): ?>
                     <tr>
-                        <td colspan="7" class="px-4 py-4 text-center text-slate-500">
-                            <span class="material-symbols-outlined text-2xl inline mb-1">inbox</span>
-                            <p class="font-bold">Tidak ada data transaksi</p>
+                        <td colspan="9" class="px-4 py-16 text-center">
+                            <div class="flex flex-col items-center text-slate-300">
+                                <span class="material-symbols-outlined text-5xl">inbox</span>
+                                <p class="mt-3 font-bold text-slate-400">Belum ada data pajak transaksi</p>
+                            </div>
                         </td>
                     </tr>
                     <?php else: ?>
-                        <?php while ($detail = mysqli_fetch_assoc($query_detail)): ?>
-                        <tr class="border-b border-slate-100 hover:bg-orange-50 transition-colors">
-                            <td class="px-6 py-4 font-bold text-orange-600">#<?= htmlspecialchars($detail['id_transaksi']) ?></td>
-                            <td class="px-6 py-4 text-slate-700"><?= date('d M Y H:i', strtotime($detail['tanggal'])) ?></td>
-                            <td class="px-6 py-4 text-slate-700"><?= htmlspecialchars($detail['username'] ?? 'Guest') ?></td>
-                            <td class="px-6 py-4 text-slate-700"><?= htmlspecialchars($detail['nama_kantin'] ?? '-') ?></td>
-                            <td class="px-6 py-4 text-right font-bold text-slate-900">Rp <?= number_format($detail['total_harga'] ?? 0, 0, ',', '.') ?></td>
-                            <td class="px-6 py-4 text-right">
-                                <span class="px-3 py-1 rounded-full text-sm font-bold text-white bg-gradient-to-r from-yellow-400 to-orange-500">
-<<<<<<< HEAD
-                                    Rp <?= number_format($detail['jumlah_pajak'] ?? 500, 0, ',', '.') ?>
-=======
+                        <?php 
+                        $no = $offset + 1;
+                        while ($detail = mysqli_fetch_assoc($query_detail)): 
+                        ?>
+                        <tr class="hover:bg-orange-50/50 transition-colors">
+                            <td class="px-4 py-4 font-bold text-slate-500" data-label="No"><?= $no++ ?></td>
+                            <td class="px-4 py-4" data-label="ID">
+                                <span class="font-bold text-primary-orange">#<?= htmlspecialchars($detail['id_transaksi']) ?></span>
+                            </td>
+                            <td class="px-4 py-4" data-label="Pembeli">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-xs font-bold uppercase shrink-0">
+                                        <?= substr($detail['username'] ?? 'U', 0, 1) ?>
+                                    </div>
+                                    <p class="font-bold text-sm"><?= htmlspecialchars($detail['username'] ?? 'Guest') ?></p>
+                                </div>
+                            </td>
+                            <td class="px-4 py-4 hidden sm:table-cell" data-label="Kantin">
+                                <span class="text-sm font-semibold"><?= htmlspecialchars($detail['nama_kantin'] ?? '-') ?></span>
+                            </td>
+                            <td class="px-4 py-4" data-label="Tanggal">
+                                <div>
+                                    <p class="text-sm font-semibold"><?= date('d M Y', strtotime($detail['tanggal'])) ?></p>
+                                    <p class="text-xs text-slate-400"><?= date('H:i', strtotime($detail['tanggal'])) ?></p>
+                                </div>
+                            </td>
+                            <td class="px-4 py-4 text-right" data-label="Total">
+                                <span class="font-bold text-primary-orange text-sm">Rp <?= number_format($detail['total_harga'] ?? 0, 0, ',', '.') ?></span>
+                            </td>
+                            <td class="px-4 py-4 text-right" data-label="Pajak">
+                                <span class="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-yellow-400 to-orange-500 inline-block">
                                     Rp <?= number_format($detail['jumlah_pajak'] ?? 1000, 0, ',', '.') ?>
->>>>>>> 2e6b11f (pesan perubahan)
                                 </span>
                             </td>
-                            <td class="px-6 py-4">
-                                <span class="px-3 py-1 rounded-lg text-xs font-bold bg-slate-100 text-slate-700">
+                            <td class="px-4 py-4" data-label="Metode">
+                                <span class="px-3 py-1.5 rounded-lg text-xs font-bold bg-slate-100 text-slate-700 inline-block">
                                     <?= htmlspecialchars($detail['metode_pembayaran'] ?? 'Cash') ?>
                                 </span>
+                            </td>
+                            <td class="px-4 py-4 text-center" data-label="Aksi">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="detail_transaksi.php?id=<?= $detail['id_transaksi'] ?>" class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-orange-100 text-primary-orange hover:bg-primary-orange hover:text-white transition-all" title="Lihat Detail">
+                                        <span class="material-symbols-outlined text-sm">visibility</span>
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         <?php endwhile; ?>
@@ -284,6 +376,53 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                 </tbody>
             </table>
         </div>
+
+        <!-- Pagination -->
+        <?php if ($total_halaman > 1): ?>
+        <div class="px-4 md:px-6 py-4 border-t border-slate-50 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p class="text-sm text-slate-500 font-semibold">
+                Menampilkan <?= $offset + 1 ?> - <?= min($offset + $per_halaman, $total_data) ?> dari <?= number_format($total_data) ?> data
+            </p>
+            <div class="flex items-center gap-2">
+                <?php if ($halaman > 1): ?>
+                    <a href="?halaman=1<?= $filterTanggal ? '&tanggal=' . urlencode($filterTanggal) : '' ?><?= $filterKantin ? '&kantin=' . urlencode($filterKantin) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-all text-sm">
+                        &laquo; Awal
+                    </a>
+                    <a href="?halaman=<?= $halaman - 1 ?><?= $filterTanggal ? '&tanggal=' . urlencode($filterTanggal) : '' ?><?= $filterKantin ? '&kantin=' . urlencode($filterKantin) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-all text-sm">
+                        &lsaquo; Sebelumnya
+                    </a>
+                <?php endif; ?>
+                
+                <div class="flex items-center gap-1">
+                    <?php
+                    $start_page = max(1, $halaman - 2);
+                    $end_page = min($total_halaman, $halaman + 2);
+                    
+                    for ($i = $start_page; $i <= $end_page; $i++):
+                    ?>
+                        <?php if ($i == $halaman): ?>
+                            <span class="px-3 py-2 rounded-lg bg-primary-orange text-white font-bold text-sm">
+                                <?= $i ?>
+                            </span>
+                        <?php else: ?>
+                            <a href="?halaman=<?= $i ?><?= $filterTanggal ? '&tanggal=' . urlencode($filterTanggal) : '' ?><?= $filterKantin ? '&kantin=' . urlencode($filterKantin) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-all text-sm">
+                                <?= $i ?>
+                            </a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+                </div>
+                
+                <?php if ($halaman < $total_halaman): ?>
+                    <a href="?halaman=<?= $halaman + 1 ?><?= $filterTanggal ? '&tanggal=' . urlencode($filterTanggal) : '' ?><?= $filterKantin ? '&kantin=' . urlencode($filterKantin) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-all text-sm">
+                        Selanjutnya &rsaquo;
+                    </a>
+                    <a href="?halaman=<?= $total_halaman ?><?= $filterTanggal ? '&tanggal=' . urlencode($filterTanggal) : '' ?><?= $filterKantin ? '&kantin=' . urlencode($filterKantin) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 text-slate-600 font-bold hover:bg-slate-100 transition-all text-sm">
+                        Akhir &raquo;
+                    </a>
+                <?php endif; ?>
+            </div>
+        </div>
+        <?php endif; ?>
     </div>
 </main>
 

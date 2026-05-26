@@ -65,11 +65,6 @@ $current_page = basename(parse_url($request_path, PHP_URL_PATH));
                 <span class="material-symbols-outlined">bar_chart</span>
                 <span class="text-sm">Laporan Penjualan</span>
             </a>
-            <a href="laporan_pendapatan_admin.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
-                <span class="material-symbols-outlined">attach_money</span>
-                <span class="text-sm">Pendapatan Admin</span>
-            </a>
-            <a href="laporan_kantin.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all text-orange-100 hover:bg-orange-900 hover:text-orange-50">
             <a href="laporan_pendapatan_admin.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all <?= ($current_page == 'laporan_pendapatan_admin.php') ? 'bg-orange-700/90 text-white' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
                 <span class="material-symbols-outlined">attach_money</span>
                 <span class="text-sm">Pendapatan Admin</span>

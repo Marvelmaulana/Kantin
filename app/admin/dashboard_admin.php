@@ -171,192 +171,90 @@ if (!$max_val || $max_val <= 0) {
     </header>
 
     <!-- Statistik Cards -->
-    <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-8 sm:mb-10">
-        <a href="manajemen_kantin.php" class="bg-white/90 backdrop-blur-xl p-4 sm:p-6 lg:p-8 rounded-2xl lg:rounded-[2rem] border border-orange-100 flex items-center gap-3 sm:gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <div class="w-12 sm:w-14 lg:w-16 h-12 sm:h-14 lg:h-16 rounded-lg lg:rounded-[24px] bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-2xl lg:text-3xl">storefront</span></div>
-            <div>
-                <p class="text-[9px] sm:text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Kantin</p>
-                <h3 class="text-lg sm:text-xl lg:text-2xl font-extrabold text-[#2a2a2a] mt-1"><?= number_format($jumlah_kantin) ?></h3>
+    <section class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-2 sm:gap-3 lg:gap-4 mb-6 sm:mb-8">
+        <a href="manajemen_kantin.php" class="bg-white/90 backdrop-blur-xl p-3 sm:p-4 rounded-xl lg:rounded-2xl border border-orange-100 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer group">
+            <div class="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white group-hover:shadow-lg transition-all">
+                <span class="material-symbols-outlined text-lg sm:text-xl">storefront</span>
+            </div>
+            <div class="text-center">
+                <p class="text-[8px] sm:text-[9px] font-black text-orange-500 uppercase tracking-wider leading-tight">Kantin</p>
+                <h3 class="text-base sm:text-lg lg:text-xl font-extrabold text-[#2a2a2a] mt-0.5"><?= number_format($jumlah_kantin) ?></h3>
             </div>
         </a>
-        <a href="manajemen_penjual.php" class="bg-white/90 backdrop-blur-xl p-4 sm:p-6 lg:p-8 rounded-2xl lg:rounded-[2rem] border border-orange-100 flex items-center gap-3 sm:gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <div class="w-12 sm:w-14 lg:w-16 h-12 sm:h-14 lg:h-16 rounded-lg lg:rounded-[24px] bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-2xl lg:text-3xl">store</span></div>
-            <div>
-                <p class="text-[9px] sm:text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Penjual</p>
-                <h3 class="text-lg sm:text-xl lg:text-2xl font-extrabold text-[#2a2a2a] mt-1"><?= number_format($jumlah_penjual) ?></h3>
+        <a href="manajemen_penjual.php" class="bg-white/90 backdrop-blur-xl p-3 sm:p-4 rounded-xl lg:rounded-2xl border border-orange-100 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer group">
+            <div class="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-gradient-to-br from-orange-300 to-orange-500 flex items-center justify-center text-white group-hover:shadow-lg transition-all">
+                <span class="material-symbols-outlined text-lg sm:text-xl">store</span>
+            </div>
+            <div class="text-center">
+                <p class="text-[8px] sm:text-[9px] font-black text-orange-500 uppercase tracking-wider leading-tight">Penjual</p>
+                <h3 class="text-base sm:text-lg lg:text-xl font-extrabold text-[#2a2a2a] mt-0.5"><?= number_format($jumlah_penjual) ?></h3>
             </div>
         </a>
-        <a href="manajemen_user.php" class="bg-white/90 backdrop-blur-xl p-4 sm:p-6 lg:p-8 rounded-2xl lg:rounded-[2rem] border border-orange-100 flex items-center gap-3 sm:gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <div class="w-12 sm:w-14 lg:w-16 h-12 sm:h-14 lg:h-16 rounded-lg lg:rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-500 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-2xl lg:text-3xl">group</span></div>
-            <div>
-                <p class="text-[9px] sm:text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Pembeli</p>
-                <h3 class="text-lg sm:text-xl lg:text-2xl font-extrabold text-[#2a2a2a] mt-1"><?= number_format($jumlah_pembeli) ?></h3>
+        <a href="manajemen_user.php" class="bg-white/90 backdrop-blur-xl p-3 sm:p-4 rounded-xl lg:rounded-2xl border border-orange-100 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer group">
+            <div class="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white group-hover:shadow-lg transition-all">
+                <span class="material-symbols-outlined text-lg sm:text-xl">group</span>
+            </div>
+            <div class="text-center">
+                <p class="text-[8px] sm:text-[9px] font-black text-blue-500 uppercase tracking-wider leading-tight">Pembeli</p>
+                <h3 class="text-base sm:text-lg lg:text-xl font-extrabold text-[#2a2a2a] mt-0.5"><?= number_format($jumlah_pembeli) ?></h3>
             </div>
         </a>
-        <a href="manajemen_menu.php" class="bg-white/90 backdrop-blur-xl p-4 sm:p-6 lg:p-8 rounded-2xl lg:rounded-[2rem] border border-orange-100 shadow-glow-card relative overflow-hidden hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <div class="absolute -top-10 -right-6 w-24 h-24 rounded-full bg-orange-100/70 blur-2xl"></div>
-            <p class="text-[9px] sm:text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">Jumlah Menu</p>
-            <h3 class="text-lg sm:text-xl lg:text-2xl font-extrabold text-[#2a2a2a]"><?= number_format($jumlah_menu) ?></h3>
-        </a>
-        <a href="laporan_transaksi.php" class="bg-white/90 backdrop-blur-xl p-4 sm:p-6 lg:p-8 rounded-2xl lg:rounded-[2rem] border border-orange-100 flex items-center gap-3 sm:gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <div class="w-12 sm:w-14 lg:w-16 h-12 sm:h-14 lg:h-16 rounded-lg lg:rounded-[24px] bg-gradient-to-br from-orange-200 to-orange-400 flex items-center justify-center text-orange-900 shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-2xl lg:text-3xl">receipt_long</span></div>
-            <div>
-                <p class="text-[9px] sm:text-[10px] font-black text-orange-500 uppercase tracking-widest">Jumlah Transaksi</p>
-                <h3 class="text-base sm:text-lg lg:text-xl font-extrabold text-[#2a2a2a] mt-1"><?= number_format($jumlah_transaksi) ?></h3>
+        <a href="manajemen_menu.php" class="bg-white/90 backdrop-blur-xl p-3 sm:p-4 rounded-xl lg:rounded-2xl border border-orange-100 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer group">
+            <div class="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-gradient-to-br from-yellow-400 to-amber-500 flex items-center justify-center text-white group-hover:shadow-lg transition-all">
+                <span class="material-symbols-outlined text-lg sm:text-xl">restaurant_menu</span>
+            </div>
+            <div class="text-center">
+                <p class="text-[8px] sm:text-[9px] font-black text-amber-500 uppercase tracking-wider leading-tight">Menu</p>
+                <h3 class="text-base sm:text-lg lg:text-xl font-extrabold text-[#2a2a2a] mt-0.5"><?= number_format($jumlah_menu) ?></h3>
             </div>
         </a>
-        <a href="laporan_penjualan.php" class="bg-white/90 backdrop-blur-xl p-4 sm:p-6 lg:p-8 rounded-2xl lg:rounded-[2rem] border border-orange-100 flex items-center gap-3 sm:gap-5 shadow-glow-card hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
-            <div class="w-12 sm:w-14 lg:w-16 h-12 sm:h-14 lg:h-16 rounded-lg lg:rounded-[24px] bg-gradient-to-br from-yellow-400 to-orange-500 flex items-center justify-center text-white shrink-0 shadow-xl shadow-orange-300/40"><span class="material-symbols-outlined text-2xl lg:text-3xl">attach_money</span></div>
-            <div>
-                <p class="text-[9px] sm:text-[10px] font-black text-orange-500 uppercase tracking-widest">Pendapatan Admin</p>
-                <h3 class="text-base sm:text-lg lg:text-xl font-extrabold text-[#2a2a2a] mt-1">Rp <?= number_format($pendapatan_admin, 0, ',', '.') ?></h3>
+        <a href="laporan_transaksi.php" class="bg-white/90 backdrop-blur-xl p-3 sm:p-4 rounded-xl lg:rounded-2xl border border-orange-100 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer group">
+            <div class="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white group-hover:shadow-lg transition-all">
+                <span class="material-symbols-outlined text-lg sm:text-xl">receipt_long</span>
+            </div>
+            <div class="text-center">
+                <p class="text-[8px] sm:text-[9px] font-black text-emerald-500 uppercase tracking-wider leading-tight">Transaksi</p>
+                <h3 class="text-base sm:text-lg lg:text-xl font-extrabold text-[#2a2a2a] mt-0.5"><?= number_format($jumlah_transaksi) ?></h3>
+            </div>
+        </a>
+        <a href="laporan_pendapatan_admin.php" class="bg-white/90 backdrop-blur-xl p-3 sm:p-4 rounded-xl lg:rounded-2xl border border-orange-100 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer group">
+            <div class="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-gradient-to-br from-rose-400 to-rose-600 flex items-center justify-center text-white group-hover:shadow-lg transition-all">
+                <span class="material-symbols-outlined text-lg sm:text-xl">trending_up</span>
+            </div>
+            <div class="text-center">
+                <p class="text-[8px] sm:text-[9px] font-black text-rose-500 uppercase tracking-wider leading-tight">Pajak</p>
+                <h3 class="text-xs sm:text-sm lg:text-base font-extrabold text-[#2a2a2a] mt-0.5">Rp <?= number_format($pendapatan_admin, 0, ',', '.') ?></h3>
             </div>
         </a>
     </section>
 
     <!-- Grafik Penjualan -->
-    <div class="grid grid-cols-1 gap-6 sm:gap-8">
-        <div class="bg-white p-4 sm:p-6 md:p-10 rounded-2xl lg:rounded-4xl shadow-sm border border-slate-50">
-            <h4 class="text-base sm:text-lg md:text-xl font-extrabold text-[#003049] mb-6 sm:mb-8">Grafik Penjualan 7 Hari Terakhir</h4>
-            <div class="w-full overflow-x-auto">
-                <div class="flex items-end justify-between h-40 sm:h-48 md:h-64 gap-1.5 sm:gap-2 md:gap-3 min-w-max py-4">
-                    <?php foreach($grafik_data as $g): $height = ($g['nilai'] / $max_val) * 100; ?>
-                    <div class="flex-1 min-w-[30px] sm:min-w-[40px] md:min-w-[60px] flex flex-col items-center gap-2 sm:gap-4 group relative">
-                        <div class="absolute -top-8 sm:-top-10 bg-[#003049] text-white text-[8px] sm:text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Rp<?= number_format($g['nilai']) ?></div>
-                        <div class="w-full max-w-[8px] sm:max-w-[10px] md:max-w-[12px] bg-slate-50 rounded-full relative h-32 sm:h-40 md:h-48 overflow-hidden">
-                            <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-primary-orange to-orange-400 rounded-full transition-all duration-1000" style="height:<?= $height ?>%"></div>
-                        </div>
-                        <span class="text-[8px] sm:text-[9px] md:text-[10px] font-black <?= $g['is_today'] ? 'text-primary-orange' : 'text-slate-300' ?>"><?= $g['label'] ?></span>
+    <div class="bg-white rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-sm border border-slate-50 p-3 sm:p-4 md:p-6">
+        <div class="mb-4 sm:mb-6">
+            <h4 class="text-sm sm:text-base md:text-lg font-extrabold text-[#003049]">Penjualan 7 Hari Terakhir</h4>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Ringkasan total penjualan per hari</p>
+        </div>
+        <div class="overflow-x-auto pb-2">
+            <div class="flex items-end justify-between h-32 sm:h-40 md:h-56 gap-1 sm:gap-2 min-w-[300px] sm:min-w-full">
+                <?php foreach($grafik_data as $g): $height = ($g['nilai'] / $max_val) * 100; ?>
+                <div class="flex-1 flex flex-col items-center gap-1 sm:gap-2 group relative">
+                    <div class="absolute -top-6 sm:-top-8 bg-[#003049] text-white text-[8px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
+                        Rp<?= number_format($g['nilai'], 0, ',', '.') ?>
                     </div>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tabel Statistik Lengkap -->
-    <div class="grid grid-cols-1 gap-6 sm:gap-8 mb-8 sm:mb-10">
-        <div class="bg-white rounded-2xl lg:rounded-4xl shadow-sm border border-slate-50 overflow-hidden">
-            <div class="p-4 sm:p-6 md:p-8 border-b border-slate-50 bg-gradient-to-r from-orange-50 to-orange-100">
-                <h4 class="text-base sm:text-lg md:text-xl font-extrabold text-[#003049] flex items-center gap-2">
-                    <span class="material-symbols-outlined text-lg sm:text-2xl">table_chart</span>
-                    <span class="line-clamp-1">Ringkasan Statistik Sistem</span>
-                </h4>
-                <p class="text-xs sm:text-sm text-slate-500 mt-1">Data komprehensif kesehatan platform</p>
-            </div>
-            <div class="overflow-x-auto -mx-4 sm:mx-0">
-                <div class="min-w-full px-4 sm:px-0">
-                    <table class="w-full text-xs sm:text-sm md:text-base">
-                        <thead>
-                            <tr class="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
-                                <th class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-left font-bold text-slate-700 whitespace-nowrap">📊 Metrik</th>
-                                <th class="px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center font-bold text-slate-700 whitespace-nowrap">Total</th>
-                                <th class="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center font-bold text-slate-700 whitespace-nowrap">Status</th>
-                                <th class="hidden md:table-cell px-3 sm:px-4 md:px-6 py-3 sm:py-4 text-center font-bold text-slate-700 whitespace-nowrap">Trend</th>
-                            </tr>
-                        </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            <tr class="hover:bg-slate-50 transition-all">
-                                <td class="px-3 sm:px-4 md:px-6 py-2 sm:py-4 font-semibold text-slate-800 whitespace-nowrap">🏪 Kantin Aktif</td>
-                                <td class="px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="text-lg sm:text-xl md:text-2xl font-bold text-orange-600"><?= number_format($jumlah_kantin) ?></span>
-                                </td>
-                                <td class="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="inline-block px-2 sm:px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold whitespace-nowrap">✓ Aktif</span>
-                                </td>
-                                <td class="hidden md:table-cell px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="text-green-600 font-semibold">↑ Stabil</span>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 transition-all">
-                                <td class="px-3 sm:px-4 md:px-6 py-2 sm:py-4 font-semibold text-slate-800 whitespace-nowrap">👨‍💼 Penjual</td>
-                                <td class="px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="text-lg sm:text-xl md:text-2xl font-bold text-blue-600"><?= number_format($jumlah_penjual) ?></span>
-                                </td>
-                                <td class="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="inline-block px-2 sm:px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold whitespace-nowrap">✓ Terdaftar</span>
-                                </td>
-                                <td class="hidden md:table-cell px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="text-blue-600 font-semibold">↑ Meningkat</span>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 transition-all">
-                                <td class="px-3 sm:px-4 md:px-6 py-2 sm:py-4 font-semibold text-slate-800 whitespace-nowrap">👥 Pembeli</td>
-                                <td class="px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="text-lg sm:text-xl md:text-2xl font-bold text-indigo-600"><?= number_format($jumlah_pembeli) ?></span>
-                                </td>
-                                <td class="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="inline-block px-2 sm:px-3 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-semibold whitespace-nowrap">✓ Aktif</span>
-                                </td>
-                                <td class="hidden md:table-cell px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="text-indigo-600 font-semibold">↑ Tinggi</span>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 transition-all">
-                                <td class="px-3 sm:px-4 md:px-6 py-2 sm:py-4 font-semibold text-slate-800 whitespace-nowrap">🍽️ Menu</td>
-                                <td class="px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="text-lg sm:text-xl md:text-2xl font-bold text-emerald-600"><?= number_format($jumlah_menu) ?></span>
-                                </td>
-                                <td class="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="inline-block px-2 sm:px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-semibold whitespace-nowrap">✓ Update</span>
-                                </td>
-                                <td class="hidden md:table-cell px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="text-emerald-600 font-semibold">↑ Beragam</span>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-slate-50 transition-all">
-                                <td class="px-3 sm:px-4 md:px-6 py-2 sm:py-4 font-semibold text-slate-800 whitespace-nowrap">💳 Transaksi</td>
-                                <td class="px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="text-lg sm:text-xl md:text-2xl font-bold text-purple-600"><?= number_format($jumlah_transaksi) ?></span>
-                                </td>
-                                <td class="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="inline-block px-2 sm:px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold whitespace-nowrap">✓ Berjalan</span>
-                                </td>
-                                <td class="hidden md:table-cell px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="text-purple-600 font-semibold">↑ Dinamis</span>
-                                </td>
-                            </tr>
-                            <tr class="bg-gradient-to-r from-yellow-50 to-orange-50 hover:from-yellow-100 hover:to-orange-100 transition-all">
-                                <td class="px-3 sm:px-4 md:px-6 py-2 sm:py-4 font-bold text-slate-800 flex items-center gap-2 whitespace-nowrap">
-                                    💰 Pendapatan
-                                </td>
-                                <td class="px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="text-base sm:text-lg md:text-2xl font-extrabold text-orange-600 block">Rp<?= number_format($pendapatan_admin, 0, ',', '.') ?></span>
-                                </td>
-                                <td class="hidden sm:table-cell px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="inline-block px-2 sm:px-3 py-1 bg-orange-200 text-orange-800 rounded-full text-xs font-semibold whitespace-nowrap">💵 Masuk</span>
-                                </td>
-                                <td class="hidden md:table-cell px-3 sm:px-4 md:px-6 py-2 sm:py-4 text-center">
-                                    <span class="text-orange-600 font-bold">📈 Positif</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Grafik Penjualan -->
-    <div class="grid grid-cols-1 gap-6 sm:gap-8 mt-8 sm:mt-10">
-        <div class="bg-white p-4 sm:p-6 md:p-10 rounded-2xl lg:rounded-4xl shadow-sm border border-slate-50">
-            <h4 class="text-base sm:text-lg md:text-xl font-extrabold text-[#003049] mb-6 sm:mb-8"><?= t('admin.sales_statistics') ?></h4>
-            <div class="w-full overflow-x-auto">
-                <div class="flex items-end justify-between h-40 sm:h-48 md:h-64 gap-1.5 sm:gap-2 md:gap-3 min-w-max py-4">
-                    <?php foreach($grafik_data as $g): $height = ($g['nilai'] / $max_val) * 100; ?>
-                    <div class="flex-1 min-w-[30px] sm:min-w-[40px] md:min-w-[60px] flex flex-col items-center gap-2 sm:gap-4 group relative">
-                        <div class="absolute -top-8 sm:-top-10 bg-[#003049] text-white text-[8px] sm:text-[9px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">Rp<?= number_format($g['nilai']) ?></div>
-                        <div class="w-full max-w-[8px] sm:max-w-[10px] md:max-w-[12px] bg-slate-50 rounded-full relative h-32 sm:h-40 md:h-48 overflow-hidden">
-                            <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-primary-orange to-orange-400 rounded-full transition-all duration-1000" style="height:<?= $height ?>%"></div>
-                        </div>
-                        <span class="text-[8px] sm:text-[9px] md:text-[10px] font-black <?= $g['is_today'] ? 'text-primary-orange' : 'text-slate-300' ?>"><?= $g['label'] ?></span>
+                    <div class="w-full bg-slate-100 rounded-t relative flex-1 overflow-hidden min-h-[20px]">
+                        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-primary-orange to-orange-400 rounded-t transition-all duration-700 ease-out" style="height:<?= $height ?>%"></div>
                     </div>
-                    <?php endforeach; ?>
+                    <span class="text-[7px] sm:text-[9px] font-black <?= $g['is_today'] ? 'text-primary-orange font-bold' : 'text-slate-400' ?>"><?= $g['label'] ?></span>
                 </div>
+                <?php endforeach; ?>
             </div>
         </div>
     </div>
 
+    <!-- Footer -->
+    <div class="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-slate-500 pb-4">
+        <p>© 2024-<?= date('Y') ?> <span class="font-bold text-[#2a2a2a]">Kantin Kita</span>. Dashboard Admin System.</p>
+    </div>
 </main>
 
 </body>

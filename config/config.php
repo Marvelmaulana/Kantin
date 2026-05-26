@@ -86,13 +86,22 @@ if (!function_exists('kk_ensure_core_schema')) {
                 email VARCHAR(150) NOT NULL UNIQUE,
                 password VARCHAR(255) NOT NULL,
                 role ENUM('admin','penjual','pembeli') NOT NULL DEFAULT 'pembeli',
+                tipe_pengguna ENUM('siswa','guru') NULL COMMENT 'Untuk pembeli & penjual: siswa atau guru',
+                nip VARCHAR(20) UNIQUE NULL COMMENT 'Nomor Identitas Guru untuk verifikasi penjual',
+                kelas ENUM('10','11','12') NULL COMMENT 'Kelas hanya untuk siswa pembeli',
                 id_kantin INT NULL,
                 nama_kantin VARCHAR(150) NULL,
                 foto_profil VARCHAR(255) NULL,
                 bahasa VARCHAR(10) NOT NULL DEFAULT 'id',
                 reset_token VARCHAR(100) NULL,
                 reset_expired DATETIME NULL,
-                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+                created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                CONSTRAINT chk_user_kelas CHECK (
+                    (role = 'pembeli' AND tipe_pengguna = 'siswa' AND kelas IN ('10','11','12')) OR
+                    (role = 'pembeli' AND tipe_pengguna = 'guru' AND kelas IS NULL) OR
+                    (role = 'penjual' AND tipe_pengguna = 'guru' AND kelas IS NULL) OR
+                    (role = 'admin' AND tipe_pengguna IS NULL AND kelas IS NULL)
+                )
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
 
             "CREATE TABLE IF NOT EXISTS kantin (
@@ -328,12 +337,14 @@ if (!function_exists('kk_ensure_core_schema')) {
 kk_ensure_core_schema($koneksi);
 
 // --- MIGRASI: pastikan kolom nama_kantin (users) dan nama_penjual (kantin) ada ---
-function kk_column_exists($koneksi, $table, $column) {
-    $table = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$table);
-    $column = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$column);
-    if ($table === '' || $column === '') return false;
-    $res = mysqli_query($koneksi, "SHOW COLUMNS FROM `$table` LIKE '$column'");
-    return $res && mysqli_num_rows($res) > 0;
+if (!function_exists('kk_column_exists')) {
+    function kk_column_exists($koneksi, $table, $column) {
+        $table = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$table);
+        $column = preg_replace('/[^a-zA-Z0-9_]/', '', (string)$column);
+        if ($table === '' || $column === '') return false;
+        $res = mysqli_query($koneksi, "SHOW COLUMNS FROM `$table` LIKE '$column'");
+        return $res && mysqli_num_rows($res) > 0;
+    }
 }
 
 if (!kk_column_exists($koneksi, 'users', 'nama_kantin')) {

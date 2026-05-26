@@ -89,6 +89,16 @@ include(__DIR__ . '/../../includes/language_helper.php');
             }
         }
 
+        /* Input Focus Effects */
+        .input-field {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .input-field:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.15);
+        }
+
         /* Loading Spinner */
         .spinner {
             border: 3px solid rgba(255, 255, 255, 0.3);
@@ -101,16 +111,6 @@ include(__DIR__ . '/../../includes/language_helper.php');
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
-        }
-
-        /* Input Focus Effects */
-        .input-field {
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .input-field:focus {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(255, 107, 53, 0.15);
         }
     </style>
 </head>
@@ -186,7 +186,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                         
                         <circle cx="250" cy="175" r="160" fill="url(#bgGrad)" class="opacity-80 dark:opacity-10"/>
                         
-                        <!-- Canteen Stall Structure -->
+                        <!-- Canteen Stall Stall Structure -->
                         <rect x="120" y="160" width="260" height="140" rx="16" fill="#F1F5F9" class="dark:fill-slate-800" stroke="#CBD5E1" stroke-width="2" />
                         <rect x="140" y="180" width="100" height="80" rx="8" fill="#FFFFFF" class="dark:fill-slate-700" />
                         <rect x="260" y="180" width="100" height="80" rx="8" fill="#FFFFFF" class="dark:fill-slate-700" />
@@ -204,9 +204,11 @@ include(__DIR__ . '/../../includes/language_helper.php');
                         <rect x="100" y="120" width="300" height="15" rx="5" fill="#FF6B35" />
 
                         <!-- Ramen / Bento illustration on counter -->
+                        <!-- Bowl -->
                         <path d="M165 230 C165 245 215 245 215 230 Z" fill="#E2E8F0" class="dark:fill-slate-600" stroke="#94A3B8" stroke-width="2"/>
                         <path d="M170 230 C175 220 205 220 210 230 Z" fill="#FFB703" />
                         <circle cx="180" cy="227" r="5" fill="#D62828" />
+                        <!-- Chopsticks -->
                         <line x1="160" y1="215" x2="190" y2="232" stroke="#8B5A2B" stroke-width="3" stroke-linecap="round"/>
                         <line x1="158" y1="220" x2="188" y2="237" stroke="#8B5A2B" stroke-width="3" stroke-linecap="round"/>
 
@@ -377,7 +379,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
 
     <!-- Help Modal (Bantuan Login) -->
     <div id="helpModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 smooth-transition">
-        <div class="w-full max-w-md bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-6 sm:p-8 overflow-y-auto max-h-[90vh]">
+        <div class="w-full max-w-md bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 shadow-2xl p-6 sm:p-8 overflow-y-auto max-h-[90vh] animate-float-3">
             <div class="flex items-center justify-between mb-5 border-b border-slate-100 dark:border-slate-800 pb-3">
                 <div class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-brand-orange text-2xl select-none">help_center</span>
@@ -410,6 +412,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     </p>
                 </div>
 
+
                 <div class="pt-3 border-t border-slate-100 dark:border-slate-800 text-center">
                     <p class="text-xs text-slate-400 font-semibold">Butuh bantuan tambahan?</p>
                     <a href="mailto:cukakamu55@gmail.com" class="text-brand-orange font-bold hover:underline">cukakamu55@gmail.com</a>
@@ -425,8 +428,9 @@ include(__DIR__ . '/../../includes/language_helper.php');
 
     <!-- Form & Interactions Logic -->
     <script>
+        // Wrap all script in DOMContentLoaded to ensure DOM is ready
         document.addEventListener('DOMContentLoaded', function() {
-            // --- Dark Mode Toggle ---
+            // --- 1. Dark Mode Toggle ---
             const darkModeToggle = document.getElementById('darkModeToggle');
             const darkIcon = document.getElementById('darkIcon');
 
@@ -440,6 +444,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                 }
             }
 
+            // Initialize theme preference
             const savedTheme = localStorage.getItem('darkMode');
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             let isDarkActive = savedTheme === 'true' || (savedTheme === null && systemPrefersDark);
@@ -451,83 +456,89 @@ include(__DIR__ . '/../../includes/language_helper.php');
                 applyTheme(isDarkActive);
             });
 
-            // --- Password Visibility Toggle ---
-            function togglePassword() {
-                const passwordInput = document.getElementById('passwordInput');
-                const eyeIcon = document.getElementById('eyeIcon');
-                
-                if (passwordInput.type === 'password') {
-                    passwordInput.type = 'text';
-                    eyeIcon.textContent = 'visibility_off';
-                } else {
-                    passwordInput.type = 'password';
-                    eyeIcon.textContent = 'visibility';
-                }
+            // --- 2. Password Visibility Toggle ---
+        function togglePassword() {
+            const passwordInput = document.getElementById('passwordInput');
+            const eyeIcon = document.getElementById('eyeIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.textContent = 'visibility_off';
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.textContent = 'visibility';
             }
+        }
 
-            window.togglePassword = togglePassword;
+        window.togglePassword = togglePassword;
 
-            // --- Modal Interactions ---
-            const helpBtn = document.getElementById('helpBtn');
-            const helpModal = document.getElementById('helpModal');
-            const helpCloseBtn = document.getElementById('helpCloseBtn');
+        // --- 3. Modal Interactions (Help) ---
+        const helpBtn = document.getElementById('helpBtn');
+        const helpModal = document.getElementById('helpModal');
+        const helpCloseBtn = document.getElementById('helpCloseBtn');
 
-            function openHelpModal() {
-                helpModal.classList.remove('hidden');
-                helpModal.classList.add('flex');
+        function openHelpModal() {
+            helpModal.classList.remove('hidden');
+            helpModal.classList.add('flex');
+        }
+
+        function closeHelpModal() {
+            helpModal.classList.remove('flex');
+            helpModal.classList.add('hidden');
+        }
+
+        helpBtn.addEventListener('click', openHelpModal);
+        helpCloseBtn.addEventListener('click', closeHelpModal);
+
+        // Close on clicking backdrop
+        helpModal.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                closeHelpModal();
             }
+        });
 
-            function closeHelpModal() {
-                helpModal.classList.remove('flex');
-                helpModal.classList.add('hidden');
+        // Close on pressing Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !helpModal.classList.contains('hidden')) {
+                closeHelpModal();
             }
+        });
 
-            helpBtn.addEventListener('click', openHelpModal);
-            helpCloseBtn.addEventListener('click', closeHelpModal);
+        // --- 5. Form Submissions Interceptor (Modern Errors & Spinner) ---
+        const errorAlert = document.getElementById('errorAlert');
+        const errorAlertText = document.getElementById('errorAlertText');
+        const successAlert = document.getElementById('successAlert');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnSpinner = document.getElementById('btnSpinner');
+        const btnText = document.getElementById('btnText');
 
-            helpModal.addEventListener('click', (e) => {
-                if (e.target === helpModal) {
-                    closeHelpModal();
-                }
-            });
+        function showErrorAlert(message) {
+            errorAlertText.textContent = message;
+            errorAlert.classList.remove('hidden');
+            errorAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
 
-            document.addEventListener('keydown', (e) => {
-                if (e.key === 'Escape' && !helpModal.classList.contains('hidden')) {
-                    closeHelpModal();
-                }
-            });
+        function closeErrorAlert() {
+            errorAlert.classList.add('hidden');
+        }
 
-            // --- Form Submission Handler ---
-            const loginForm = document.getElementById('loginForm');
-            const errorAlert = document.getElementById('errorAlert');
-            const errorAlertText = document.getElementById('errorAlertText');
-            const successAlert = document.getElementById('successAlert');
-            const submitBtn = document.getElementById('submitBtn');
-            const btnSpinner = document.getElementById('btnSpinner');
-            const btnText = document.getElementById('btnText');
+        function showSuccessAlert() {
+            successAlert.classList.remove('hidden');
+        }
 
-            function showErrorAlert(message) {
-                errorAlertText.textContent = message;
-                errorAlert.classList.remove('hidden');
-                errorAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            closeErrorAlert();
 
-            function closeErrorAlert() {
-                errorAlert.classList.add('hidden');
-            }
+            // Client-side validations
+            const role = roleInput.value;
+            const tipe = typeInput.value;
 
-            function showSuccessAlert() {
-                successAlert.classList.remove('hidden');
-            }
-
-            window.closeErrorAlert = closeErrorAlert;
-
-            loginForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                closeErrorAlert();
-
+            if (tipe === 'siswa') {
+                // Validasi Siswa Pembeli
                 const userInput = document.getElementById('userInput').value.trim();
                 const passwordVal = document.getElementById('passwordInput').value;
+                const kelasSelect = document.getElementById('kelasSelect');
 
                 if (!userInput) {
                     showErrorAlert('Username atau Email tidak boleh kosong.');
@@ -537,57 +548,91 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     showErrorAlert('Password tidak boleh kosong.');
                     return;
                 }
+                if (!kelasSelect.value) {
+                    showErrorAlert('Silakan pilih kelas Anda terlebih dahulu.');
+                    return;
+                }
+            } else if (tipe === 'guru') {
+                // Validasi Guru - Using Guru Fields
+                const guruUserInput = document.getElementById('guruUserInput').value.trim();
+                const guruPasswordInput = document.getElementById('guruPasswordInput').value;
 
-                submitBtn.disabled = true;
-                btnSpinner.classList.remove('hidden');
-                btnText.textContent = 'Memverifikasi...';
+                if (!guruUserInput) {
+                    showErrorAlert('Username atau Email tidak boleh kosong.');
+                    return;
+                }
+                if (!guruPasswordInput) {
+                    showErrorAlert('Password tidak boleh kosong.');
+                    return;
+                }
 
-                try {
-                    const formData = new FormData(loginForm);
-                    const response = await fetch(loginForm.action, {
-                        method: 'POST',
-                        body: formData
-                    });
+                // Copy Guru input values to hidden siswa fields for form submission
+                document.getElementById('userInput').value = guruUserInput;
+                document.getElementById('passwordInput').value = guruPasswordInput;
+            }
 
-                    if (response.redirected) {
+            // Start Loading State
+            submitBtn.disabled = true;
+            btnSpinner.classList.remove('hidden');
+            btnText.textContent = 'Memverifikasi...';
+
+            try {
+                // Post form data to current action
+                const formData = new FormData(loginForm);
+                const response = await fetch(loginForm.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                // Check if redirect already occurred
+                if (response.redirected) {
+                    showSuccessAlert();
+                    setTimeout(() => {
+                        window.location.href = response.url;
+                    }, 800);
+                    return;
+                }
+
+                const responseText = await response.text();
+
+                // Check if the response contains alert scripts outputted by backend
+                const alertRegex = /alert\(['"]([^'"]+)['"]\)/;
+                const match = responseText.match(alertRegex);
+
+                if (match && match[1]) {
+                    // Extract message and display as modern inline alert
+                    showErrorAlert(match[1]);
+                    
+                    // Reset Button State
+                    submitBtn.disabled = false;
+                    btnSpinner.classList.add('hidden');
+                    btnText.textContent = 'Masuk Akun';
+                } else {
+                    // If no alert is found, but the response went through successfully
+                    if (response.url && !response.url.includes('login.php')) {
                         showSuccessAlert();
                         setTimeout(() => {
                             window.location.href = response.url;
                         }, 800);
-                        return;
-                    }
-
-                    const responseText = await response.text();
-                    const alertRegex = /alert\(['"]([^'"]+)['"]\)/;
-                    const match = responseText.match(alertRegex);
-
-                    if (match && match[1]) {
-                        showErrorAlert(match[1]);
-                        submitBtn.disabled = false;
-                        btnSpinner.classList.add('hidden');
-                        btnText.textContent = 'Masuk Akun';
                     } else {
-                        if (response.url && !response.url.includes('login.php')) {
-                            showSuccessAlert();
-                            setTimeout(() => {
-                                window.location.href = response.url;
-                            }, 800);
-                        } else {
-                            showSuccessAlert();
-                            setTimeout(() => {
-                                loginForm.submit();
-                            }, 500);
-                        }
+                        // Fallback: standard submission
+                        showSuccessAlert();
+                        setTimeout(() => {
+                            loginForm.submit();
+                        }, 500);
                     }
-                } catch (err) {
-                    console.error(err);
-                    showErrorAlert('Terjadi kesalahan jaringan atau server. Silakan coba lagi.');
-                    submitBtn.disabled = false;
-                    btnSpinner.classList.add('hidden');
-                    btnText.textContent = 'Masuk Akun';
                 }
-            });
+            } catch (err) {
+                console.error(err);
+                showErrorAlert('Terjadi kesalahan jaringan atau server. Silakan coba lagi.');
+                
+                // Reset Button State
+                submitBtn.disabled = false;
+                btnSpinner.classList.add('hidden');
+                btnText.textContent = 'Masuk Akun';
+            }
         });
+        }); // End DOMContentLoaded event listener
     </script>
 </body>
 </html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Guru Login - Kantin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        form {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        input, select {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background: #FF6B35;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #e0531f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 Login Test - Guru</h1>
+        
+        <div class="status info">
+            <h3>Test Guru (Penjual) User</h3>
+            <p>Untuk test Guru login, kami perlu create guru user lebih dulu.</p>
+            <p>Form dibawah akan submit ke backend untuk test guru login.</p>
+        </div>
+
+        <form method="POST" action="proses.php" id="guruTestForm">
+            <h3>Test Guru Login</h3>
+            
+            <label>Type Pengguna:</label>
+            <select name="tipe_pengguna" required>
+                <option value="guru">Guru</option>
+            </select>
+
+            <label>Role:</label>
+            <select name="role" required>
+                <option value="penjual">Penjual (Guru)</option>
+            </select>
+
+            <label>Username:</label>
+            <input type="text" name="user_input" placeholder="Masukkan username guru" required>
+
+            <label>Password:</label>
+            <input type="password" name="password" placeholder="Masukkan password guru" required>
+
+            <input type="hidden" name="login_btn" value="1">
+
+            <button type="submit">Test Guru Login</button>
+        </form>
+
+        <div class="status info">
+            <h3>Langkah Testing:</h3>
+            <ol>
+                <li>Pertama, create test guru user dengan script di bawah ini</li>
+                <li>Kemudian test login dengan form di atas</li>
+            </ol>
+        </div>
+
+        <hr>
+
+        <h3>📝 Create Test Guru User</h3>
+        <form method="POST" action="create_test_guru.php" id="createGuruForm">
+            <label>Guru Username:</label>
+            <input type="text" name="username" value="guru_test" required>
+
+            <label>Guru Email:</label>
+            <input type="email" name="email" value="guru_test@school.com" required>
+
+            <label>Guru Password:</label>
+            <input type="password" name="password" value="guru123" required>
+
+            <button type="submit">Create Test Guru User</button>
+        </form>
+
+        <div class="status error" id="message" style="display:none;"></div>
+    </div>
+
+    <script>
+        // Display any messages
+        const urlParams = new URLSearchParams(window.location.search);
+        const msg = urlParams.get('msg');
+        if (msg) {
+            const msgEl = document.getElementById('message');
+            msgEl.textContent = decodeURIComponent(msg);
+            msgEl.style.display = 'block';
+        }
+    </script>
+</body>
+</html>

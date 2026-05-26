@@ -30,6 +30,7 @@ $total_kantin = mysqli_num_rows($query);
 <html lang="id">
 <head>
     <meta charset="utf-8"/>
+    
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
     <title>Manajemen Kantin - Kantin Kita</title>
     <script src="https://cdn.tailwindcss.com"></script>

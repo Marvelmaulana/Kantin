@@ -9,27 +9,6 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     header('Location: ../auth/login.php');
     exit();
 }
-?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Laporan Kantin</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="flex">
-    <?php include '../../includes/sidebar_admin.php'; ?>
-    
-    <main class="flex-1 p-8">
-        <h1 class="text-2xl font-bold">Laporan Kantin</h1>
-        <p class="mt-4 text-slate-600">Halaman laporan kantin sedang dalam pengembangan.</p>
-        
-        <!-- Placeholder content -->
-        <div class="mt-8 bg-slate-100 p-6 rounded-lg">
-            <p class="text-slate-600">Fitur ini akan menampilkan laporan detail untuk setiap kantin.</p>
-        </div>
-    </main>
 
 // Ambil data kantin dengan statistik
 $query_kantin = mysqli_query($koneksi, "
@@ -97,10 +76,15 @@ $query_filtered = mysqli_query($koneksi, "
     LEFT JOIN detail_pesanan dp ON m.id_menu = dp.id_menu
     LEFT JOIN pesanan p ON dp.id_pesanan = p.id_pesanan
     WHERE $where_sql
-    GROUP BY k.id_kantin
+    GROUP BY k.id_kantin, k.nama_kantin, k.status_buka, k.rating, k.total_ulasan, k.logo, u.id_user, u.username
     ORDER BY k.rating DESC, total_pendapatan DESC
     LIMIT 200
 ");
+
+// Handle query error
+if (!$query_filtered) {
+    $query_filtered = mysqli_query($koneksi, "SELECT * FROM kantin WHERE 1=0");
+}
 
 // List penjual untuk filter
 $daftar_penjual = mysqli_query($koneksi, "SELECT DISTINCT u.id_user, u.username FROM users u JOIN kantin k ON u.id_user = k.id_penjual ORDER BY u.username");
@@ -302,7 +286,7 @@ if (!$daftar_penjual) {
             <h3 class="font-extrabold text-[#003049] text-lg flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary-orange">list_alt</span>
                 Data Kantin
-                <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-xl text-xs font-bold ml-2"><?= mysqli_num_rows($query_filtered) ?></span>
+                <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-xl text-xs font-bold ml-2"><?= $query_filtered ? mysqli_num_rows($query_filtered) : 0 ?></span>
             </h3>
         </div>
 

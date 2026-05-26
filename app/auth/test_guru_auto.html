@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Guru Login Auto-Submit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 100px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        .status {
+            padding: 20px;
+            border-radius: 5px;
+            font-size: 18px;
+            margin: 20px 0;
+        }
+        .processing {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔐 Guru Login Test</h1>
+    <div class="status processing">
+        ⏳ Sedang mencoba login dengan guru_test...
+    </div>
+
+    <form id="loginForm" method="POST" action="proses.php" style="display: none;">
+        <input type="hidden" name="login_btn" value="1">
+        <input type="hidden" name="tipe_pengguna" value="guru">
+        <input type="hidden" name="role" value="penjual">
+        <input type="hidden" name="user_input" value="guru_test">
+        <input type="hidden" name="password" value="guru123">
+    </form>
+
+    <script>
+        // Auto-submit form after 1 second
+        setTimeout(() => {
+            document.getElementById('loginForm').submit();
+        }, 1000);
+    </script>
+</body>
+</html>

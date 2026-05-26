@@ -1,19 +1,23 @@
 -- Database schema for Kantin app
--- Users table with role-specific kelas attribute
+-- Users table with role-specific kelas attribute and tipe_pengguna
 CREATE TABLE IF NOT EXISTS users (
     id_user INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(100) NOT NULL UNIQUE,
     email VARCHAR(150) NOT NULL UNIQUE,
     password VARCHAR(255) NOT NULL,
     role ENUM('admin','penjual','pembeli') NOT NULL DEFAULT 'pembeli',
+    tipe_pengguna ENUM('siswa','guru') NULL,
+    nip VARCHAR(20) UNIQUE NULL,
     kelas ENUM('10','11','12') NULL,
     bahasa VARCHAR(10) NOT NULL DEFAULT 'id',
     foto_profil VARCHAR(255) NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT chk_user_kelas CHECK (
-        (role = 'pembeli' AND kelas IN ('10','11','12')) OR
-        (role <> 'pembeli' AND kelas IS NULL)
+        (role = 'pembeli' AND tipe_pengguna = 'siswa' AND kelas IN ('10','11','12')) OR
+        (role = 'pembeli' AND tipe_pengguna = 'guru' AND kelas IS NULL) OR
+        (role = 'penjual' AND tipe_pengguna = 'guru' AND kelas IS NULL) OR
+        (role = 'admin' AND tipe_pengguna IS NULL AND kelas IS NULL)
     )
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
