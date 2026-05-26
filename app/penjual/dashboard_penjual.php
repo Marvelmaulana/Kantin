@@ -398,6 +398,9 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
         <?php endforeach; ?>
     </div>
 
+    <!-- SECTION: PENGATURAN JAM OPERASIONAL -->
+    <?php include(__DIR__ . '/includes_jam_operasional.php'); ?>
+
     <!-- PESANAN MASUK + MENU SAYA -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 

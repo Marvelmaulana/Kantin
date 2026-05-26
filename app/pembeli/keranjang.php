@@ -343,11 +343,17 @@ foreach ($grouped as $idKantin => $kantin) {
         <div class="kantin-header rounded-3xl p-4 md:p-5">
             <!-- Header Kantin -->
             <div class="flex items-center justify-between mb-4">
-                <div class="flex items-center gap-3">
+                <div class="flex items-center gap-3 flex-1">
                     <img src="<?= kk_upload_url($group['logo'] ?? '', 'logo') ?>"
                          class="w-12 h-12 rounded-2xl object-cover border-2 border-white shadow-md">
                     <div>
-                        <p class="headline font-black text-base"><?= htmlspecialchars($group['nama']) ?></p>
+                        <div class="flex items-center gap-2">
+                            <p class="headline font-black text-base"><?= htmlspecialchars($group['nama']) ?></p>
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold <?= $group['is_open'] ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' ?>">
+                                <span class="w-2 h-2 rounded-full <?= $group['is_open'] ? 'bg-green-500' : 'bg-red-500' ?> animate-pulse"></span>
+                                <?= $group['is_open'] ? 'BUKA' : 'TUTUP' ?>
+                            </span>
+                        </div>
                         <p class="text-xs text-gray-500 font-semibold"><?= count($group['items']) ?> menu</p>
                         <?php if (!$group['is_open']): ?>
                         <p class="text-[11px] text-purple-600 font-bold mt-0.5">

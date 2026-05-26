@@ -48,6 +48,15 @@ $stok = (int)($data['stok'] ?? 0);
 $statusMenu = $data['status'] ?? 'Tersedia';
 $isHabis = ($statusMenu === 'Habis' || $stok <= 0);
 $stokTerbatas = (!$isHabis && $stok <= 5);
+
+// ===== LOGIC STATUS MENU BARU =====
+$menuStatus = kk_get_menu_status($data, $data); // menggunakan helper function baru
+$menuStatusLabel = kk_get_menu_status_label($menuStatus);
+$menuStatusBadgeClass = kk_get_status_badge_class($menuStatus);
+// Update isHabis dan isLuarJam based on menuStatus
+$isHabis = ($menuStatus === 'habis');
+$isLuarJam = ($menuStatus === 'tutup');
+
 $csrfToken = kk_csrf_token();
 
 // Query ulasan
@@ -205,17 +214,28 @@ function goBack() {
 
             <!-- Nama Menu -->
             <div>
-                <h1 class="headline text-3xl md:text-4xl font-black leading-tight text-gray-900"><?= htmlspecialchars($data['nama_menu']); ?></h1>
+                <div class="flex items-start justify-between gap-3 mb-2">
+                    <h1 class="headline text-3xl md:text-4xl font-black leading-tight text-gray-900 flex-1"><?= htmlspecialchars($data['nama_menu']); ?></h1>
+                    <span class="<?= htmlspecialchars($menuStatusBadgeClass, ENT_QUOTES, 'UTF-8') ?> px-3 py-1.5 text-xs font-bold whitespace-nowrap"><?= htmlspecialchars($menuStatusLabel, ENT_QUOTES, 'UTF-8') ?></span>
+                </div>
                 <p class="headline text-3xl md:text-4xl font-black gradient-text mt-2"><?= kk_format_rupiah($data['harga']); ?></p>
             </div>
 
             <!-- Stok Warning -->
-            <?php if ($isHabis): ?>
+            <?php if ($menuStatus === 'habis'): ?>
             <div class="px-4 py-3 bg-red-50 border-2 border-red-200 rounded-2xl flex items-center gap-3">
                 <span class="material-symbols-outlined text-red-500 text-2xl">error</span>
                 <div>
-                    <p class="font-black text-red-600 text-sm">Maaf, menu ini sedang habis</p>
-                    <p class="text-xs text-red-400">Coba menu lain ya!</p>
+                    <p class="font-black text-red-600 text-sm">Stok Habis</p>
+                    <p class="text-xs text-red-400">Menu ini sedang tidak tersedia. Coba menu lain ya!</p>
+                </div>
+            </div>
+            <?php elseif ($menuStatus === 'tutup'): ?>
+            <div class="px-4 py-3 bg-purple-50 border-2 border-purple-200 rounded-2xl flex items-center gap-3">
+                <span class="material-symbols-outlined text-purple-500 text-2xl">schedule</span>
+                <div>
+                    <p class="font-black text-purple-700 text-sm">Kantin Sedang Tutup</p>
+                    <p class="text-xs text-purple-500">Kantin buka pukul <?= date('H:i', strtotime($jamBuka)) ?> - <?= date('H:i', strtotime($jamTutup)) ?></p>
                 </div>
             </div>
             <?php elseif ($stokTerbatas): ?>
@@ -223,18 +243,25 @@ function goBack() {
                 <span class="material-symbols-outlined text-amber-500 text-2xl">warning</span>
                 <div>
                     <p class="font-black text-amber-700 text-sm">Stok Terbatas!</p>
-                    <p class="text-xs text-amber-500">Tersisa <?= $stok ?> unit</p>
+                    <p class="text-xs text-amber-500">Tersisa <?= $stok ?> unit. Buruan pesan ya!</p>
+                </div>
+            </div>
+            <?php else: ?>
+            <div class="px-4 py-3 bg-green-50 border-2 border-green-200 rounded-2xl flex items-center gap-3">
+                <span class="material-symbols-outlined text-green-500 text-2xl">check_circle</span>
+                <div>
+                    <p class="font-black text-green-700 text-sm">Tersedia</p>
+                    <p class="text-xs text-green-600">Menu ini sedang tersedia dan siap untuk dipesan</p>
                 </div>
             </div>
             <?php endif; ?>
 
-            <!-- Jam Operasional Warning -->
-            <?php if ($isLuarJam): ?>
-            <div class="px-4 py-3 bg-purple-50 border-2 border-purple-200 rounded-2xl flex items-center gap-3">
-                <span class="material-symbols-outlined text-purple-500 text-2xl">schedule</span>
+            <!-- Jam Operasional Info (hanya jika bukan tutup) -->
+            <?php if ($menuStatus !== 'tutup'): ?>
+            <div class="px-4 py-3 bg-blue-50 border-2 border-blue-200 rounded-2xl flex items-center gap-3">
+                <span class="material-symbols-outlined text-blue-500 text-2xl">info</span>
                 <div>
-                    <p class="font-black text-purple-700 text-sm">Luar Jam Operasional</p>
-                    <p class="text-xs text-purple-500">Buka <?= date('H:i', strtotime($jamBuka)) ?> - <?= date('H:i', strtotime($jamTutup)) ?></p>
+                    <p class="text-xs text-blue-600"><strong>Jam Operasional:</strong> <?= date('H:i', strtotime($jamBuka)) ?> - <?= date('H:i', strtotime($jamTutup)) ?></p>
                 </div>
             </div>
             <?php endif; ?>

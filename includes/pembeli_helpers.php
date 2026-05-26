@@ -316,4 +316,156 @@ if (!function_exists('kk_checkout_tax')) {
         return 1000; // Pajak tetap 1000 per transaksi
     }
 }
+
+// ========================================
+// FUNGSI BARU: STATUS MENU & KANTIN
+// ========================================
+
+/**
+ * Mendapatkan status menu dengan logika lengkap
+ * Status bisa: 'tersedia', 'habis', 'tutup'
+ */
+if (!function_exists('kk_get_menu_status')) {
+    function kk_get_menu_status($menu, $kantin = null) {
+        if (!is_array($menu)) {
+            return 'tutup';
+        }
+
+        $stok = (int)($menu['stok'] ?? 0);
+        $menuStatus = trim($menu['status'] ?? 'Tersedia');
+
+        // Jika stok habis, return 'habis'
+        if ($stok <= 0) {
+            return 'habis';
+        }
+
+        // Jika kantin ditutup, return 'tutup'
+        if ($kantin !== null && !kk_is_kantin_open($kantin)) {
+            return 'tutup';
+        }
+
+        // Jika menu status Habis di database, return 'habis'
+        if ($menuStatus === 'Habis' || strtolower($menuStatus) === 'habis') {
+            return 'habis';
+        }
+
+        // Selain itu tersedia
+        return 'tersedia';
+    }
+}
+
+/**
+ * Mendapatkan label status menu dalam bahasa Indonesia
+ */
+if (!function_exists('kk_get_menu_status_label')) {
+    function kk_get_menu_status_label($status) {
+        $labels = [
+            'tersedia' => 'Tersedia',
+            'habis'    => 'Stok Habis',
+            'tutup'    => 'Kantin Tutup'
+        ];
+        $status = strtolower(trim($status));
+        return $labels[$status] ?? 'Tidak Diketahui';
+    }
+}
+
+/**
+ * Cek apakah menu bisa dibeli
+ */
+if (!function_exists('kk_can_buy_menu')) {
+    function kk_can_buy_menu($menu, $kantin = null) {
+        $status = kk_get_menu_status($menu, $kantin);
+        return $status === 'tersedia';
+    }
+}
+
+/**
+ * Mendapatkan warna badge untuk status menu
+ */
+if (!function_exists('kk_get_status_badge_class')) {
+    function kk_get_status_badge_class($status) {
+        $status = strtolower(trim($status));
+        switch ($status) {
+            case 'tersedia':
+                return 'badge bg-success'; // Hijau
+            case 'habis':
+                return 'badge bg-warning text-dark'; // Kuning
+            case 'tutup':
+                return 'badge bg-danger'; // Merah
+            default:
+                return 'badge bg-secondary';
+        }
+    }
+}
+
+/**
+ * Mendapatkan HTML badge untuk status menu
+ */
+if (!function_exists('kk_get_status_badge')) {
+    function kk_get_status_badge($status) {
+        $label = kk_get_menu_status_label($status);
+        $class = kk_get_status_badge_class($status);
+        return '<span class="' . htmlspecialchars($class, ENT_QUOTES, 'UTF-8') . '">'
+             . htmlspecialchars($label, ENT_QUOTES, 'UTF-8')
+             . '</span>';
+    }
+}
+
+/**
+ * Mendapatkan status kantin dengan label
+ */
+if (!function_exists('kk_get_kantin_status_label')) {
+    function kk_get_kantin_status_label($kantin) {
+        $isOpen = kk_is_kantin_open($kantin);
+        if ($isOpen) {
+            $jam = kk_kantin_hours_label($kantin);
+            return "Buka (${jam})";
+        }
+        $jam = kk_kantin_hours_label($kantin);
+        return "Tutup sampai ${jam}";
+    }
+}
+
+/**
+ * Mendapatkan badge status kantin
+ */
+if (!function_exists('kk_get_kantin_badge')) {
+    function kk_get_kantin_badge($kantin) {
+        $isOpen = kk_is_kantin_open($kantin);
+        $class = $isOpen ? 'badge bg-success' : 'badge bg-danger';
+        $label = $isOpen ? 'BUKA' : 'TUTUP';
+        return '<span class="' . $class . '">' . $label . '</span>';
+    }
+}
+
+/**
+ * Format jam ke HH:MM dengan validasi
+ */
+if (!function_exists('kk_format_jam')) {
+    function kk_format_jam($jam) {
+        $jam = trim((string)$jam);
+        if (empty($jam)) return '00:00';
+        
+        if (preg_match('/^\d{1,2}:\d{2}/', $jam)) {
+            return substr($jam, 0, 5);
+        }
+        
+        $ts = strtotime($jam);
+        if ($ts) {
+            return date('H:i', $ts);
+        }
+        
+        return '00:00';
+    }
+}
+
+/**
+ * Validasi format jam HH:MM
+ */
+if (!function_exists('kk_validate_jam')) {
+    function kk_validate_jam($jam) {
+        return preg_match('/^\d{2}:\d{2}$/', trim((string)$jam)) === 1;
+    }
+}
 ?>
+
