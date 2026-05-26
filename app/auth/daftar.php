@@ -309,7 +309,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                             required
                         />
                         <label class="text-xs md:text-sm text-slate-600 dark:text-slate-400 leading-relaxed cursor-pointer" for="termsCheckbox">
-                            Saya setuju dengan <a href="#" class="text-brand-orange font-bold hover:underline">Syarat & Ketentuan</a> dan <a href="#" class="text-brand-orange font-bold hover:underline">Kebijakan Privasi</a>
+                            Saya setuju dengan <a href="../../pages/syarat_ketentuan.php" target="_blank" class="text-brand-orange font-bold hover:underline">Syarat & Ketentuan</a> dan <a href="../../pages/syarat_ketentuan.php" target="_blank" class="text-brand-orange font-bold hover:underline">Kebijakan Privasi</a>
                         </label>
                     </div>
 

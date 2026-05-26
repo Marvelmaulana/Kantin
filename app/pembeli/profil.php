@@ -2,6 +2,7 @@
 session_start();
 include(__DIR__ . '/../../config/config.php');
 include(__DIR__ . '/../../includes/pembeli_helpers.php');
+include(__DIR__ . '/../../includes/student_helpers.php');
 include(__DIR__ . '/../../includes/language_helper.php');
 kk_ensure_buyer_schema($koneksi);
 
@@ -16,6 +17,13 @@ $id_user = $_SESSION['id_user'];
 // Ambil data user dari database
 $query_user = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = '$id_user'");
 $u = mysqli_fetch_assoc($query_user);
+
+// Siapkan data kelas untuk siswa
+$is_siswa = isset($u['tipe_pengguna']) && $u['tipe_pengguna'] === 'siswa';
+$kelas_label = '';
+if ($is_siswa && isset($u['kelas'])) {
+    $kelas_label = get_kelas_label($u['kelas']);
+}
 ?>
 
 <!DOCTYPE html>
@@ -63,9 +71,12 @@ $u = mysqli_fetch_assoc($query_user);
                 <?php endif; ?>
             </div>
             <div>
-                <h2 class="text-xl font-extrabold font-headline leading-tight"><?= $u['username'] ?></h2>
-                <p class="text-white/70 text-xs font-medium"><?= $u['email'] ?></p>
-                <span class="inline-block mt-2 px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold uppercase tracking-widest italic"><?= t('profile.member') ?> <?= ucfirst($u['role']) ?></span>
+                <h2 class="text-xl font-extrabold font-headline leading-tight"><?= htmlspecialchars($u['username'] ?? '') ?></h2>
+                <p class="text-white/70 text-xs font-medium"><?= htmlspecialchars($u['email'] ?? '') ?></p>
+                <span class="inline-block mt-2 px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold uppercase tracking-widest italic"><?= t('profile.member') ?> <?= ucfirst($u['role'] ?? 'pembeli') ?></span>
+                <?php if ($is_siswa && !empty($kelas_label)): ?>
+                <span class="inline-block mt-2 ml-2 px-3 py-1 bg-white/20 rounded-full text-[10px] font-bold uppercase tracking-widest italic">📚 <?= htmlspecialchars($kelas_label) ?></span>
+                <?php endif; ?>
             </div>
         </div>
         <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full"></div>

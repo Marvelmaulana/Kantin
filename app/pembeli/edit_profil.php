@@ -2,6 +2,7 @@
 session_start();
 include(__DIR__ . '/../../config/config.php');
 include(__DIR__ . '/../../includes/pembeli_helpers.php');
+include(__DIR__ . '/../../includes/student_helpers.php');
 include(__DIR__ . '/../../includes/language_helper.php');
 kk_ensure_buyer_schema($koneksi);
 
@@ -14,9 +15,14 @@ $id_user = (int)$_SESSION['id_user'];
 $query = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = $id_user");
 $user = mysqli_fetch_assoc($query);
 
+// Siapkan data untuk siswa
+$is_siswa = isset($user['tipe_pengguna']) && $user['tipe_pengguna'] === 'siswa';
+$kelas_options = get_kelas_options();
+
 if (isset($_POST['update'])) {
     $nama = mysqli_real_escape_string($koneksi, trim($_POST['username'] ?? ''));
     $email = mysqli_real_escape_string($koneksi, trim($_POST['email'] ?? ''));
+    $kelas = $is_siswa ? ($_POST['kelas'] ?? null) : null;
     $foto = kk_upload_image('foto_profil', __DIR__ . '/../../uploads/profil');
 
     // ✅ Validasi username: hanya boleh huruf, angka, spasi, titik, dan garis bawah
@@ -26,8 +32,17 @@ if (isset($_POST['update'])) {
         exit();
     }
 
+    // Validasi kelas untuk siswa
+    if ($is_siswa && !validate_kelas($kelas)) {
+        $_SESSION['error'] = "Pilih kelas yang valid.";
+        header("Location: edit_profil.php");
+        exit();
+    }
+
     $setFoto = $foto ? ", foto_profil='$foto'" : '';
-    $update = mysqli_query($koneksi, "UPDATE users SET username='$nama', email='$email' $setFoto WHERE id_user=$id_user");
+    $setKelas = $is_siswa ? ", kelas='$kelas'" : '';
+    
+    $update = mysqli_query($koneksi, "UPDATE users SET username='$nama', email='$email' $setFoto $setKelas WHERE id_user=$id_user");
     if ($update) {
         header("Location: profil.php?success=profil");
         exit();
@@ -88,6 +103,20 @@ if (!empty($_SESSION['error'])) {
             <label class="text-[11px] font-black uppercase tracking-wider text-stone-400">Email</label>
             <input type="email" name="email" value="<?= htmlspecialchars($user['email']) ?>" class="mt-2 w-full bg-stone-100 rounded-2xl border-none px-4 py-3 text-sm" required>
         </div>
+        <?php if ($is_siswa): ?>
+        <div>
+            <label class="text-[11px] font-black uppercase tracking-wider text-stone-400">📚 Kelas</label>
+            <select name="kelas" class="mt-2 w-full bg-stone-100 rounded-2xl border-none px-4 py-3 text-sm" required>
+                <option value="">-- Pilih Kelas --</option>
+                <?php foreach ($kelas_options as $opt): ?>
+                <option value="<?= htmlspecialchars($opt['value']) ?>" <?= ($user['kelas'] === $opt['value']) ? 'selected' : '' ?>>
+                    <?= htmlspecialchars($opt['label']) ?>
+                </option>
+                <?php endforeach; ?>
+            </select>
+            <p class="text-[10px] text-stone-400 mt-1">Kelas Anda sebagai siswa di sekolah.</p>
+        </div>
+        <?php endif; ?>
         <button type="submit" name="update" class="w-full h-13 py-4 rounded-2xl bg-gradient-to-r from-[#b22204] to-[#ff6b35] text-white headline font-black"><?= t('profile.save_changes') ?></button>
     </form>
 </main>
