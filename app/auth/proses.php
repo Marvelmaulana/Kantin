@@ -42,7 +42,12 @@ if (isset($_POST['login_btn'])) {
         // Verifikasi password dengan password_verify (secure)
         if (verify_password($password_raw, $user_data['password'])) {
             // ✅ Login berhasil - buat session
+            error_log("Proses.php - User found, creating session for user_id: " . $user_data['id_user']);
+            error_log("Proses.php - User role: " . $user_data['role']);
+            
             if (create_user_session($user_data)) {
+                error_log("Proses.php - Session created successfully");
+                error_log("Proses.php - SESSION after create: " . json_encode($_SESSION));
                 
                 // Jika penjual, ambil data kantin
                 if ($user_data['role'] === 'penjual') {
@@ -66,6 +71,7 @@ if (isset($_POST['login_btn'])) {
                 }
 
                 // Redirect ke loading page yang akan redirect ke dashboard sesuai role
+                error_log("Proses.php - Redirecting to loading.php");
                 header("Location: loading.php");
                 exit();
             } else {
