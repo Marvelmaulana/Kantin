@@ -28,7 +28,7 @@ if (!$id_kantin) {
 try {
     // Fetch kantin data with logo and banner
     $kantin = admin_query_fetch_one($koneksi, 
-        "SELECT id_kantin, id_user, logo, banner FROM kantin WHERE id_kantin = ? LIMIT 1", 
+        "SELECT id_kantin, id_user, id_penjual, logo, banner FROM kantin WHERE id_kantin = ? LIMIT 1", 
         [$id_kantin], 'i');
     
     if (!$kantin) {
@@ -40,34 +40,86 @@ try {
     $logo_file = $kantin['logo'] ?? null;
     $banner_file = $kantin['banner'] ?? null;
     
+    // Fetch all menu photos before deletion so we can clean up files
+    $menu_photos = [];
+    $menu_list = admin_query_fetch_all($koneksi, 
+        "SELECT foto, foto_menu FROM menu WHERE id_kantin = ?", 
+        [$id_kantin], 'i');
+    foreach ($menu_list as $m) {
+        if (!empty($m['foto'])) $menu_photos[] = $m['foto'];
+        if (!empty($m['foto_menu'])) $menu_photos[] = $m['foto_menu'];
+    }
+    
+    // Also get id_penjual for user cleanup
+    $id_penjual = (int)($kantin['id_penjual'] ?? 0);
+    
     // Execute delete with transaction
-    admin_execute_transaction($koneksi, function($koneksi) use ($id_kantin, $id_user, $logo_file, $banner_file) {
-        // Delete dependent records (cascade)
+    admin_execute_transaction($koneksi, function($koneksi) use ($id_kantin, $id_user, $id_penjual, $logo_file, $banner_file) {
+        // 1. Delete ulasan (reviews) for menus in this canteen
+        admin_query_execute($koneksi, 
+            "DELETE FROM ulasan WHERE id_menu IN (SELECT id_menu FROM menu WHERE id_kantin = ?)", 
+            [$id_kantin], 'i');
+        
+        // 2. Delete rating_menu for menus in this canteen
+        admin_query_execute($koneksi, 
+            "DELETE FROM rating_menu WHERE id_menu IN (SELECT id_menu FROM menu WHERE id_kantin = ?)", 
+            [$id_kantin], 'i');
+        
+        // 3. Delete keranjang (cart items) for menus in this canteen
         admin_query_execute($koneksi, 
             "DELETE FROM keranjang WHERE id_menu IN (SELECT id_menu FROM menu WHERE id_kantin = ?)", 
             [$id_kantin], 'i');
         
+        // 4. Delete favorit for menus in this canteen
         admin_query_execute($koneksi, 
             "DELETE FROM favorit WHERE id_menu IN (SELECT id_menu FROM menu WHERE id_kantin = ?)", 
             [$id_kantin], 'i');
         
+        // 5. Delete detail_pesanan for menus in this canteen
+        admin_query_execute($koneksi, 
+            "DELETE FROM detail_pesanan WHERE id_menu IN (SELECT id_menu FROM menu WHERE id_kantin = ?)", 
+            [$id_kantin], 'i');
+        
+        // 6. Delete detail_transaksi for menus in this canteen
+        admin_query_execute($koneksi, 
+            "DELETE FROM detail_transaksi WHERE id_menu IN (SELECT id_menu FROM menu WHERE id_kantin = ?)", 
+            [$id_kantin], 'i');
+        
+        // 7. Delete pesanan for this canteen
+        admin_query_execute($koneksi, 
+            "DELETE FROM pesanan WHERE id_kantin = ?", 
+            [$id_kantin], 'i');
+        
+        // 8. Delete transaksi for this canteen
+        admin_query_execute($koneksi, 
+            "DELETE FROM transaksi WHERE id_kantin = ?", 
+            [$id_kantin], 'i');
+        
+        // 9. Delete all menus for this canteen
         admin_query_execute($koneksi, 
             "DELETE FROM menu WHERE id_kantin = ?", 
             [$id_kantin], 'i');
         
-        // Delete kantin
+        // 10. Delete kantin
         admin_query_execute($koneksi, 
             "DELETE FROM kantin WHERE id_kantin = ?", 
             [$id_kantin], 'i');
         
-        // Update user if exists
+        // 11. Update user if linked via id_user
         if ($id_user > 0) {
             admin_query_execute($koneksi, 
-                "UPDATE users SET id_kantin = NULL, nama_kantin = NULL WHERE id_user = ? AND role = 'penjual' AND id_kantin = ?", 
-                [$id_user, $id_kantin], 'ii');
+                "UPDATE users SET id_kantin = NULL, nama_kantin = NULL WHERE id_user = ? AND role = 'penjual'", 
+                [$id_user], 'i');
         }
         
-        // Log action
+        // 12. Update user if linked via id_penjual
+        if ($id_penjual > 0 && $id_penjual !== $id_user) {
+            admin_query_execute($koneksi, 
+                "UPDATE users SET id_kantin = NULL, nama_kantin = NULL WHERE id_user = ? AND role = 'penjual'", 
+                [$id_penjual], 'i');
+        }
+        
+        // Log action (will silently fail if admin_logs table doesn't exist)
         admin_log_action($koneksi, $_SESSION['id_user'], 'DELETE', 'kantin', $id_kantin, 
             "Deleted kantin with logo: $logo_file, banner: $banner_file");
     });
@@ -78,6 +130,10 @@ try {
     }
     if ($banner_file) {
         admin_delete_file(__DIR__ . '/../../uploads/' . $banner_file);
+    }
+    // Delete menu photo files
+    foreach ($menu_photos as $photo) {
+        admin_delete_file(__DIR__ . '/../../uploads/' . $photo);
     }
     
     header('Location: manajemen_kantin.php?success=hapus');

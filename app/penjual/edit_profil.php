@@ -4,7 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-include(__DIR__ . '/../../config/config.php');
+include_once(__DIR__ . '/../../config/config.php');
 include(__DIR__ . '/../../includes/pembeli_helpers.php');
 
 if (!isset($_SESSION['id_user'])) {
@@ -16,8 +16,8 @@ $id_user = (int)$_SESSION['id_user'];
 
 // ✅ Gunakan id_kantin dari session atau query dari database
 if (!isset($_SESSION['id_kantin'])) {
-    // Fallback: cari dari database menggunakan id_penjual
-    $q_kantin_fallback = mysqli_query($koneksi, "SELECT id_kantin FROM kantin WHERE id_penjual = $id_user LIMIT 1");
+    // Fallback: cari dari database menggunakan id_user
+    $q_kantin_fallback = mysqli_query($koneksi, "SELECT id_kantin FROM kantin WHERE id_user = $id_user LIMIT 1");
     if ($q_kantin_fallback && mysqli_num_rows($q_kantin_fallback) > 0) {
         $kantin_data = mysqli_fetch_assoc($q_kantin_fallback);
         $_SESSION['id_kantin'] = $kantin_data['id_kantin'];
@@ -37,11 +37,15 @@ $q_kantin = mysqli_query($koneksi, "SELECT * FROM kantin WHERE id_kantin = $id_k
 $data = mysqli_fetch_assoc($q_kantin);
 if (!$data) die("Data kantin tidak ditemukan");
 
+$hasError = false;
+
 if(isset($_POST['simpan'])){
     $username    = mysqli_real_escape_string($koneksi, trim($_POST['username'] ?? ''));
+    $email       = mysqli_real_escape_string($koneksi, trim($_POST['email'] ?? ''));
+    $password    = trim($_POST['password'] ?? '');
+    
     $nama_kantin = mysqli_real_escape_string($koneksi, trim($_POST['nama_kantin'] ?? ''));
     $deskripsi   = mysqli_real_escape_string($koneksi, trim($_POST['deskripsi'] ?? ''));
-    $alamat      = mysqli_real_escape_string($koneksi, trim($_POST['alamat'] ?? ''));
     
     // ✅ Jam buka-tutup BISA diedit penjual
     $jam_buka_raw = trim($_POST['jam_buka'] ?? '07:00');
@@ -76,37 +80,56 @@ if(isset($_POST['simpan'])){
         }
     }
 
-    // ✅ Validasi username tidak boleh kosong
+    $hasError = false;
+
+    // ✅ Validasi dasar
     if (empty($username)) {
         $_SESSION['error'] = "Username tidak boleh kosong!";
         $hasError = true;
-    }
-
-    // ✅ Validasi username: hanya boleh huruf, angka, spasi, titik, dan garis bawah
-    if (!$hasError && !preg_match('/^[a-zA-Z0-9._\s]+$/', $username)) {
+    } elseif (!preg_match('/^[a-zA-Z0-9._\s]+$/', $username)) {
         $_SESSION['error'] = "Nama pengguna hanya boleh berisi huruf, angka, spasi, titik, dan garis bawah.";
         $hasError = true;
     }
 
-    // ✅ Update username ke tabel users
-    if (!$hasError && !empty($username) && $username !== $user['username']) {
-        // Cek duplikat username
-        $cek = mysqli_query($koneksi, "SELECT id_user FROM users WHERE username = '$username' AND id_user != $id_user");
+    if (empty($email) && !$hasError) {
+        $_SESSION['error'] = "Email tidak boleh kosong!";
+        $hasError = true;
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL) && !$hasError) {
+        $_SESSION['error'] = "Format email tidak valid!";
+        $hasError = true;
+    }
+
+    // ✅ Update tabel users (username, email, password)
+    if (!$hasError) {
+        $cek = mysqli_query($koneksi, "SELECT id_user FROM users WHERE (username = '$username' OR email = '$email') AND id_user != $id_user");
         if (mysqli_num_rows($cek) > 0) {
-            $_SESSION['error'] = "Username sudah digunakan!";
+            $_SESSION['error'] = "Username atau Email sudah digunakan oleh pengguna lain!";
             $hasError = true;
         } else {
-            mysqli_query($koneksi, "UPDATE users SET username = '$username' WHERE id_user = $id_user");
+            $update_users = "UPDATE users SET username = '$username', email = '$email'";
+            if (!empty($password)) {
+                $hashed_password = password_hash($password, PASSWORD_BCRYPT);
+                $update_users .= ", password = '$hashed_password'";
+            }
+            $update_users .= " WHERE id_user = $id_user";
+            
+            mysqli_query($koneksi, $update_users);
             mysqli_query($koneksi, "UPDATE kantin SET nama_penjual = '$username' WHERE id_kantin = $id_kantin");
+            
             $_SESSION['username'] = $username;
             $_SESSION['nama_penjual'] = $username;
             $user['username'] = $username;
+            $user['email'] = $email;
         }
     }
 
+    if (empty($nama_kantin)) {
+        $_SESSION['error'] = "Nama kantin tidak boleh kosong!";
+        $hasError = true;
+    }
+
     // ✅ Update nama kantin ke tabel kantin
-    if (!empty($nama_kantin) && !$hasError) {
-        // ✅ Hitung status berdasarkan jam operasional (selalu otomatis)
+    if (!$hasError) {
         date_default_timezone_set('Asia/Jakarta');
         $isOpenNow = kk_is_kantin_open([
             'jam_buka' => $jam_buka,
@@ -120,7 +143,6 @@ if(isset($_POST['simpan'])){
             UPDATE kantin SET
                 nama_kantin  = '$nama_kantin',
                 deskripsi    = '$deskripsi',
-                alamat       = '$alamat',
                 jam_buka     = '$jam_buka',
                 jam_tutup    = '$jam_tutup',
                 tipe_operasi = 'otomatis',
@@ -133,7 +155,6 @@ if(isset($_POST['simpan'])){
         $_SESSION['nama_kantin'] = $nama_kantin;
         $data['nama_kantin']  = $nama_kantin;
         $data['deskripsi']    = $deskripsi;
-        $data['alamat']       = $alamat;
         $data['jam_buka']     = $jam_buka;
         $data['jam_tutup']    = $jam_tutup;
         $data['tipe_operasi'] = 'otomatis';
@@ -144,9 +165,9 @@ if(isset($_POST['simpan'])){
 
     if ($hasError) {
         $user['username'] = $username;
+        $user['email']    = $email;
         $data['nama_kantin']  = $nama_kantin ?: $data['nama_kantin'];
         $data['deskripsi']    = $deskripsi;
-        $data['alamat']       = $alamat;
         $data['jam_buka']     = $jam_buka;
         $data['jam_tutup']    = $jam_tutup;
         $data['tipe_operasi'] = 'otomatis';
@@ -316,38 +337,48 @@ $is_kantin_open = kk_is_kantin_open($data);
             <!-- FORM FIELDS -->
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-               <!-- USERNAME PENJUAL -->
+<!-- USERNAME PENJUAL -->
 <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.1s">
     <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
         <span class="material-symbols-outlined align-middle text-base mr-1">person</span>
-        Username kantin
+        Username kantin <span class="text-gray-400 lowercase font-normal ml-1">(dari database)</span>
     </label>
     <input type="text" name="username" id="usernameInput" pattern="[a-zA-Z0-9._\s]+"
-           value="<?= htmlspecialchars($user['username'] ?? '') ?>"
-           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
+           value="<?php echo htmlspecialchars($user['username'] ?? ''); ?>"
+           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all" required>
     <p class="text-[11px] text-gray-400 mt-2">Huruf, angka, spasi, titik, dan garis bawah saja.</p>
 </div>
 
 <!-- NAMA KANTIN -->
-<div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.15s">
+<div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.1s">
     <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
         <span class="material-symbols-outlined align-middle text-base mr-1">storefront</span>
-        Nama Kantin
+        Nama Kantin <span class="text-gray-400 lowercase font-normal ml-1">(dari database)</span>
     </label>
     <input type="text" name="nama_kantin"
-           value="<?= htmlspecialchars($data['nama_kantin']) ?>"
-           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
+           value="<?php echo htmlspecialchars($data['nama_kantin'] ?? ''); ?>"
+           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all" required>
 </div>
 
-<!-- ALAMAT KANTIN -->
+<!-- EMAIL -->
 <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.15s">
     <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
-        <span class="material-symbols-outlined align-middle text-base mr-1">location_on</span>
-        Alamat Kantin
+        <span class="material-symbols-outlined align-middle text-base mr-1">mail</span>
+        Email Kantin <span class="text-gray-400 lowercase font-normal ml-1">(dari database)</span>
     </label>
-    <input type="text" name="alamat"
-           value="<?= htmlspecialchars($data['alamat'] ?? '') ?>"
-           placeholder="Misal: Gedung Utama, Lantai 2"
+    <input type="email" name="email"
+           value="<?php echo htmlspecialchars($user['email'] ?? ''); ?>"
+           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all" required>
+</div>
+
+<!-- PASSWORD -->
+<div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.15s">
+    <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
+        <span class="material-symbols-outlined align-middle text-base mr-1">lock</span>
+        Password Baru (Opsional)
+    </label>
+    <input type="password" name="password"
+           placeholder="*** Password lama aman di database *** (Ketik untuk ubah)"
            class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
 </div>
                 <!-- STATUS KANTIN -->
@@ -418,88 +449,7 @@ $is_kantin_open = kk_is_kantin_open($data);
                 </div>
             </div>
 
-            <!-- MENU PREVIEW SECTION -->
-            <div class="mt-8 bg-gradient-to-br from-white to-blue-50 rounded-3xl p-6 shadow-sm border border-blue-100 card-fade" style="animation-delay:.4s">
-                <div class="flex items-center gap-3 mb-6">
-                    <div class="w-11 h-11 rounded-2xl bg-blue-100 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-blue-600">restaurant_menu</span>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-black text-gray-900">Menu Kantin Anda</h3>
-                        <p class="text-xs text-gray-500 mt-0.5">Daftar menu yang ditampilkan ke pembeli</p>
-                    </div>
-                    <a href="kelola_menu_penjual.php" class="ml-auto px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold rounded-xl transition">
-                        <span class="material-symbols-outlined align-middle text-base mr-1">edit</span>Kelola Menu
-                    </a>
-                </div>
-                
-                <?php 
-                // Ambil preview menu
-                $q_preview_menu = mysqli_query($koneksi, "
-                    SELECT id_menu, nama_menu, harga, foto, stok, status, kategori
-                    FROM menu 
-                    WHERE id_kantin = $id_kantin
-                    ORDER BY CASE WHEN status='Tersedia' THEN 0 ELSE 1 END, id_menu DESC
-                    LIMIT 6
-                ");
-                $menu_preview_count = mysqli_num_rows($q_preview_menu);
-                ?>
-                
-                <?php if ($menu_preview_count === 0): ?>
-                <div class="text-center py-8">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                        <span class="material-symbols-outlined text-gray-300 text-3xl">restaurant_menu</span>
-                    </div>
-                    <p class="text-gray-500 font-semibold mb-4">Belum ada menu. Tambahkan menu untuk mulai berjualan!</p>
-                    <a href="kelola_menu_penjual.php" class="inline-block px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-xl transition">
-                        <span class="material-symbols-outlined align-middle text-base mr-1">add</span>Tambah Menu Pertama
-                    </a>
-                </div>
-                <?php else: ?>
-                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                    <?php while ($m = mysqli_fetch_assoc($q_preview_menu)): ?>
-                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition group">
-                        <!-- Foto -->
-                        <div class="relative w-full h-24 bg-gray-100 overflow-hidden">
-                            <?php 
-                            $foto_menu = !empty($m['foto']) && file_exists("../../uploads/" . $m['foto']) 
-                                ? "../../uploads/" . $m['foto']
-                                : "../../uploads/default/default-logo.svg";
-                            ?>
-                            <img src="<?= htmlspecialchars($foto_menu) ?>" 
-                                 alt="<?= htmlspecialchars($m['nama_menu']) ?>"
-                                 class="w-full h-full object-cover group-hover:scale-110 transition">
-                            
-                            <!-- Badge Status -->
-                            <div class="absolute top-2 right-2">
-                                <span class="inline-block text-[10px] font-bold px-2 py-1 rounded-lg 
-                                    <?= $m['status'] === 'Tersedia' && $m['stok'] > 0 
-                                        ? 'bg-green-100 text-green-700' 
-                                        : 'bg-red-100 text-red-700' ?>">
-                                    <?= $m['stok'] > 0 ? 'Stok: ' . $m['stok'] : 'Habis' ?>
-                                </span>
-                            </div>
-                        </div>
-                        
-                        <!-- Info -->
-                        <div class="p-3">
-                            <p class="text-xs text-gray-500 font-semibold uppercase"><?= htmlspecialchars($m['kategori']) ?></p>
-                            <h4 class="font-bold text-sm text-gray-900 line-clamp-2 mb-2"><?= htmlspecialchars($m['nama_menu']) ?></h4>
-                            <p class="text-lg font-black text-orange-600">Rp <?= number_format($m['harga'], 0, ',', '.') ?></p>
-                        </div>
-                    </div>
-                    <?php endwhile; ?>
-                </div>
-                
-                <?php if ($menu_preview_count >= 6): ?>
-                <div class="text-center mt-4">
-                    <a href="kelola_menu_penjual.php" class="text-orange-600 hover:text-orange-700 text-sm font-bold">
-                        Lihat semua menu →
-                    </a>
-                </div>
-                <?php endif; ?>
-                <?php endif; ?>
-            </div>
+
 
             <!-- BUTTONS -->
             <div class="mt-8 flex gap-4 flex-col sm:flex-row">
@@ -517,6 +467,8 @@ $is_kantin_open = kk_is_kantin_open($data);
 
         </form>
     </main>
+
+    <script>
     // ✅ Validasi form username
     function validasiForm() {
         const username = document.getElementById('usernameInput').value.trim();

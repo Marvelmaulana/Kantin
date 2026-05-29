@@ -3,7 +3,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-include(__DIR__ . '/../config/config.php');
+include_once(__DIR__ . '/../config/config.php');
 
 $current_page = basename($_SERVER['PHP_SELF']);
 $user_display = trim($_SESSION['username'] ?? '');
@@ -29,7 +29,7 @@ $q_notif = mysqli_query($koneksi, "
     SELECT COUNT(*) as total
     FROM pesanan
     WHERE id_kantin = '$id_kantin'
-    AND status = 'Pending'
+    AND status IN ('Pending', 'Diproses', 'Siap Diambil')
 ");
 
 $data_notif = mysqli_fetch_assoc($q_notif);

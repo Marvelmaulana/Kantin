@@ -1,0 +1,264 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Pembeli Kantin</title>
+
+<style>
+
+body{
+font-family:Arial;
+background:#f4f4f4;
+padding:20px;
+}
+
+.menu{
+background:white;
+padding:15px;
+margin-bottom:15px;
+border-radius:10px;
+}
+
+img{
+width:120px;
+border-radius:8px;
+}
+
+.search{
+width:100%;
+padding:10px;
+margin-bottom:10px;
+}
+
+button{
+padding:6px 10px;
+}
+
+.badge{
+background:red;
+color:white;
+padding:3px 6px;
+font-size:12px;
+border-radius:5px;
+}
+
+.rating{
+color:orange;
+}
+
+</style>
+</head>
+
+<body>
+
+<h2>Menu Kantin</h2>
+
+<input class="search" placeholder="Cari makanan..." onkeyup="cariMenu(this.value)">
+
+<select onchange="filterKategori(this.value)">
+<option value="">Semua Kategori</option>
+<option value="makanan">Makanan</option>
+<option value="minuman">Minuman</option>
+</select>
+
+<button onclick="tampilFavorit()">❤️ Favorit</button>
+<button onclick="tampilMenu()">Semua Menu</button>
+
+<hr>
+
+<div id="menuList"></div>
+
+<h2>Keranjang</h2>
+
+<div id="keranjang"></div>
+
+<h3>Total: Rp <span id="total">0</span></h3>
+
+<button onclick="checkout()">Checkout</button>
+
+<script>
+
+let menu = JSON.parse(localStorage.getItem("menu")) || [
+
+{
+nama:"Nasi Goreng",
+harga:10000,
+gambar:"https://via.placeholder.com/120",
+kategori:"makanan",
+diskon:true,
+rating:4
+},
+
+{
+nama:"Es Teh",
+harga:3000,
+gambar:"https://via.placeholder.com/120",
+kategori:"minuman",
+diskon:false,
+rating:5
+}
+
+];
+
+let favorit = JSON.parse(localStorage.getItem("favorit")) || [];
+let keranjang = [];
+
+function tampilMenu(data = menu){
+
+let container = document.getElementById("menuList");
+
+container.innerHTML="";
+
+data.forEach((item,index)=>{
+
+let fav = favorit.includes(item.nama) ? "❤️" : "🤍";
+let badge = item.diskon ? '<span class="badge">Diskon</span>' : "";
+
+container.innerHTML += `
+<div class="menu">
+
+<img src="${item.gambar}">
+
+<h3>${item.nama} ${badge}</h3>
+
+<p>Rp ${item.harga}</p>
+
+<p class="rating">⭐ ${item.rating}/5</p>
+
+<button onclick="toggleFav('${item.nama}')">${fav}</button>
+
+<br><br>
+
+<label>Varian:</label>
+
+<select id="varian${index}">
+<option value="${item.harga}">Original</option>
+<option value="${item.harga+2000}">Large (+2000)</option>
+<option value="${item.harga+4000}">Extra (+4000)</option>
+</select>
+
+<br><br>
+
+<button onclick="tambahKeranjang(${index})">
+Tambah Keranjang
+</button>
+
+</div>
+`;
+
+});
+
+}
+
+function tambahKeranjang(index){
+
+let hargaVarian = document.getElementById("varian"+index).value;
+
+keranjang.push({
+nama:menu[index].nama,
+harga:Number(hargaVarian)
+});
+
+tampilKeranjang();
+
+}
+
+function tampilKeranjang(){
+
+let list = document.getElementById("keranjang");
+
+list.innerHTML="";
+
+let total = 0;
+
+keranjang.forEach((item,i)=>{
+
+total += item.harga;
+
+list.innerHTML += `
+<div>
+
+${item.nama} - Rp ${item.harga}
+
+<button onclick="hapusItem(${i})">hapus</button>
+
+</div>
+`;
+
+});
+
+document.getElementById("total").innerText = total;
+
+}
+
+function hapusItem(i){
+
+keranjang.splice(i,1);
+
+tampilKeranjang();
+
+}
+
+function checkout(){
+
+alert("Pesanan berhasil dibuat");
+
+keranjang = [];
+
+tampilKeranjang();
+
+}
+
+function toggleFav(nama){
+
+if(favorit.includes(nama)){
+favorit = favorit.filter(f=>f!==nama);
+}else{
+favorit.push(nama);
+}
+
+localStorage.setItem("favorit",JSON.stringify(favorit));
+
+tampilMenu();
+
+}
+
+function tampilFavorit(){
+
+let data = menu.filter(item=>favorit.includes(item.nama));
+
+tampilMenu(data);
+
+}
+
+function cariMenu(keyword){
+
+let hasil = menu.filter(item=>
+item.nama.toLowerCase().includes(keyword.toLowerCase())
+);
+
+tampilMenu(hasil);
+
+}
+
+function filterKategori(kat){
+
+if(kat===""){
+tampilMenu();
+return;
+}
+
+let hasil = menu.filter(item=>item.kategori===kat);
+
+tampilMenu(hasil);
+
+}
+
+tampilMenu();
+
+</script>
+
+</body>
+</html>
+```

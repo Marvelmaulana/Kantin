@@ -9,47 +9,44 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
 }
 
 // === FILTER INPUT ===
-$filterTanggal = $_GET['tanggal'] ?? '';
+$filterTanggal = $_GET['tanggal'] ?? date('Y-m-d');
 $filterKantin = $_GET['kantin'] ?? '';
 
-$where = [];
+$where = ["p.status = 'Selesai'"];
 if ($filterTanggal) {
     $safe_tanggal = mysqli_real_escape_string($koneksi, $filterTanggal);
-    $where[] = "DATE(t.tanggal) = '$safe_tanggal'";
+    $where[] = "DATE(p.tanggal) = '$safe_tanggal'";
 }
 if ($filterKantin) {
     $safe_kantin = mysqli_real_escape_string($koneksi, $filterKantin);
     $where[] = "p.id_kantin = '$safe_kantin'";
 }
 
-$where_sql = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
+$where_sql = 'WHERE ' . implode(' AND ', $where);
 
 // === STATISTIK PENDAPATAN ADMIN (DENGAN FILTER) ===
 $stat_pajak_q = mysqli_query($koneksi, "
-    SELECT COALESCE(SUM(t.jumlah_pajak), 0) as total 
-    FROM transaksi t
-    LEFT JOIN pesanan p ON t.id_pesanan = p.id_pesanan
+    SELECT COALESCE(SUM(p.pajak), 0) as total 
+    FROM pesanan p
     $where_sql
 ");
 $total_pajak = $stat_pajak_q ? mysqli_fetch_assoc($stat_pajak_q)['total'] : 0;
 
 $stat_transaksi_q = mysqli_query($koneksi, "
     SELECT COUNT(*) as total 
-    FROM transaksi t
-    LEFT JOIN pesanan p ON t.id_pesanan = p.id_pesanan
+    FROM pesanan p
     $where_sql
 ");
 $total_transaksi = $stat_transaksi_q ? mysqli_fetch_assoc($stat_transaksi_q)['total'] : 0;
 
 // Filter khusus bulan ini dengan mempertahankan filter kantin jika dipilih
 $where_bulan_ini = $where;
-$where_bulan_ini[] = "MONTH(t.tanggal) = MONTH(NOW()) AND YEAR(t.tanggal) = YEAR(NOW())";
+$where_bulan_ini[] = "MONTH(p.tanggal) = MONTH(NOW()) AND YEAR(p.tanggal) = YEAR(NOW())";
 $where_bulan_ini_sql = 'WHERE ' . implode(' AND ', $where_bulan_ini);
 
 $stat_transaksi_bulan_ini_q = mysqli_query($koneksi, "
     SELECT COUNT(*) as total 
-    FROM transaksi t
-    LEFT JOIN pesanan p ON t.id_pesanan = p.id_pesanan
+    FROM pesanan p
     $where_bulan_ini_sql
 ");
 $transaksi_bulan_ini = $stat_transaksi_bulan_ini_q ? mysqli_fetch_assoc($stat_transaksi_bulan_ini_q)['total'] : 0;
@@ -62,8 +59,7 @@ $offset = ($halaman - 1) * $per_halaman;
 // Hitung total data terfilter
 $result_count = mysqli_query($koneksi, "
     SELECT COUNT(*) as total 
-    FROM transaksi t
-    LEFT JOIN pesanan p ON t.id_pesanan = p.id_pesanan
+    FROM pesanan p
     $where_sql
 ");
 $total_data = $result_count ? mysqli_fetch_assoc($result_count)['total'] : 0;
@@ -82,10 +78,9 @@ for ($i = 6; $i >= 0; $i--) {
     $day_en = date('D', strtotime($date));
     
     $query_g = "
-        SELECT COALESCE(SUM(t.jumlah_pajak), 0) as total 
-        FROM transaksi t
-        LEFT JOIN pesanan p ON t.id_pesanan = p.id_pesanan
-        WHERE DATE(t.tanggal)='$date'
+        SELECT COALESCE(SUM(p.pajak), 0) as total 
+        FROM pesanan p
+        WHERE DATE(p.tanggal)='$date' AND p.status='Selesai'
     ";
     if ($filterKantin) {
         $safe_kantin = mysqli_real_escape_string($koneksi, $filterKantin);
@@ -107,14 +102,13 @@ if (!$max_val || $max_val <= 0) {
 
 // === DETAIL DATA (DENGAN PAGINATION) ===
 $query_detail = mysqli_query($koneksi, "
-    SELECT t.id_transaksi, t.tanggal, t.jumlah_pajak, t.metode_pembayaran,
-           p.id_pesanan, p.total_harga, u.username, k.nama_kantin
-    FROM transaksi t
-    LEFT JOIN pesanan p ON t.id_pesanan = p.id_pesanan
+    SELECT p.id_pesanan as id_transaksi, p.tanggal, p.pajak as jumlah_pajak, p.metode_pembayaran,
+           p.total_harga, u.username, k.nama_kantin
+    FROM pesanan p
     LEFT JOIN users u ON p.id_user = u.id_user
     LEFT JOIN kantin k ON p.id_kantin = k.id_kantin
     $where_sql
-    ORDER BY t.tanggal DESC
+    ORDER BY p.tanggal DESC
     LIMIT $offset, $per_halaman
 ");
 
@@ -173,7 +167,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
     <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8 mt-14 lg:mt-0">
         <div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-[#2a2a2a] tracking-tight">Laporan Pendapatan Admin</h2>
-            <p class="text-orange-700 font-semibold mt-1 text-sm md:text-base">Kelola dan lihat pendapatan dari pajak transaksi</p>
+            <p class="text-orange-700 font-semibold mt-1 text-sm md:text-base">Kelola dan lihat pendapatan dari biaya layanan transaksi</p>
         </div>
         <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
             <button onclick="window.print()" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2.5 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 hover:-translate-y-0.5 transition-all text-sm w-full sm:w-auto">
@@ -183,7 +177,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
     </header>
 
     <!-- Stats Cards -->
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div class="bg-white/90 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-orange-100 shadow-glow-card">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shrink-0">
@@ -206,17 +200,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                 </div>
             </div>
         </div>
-        <div class="bg-white/90 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-orange-100 shadow-glow-card">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white shrink-0">
-                    <span class="material-symbols-outlined text-xl md:text-2xl">calculate</span>
-                </div>
-                <div>
-                    <p class="text-[10px] font-black text-blue-500 uppercase tracking-widest">Rata-Rata Pajak</p>
-                    <h3 class="text-base md:text-lg font-extrabold text-[#2a2a2a]">Rp <?= number_format($total_transaksi > 0 ? $total_pajak / $total_transaksi : 0, 0, ',', '.') ?></h3>
-                </div>
-            </div>
-        </div>
+
         <div class="bg-white/90 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-orange-100 shadow-glow-card">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white shrink-0">
@@ -268,9 +252,9 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
         <div class="mb-4">
             <h4 class="text-base font-extrabold text-[#003049] flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary-orange">bar_chart</span>
-                Tren Pendapatan Pajak 7 Hari Terakhir
+                Tren Pendapatan Biaya Layanan 7 Hari Terakhir
             </h4>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Ringkasan total pendapatan pajak per hari</p>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Ringkasan total pendapatan biaya layanan per hari</p>
         </div>
         <div class="overflow-x-auto pb-2">
             <div class="flex items-end justify-between h-32 sm:h-40 md:h-56 gap-1 sm:gap-2 min-w-[300px] sm:min-w-full">
@@ -294,7 +278,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
         <div class="p-4 md:p-6 border-b border-slate-50">
             <h3 class="font-extrabold text-[#003049] text-lg flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary-orange">table_chart</span>
-                Detail Pajak Transaksi
+                Detail Biaya Layanan Transaksi
                 <span class="bg-orange-100 text-orange-600 px-3 py-1 rounded-xl text-xs font-bold ml-2"><?= number_format($total_data) ?></span>
             </h3>
         </div>
@@ -308,7 +292,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                         <th class="px-4 py-4 text-left hidden sm:table-cell">Kantin</th>
                         <th class="px-4 py-4 text-left">Tanggal</th>
                         <th class="px-4 py-4 text-right">Total</th>
-                        <th class="px-4 py-4 text-right">Pajak</th>
+                        <th class="px-4 py-4 text-right">Biaya Layanan</th>
                         <th class="px-4 py-4 text-left">Metode</th>
                         <th class="px-4 py-4 text-center">Aksi</th>
                     </tr>
@@ -353,7 +337,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                             <td class="px-4 py-4 text-right" data-label="Total">
                                 <span class="font-bold text-primary-orange text-sm">Rp <?= number_format($detail['total_harga'] ?? 0, 0, ',', '.') ?></span>
                             </td>
-                            <td class="px-4 py-4 text-right" data-label="Pajak">
+                            <td class="px-4 py-4 text-right" data-label="Biaya Layanan">
                                 <span class="px-3 py-1.5 rounded-lg text-xs font-bold text-white bg-gradient-to-r from-yellow-400 to-orange-500 inline-block">
                                     Rp <?= number_format($detail['jumlah_pajak'] ?? 1000, 0, ',', '.') ?>
                                 </span>

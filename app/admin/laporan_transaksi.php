@@ -28,21 +28,21 @@ if ($filter_tanggal) {
 $where_clause = count($where_conditions) > 0 ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
 
 // === STATISTIK (DENGAN FILTER) ===
-$stat_total = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi t $where_clause"))['total'] ?? 0;
+$stat_total = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan t $where_clause"))['total'] ?? 0;
 
-$stat_selesai = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi t WHERE t.status='Selesai' AND " . ($where_clause ? str_replace('WHERE ', '', $where_clause) : '1=1')))['total'] ?? 0;
+$stat_selesai = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan t WHERE t.status='Selesai' AND " . ($where_clause ? str_replace('WHERE ', '', $where_clause) : '1=1')))['total'] ?? 0;
 
-$stat_pending = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi t WHERE t.status='Pending' AND " . ($where_clause ? str_replace('WHERE ', '', $where_clause) : '1=1')))['total'] ?? 0;
+$stat_pending = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan t WHERE t.status='Pending' AND " . ($where_clause ? str_replace('WHERE ', '', $where_clause) : '1=1')))['total'] ?? 0;
 
-$result_pendapatan = mysqli_query($koneksi, "SELECT COALESCE(SUM(t.total_harga), 0) as total FROM transaksi t WHERE t.status='Selesai' AND " . ($where_clause ? str_replace('WHERE ', '', $where_clause) : '1=1'));
+$result_pendapatan = mysqli_query($koneksi, "SELECT COALESCE(SUM(t.total_harga), 0) as total FROM pesanan t WHERE t.status='Selesai' AND " . ($where_clause ? str_replace('WHERE ', '', $where_clause) : '1=1'));
 $stat_pendapatan = $result_pendapatan ? mysqli_fetch_assoc($result_pendapatan)['total'] : 0;
 
 // === QUERY DATA TRANSAKSI (DENGAN PAGINATION) ===
 $query_data = mysqli_query($koneksi, "
-    SELECT t.id_transaksi, t.id_user, t.id_kantin, t.total_harga, t.status, t.tanggal,
+    SELECT t.id_pesanan as id_transaksi, t.id_user, t.id_kantin, t.total_harga, t.status, t.tanggal,
            u.username, u.email,
            k.nama_kantin
-    FROM transaksi t
+    FROM pesanan t
     LEFT JOIN users u ON t.id_user = u.id_user
     LEFT JOIN kantin k ON t.id_kantin = k.id_kantin
     $where_clause
@@ -55,7 +55,7 @@ if (!$query_data) {
 }
 
 // === HITUNG TOTAL HALAMAN ===
-$result_count = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi t $where_clause");
+$result_count = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan t $where_clause");
 $total_data = $result_count ? mysqli_fetch_assoc($result_count)['total'] : 0;
 $total_halaman = ceil($total_data / $per_halaman);
 

@@ -525,7 +525,7 @@ body::before {
     <table style="width:100%;border-collapse:collapse;font-size:.7rem;">
         <tr><td>Jumlah Item</td><td style="text-align:right;"><?= $jml ?> item</td></tr>
         <tr><td>Subtotal</td><td style="text-align:right;"><?= $subtotal_items > 0 ? 'Rp '.number_format($subtotal_items,0,',','.') : '-' ?></td></tr>
-        <tr><td>Biaya Admin (Pajak)</td><td style="text-align:right;"><?= $pajak > 0 ? 'Rp '.number_format($pajak,0,',','.') : '-' ?></td></tr>
+        <tr><td>Biaya Layanan</td><td style="text-align:right;"><?= $pajak > 0 ? 'Rp '.number_format($pajak,0,',','.') : '-' ?></td></tr>
         <tr>
             <td style="font-size:.85rem;font-weight:900;padding-top:.2rem;">TOTAL PENDAPATAN</td>
             <td style="text-align:right;font-size:.85rem;font-weight:900;"><?= $pendapatan > 0 ? 'Rp '.number_format($pendapatan,0,',','.') : '-' ?></td>

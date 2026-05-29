@@ -336,6 +336,20 @@ if (!function_exists('kk_ensure_core_schema')) {
 
 kk_ensure_core_schema($koneksi);
 
+// Create admin_logs table for audit trail
+mysqli_query($koneksi, "CREATE TABLE IF NOT EXISTS admin_logs (
+    id_log INT AUTO_INCREMENT PRIMARY KEY,
+    id_user INT NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    table_name VARCHAR(50) NOT NULL,
+    record_id INT NULL,
+    details TEXT NULL,
+    ip_address VARCHAR(45) NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    INDEX (id_user),
+    INDEX (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci");
+
 // --- MIGRASI: pastikan kolom nama_kantin (users) dan nama_penjual (kantin) ada ---
 if (!function_exists('kk_column_exists')) {
     function kk_column_exists($koneksi, $table, $column) {
@@ -345,6 +359,16 @@ if (!function_exists('kk_column_exists')) {
         $res = mysqli_query($koneksi, "SHOW COLUMNS FROM `$table` LIKE '$column'");
         return $res && mysqli_num_rows($res) > 0;
     }
+}
+
+if (!kk_column_exists($koneksi, 'users', 'id_kantin')) {
+    mysqli_query($koneksi, "ALTER TABLE users ADD COLUMN id_kantin INT NULL");
+    // Sync id_kantin from kantin table for existing penjual
+    mysqli_query($koneksi, "UPDATE users u JOIN kantin k ON k.id_user = u.id_user SET u.id_kantin = k.id_kantin WHERE u.role = 'penjual'");
+}
+
+if (!kk_column_exists($koneksi, 'users', 'nip')) {
+    mysqli_query($koneksi, "ALTER TABLE users ADD COLUMN nip VARCHAR(20) NULL");
 }
 
 if (!kk_column_exists($koneksi, 'users', 'nama_kantin')) {

@@ -96,6 +96,36 @@ function setRating(n) {
         else star.classList.remove('active');
     });
 }
+
+document.querySelector('form').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    const btn = this.querySelector('button[type="submit"]');
+    btn.disabled = true;
+    btn.textContent = 'Mengirim...';
+
+    try {
+        const fd = new FormData(this);
+        const res = await fetch('proses_ulasan.php', { method: 'POST', body: fd });
+        const data = await res.json();
+
+        if (data.success) {
+            btn.textContent = 'Berhasil! Mengalihkan...';
+            btn.classList.remove('bg-[#b22204]');
+            btn.classList.add('bg-green-600');
+            setTimeout(() => {
+                window.location.href = 'riwayat_pembeli.php';
+            }, 800);
+        } else {
+            alert(data.message || 'Gagal mengirim ulasan.');
+            btn.disabled = false;
+            btn.textContent = 'Kirim Review';
+        }
+    } catch (err) {
+        alert('Terjadi kesalahan. Silakan coba lagi.');
+        btn.disabled = false;
+        btn.textContent = 'Kirim Review';
+    }
+});
 </script>
 </body>
 </html>

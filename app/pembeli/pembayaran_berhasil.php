@@ -193,8 +193,8 @@ body {
                     <span class="font-semibold text-gray-500">Subtotal</span>
                     <span class="font-bold text-gray-700">Rp <?= number_format($subtotalPesanan, 0, ',', '.') ?></span>
                 </div>
-                <div class="flex justify-between items-center mb-2">
-                    <span class="font-semibold text-gray-500">Pajak</span>
+                <div class="flex items-center justify-between">
+                    <span class="font-semibold text-gray-500">Biaya Layanan</span>
                     <span class="font-bold text-gray-700">Rp <?= number_format($pajak, 0, ',', '.') ?></span>
                 </div>
                 <div class="flex justify-between items-center pt-2 border-t border-dashed border-gray-200">

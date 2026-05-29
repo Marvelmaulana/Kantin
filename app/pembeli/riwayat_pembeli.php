@@ -130,10 +130,13 @@ body {
                     COALESCE(dp.nama_menu, m.nama_menu) AS nama_menu,
                     COALESCE(NULLIF(dp.harga, 0), m.harga, 0) AS harga,
                     m.foto,
-                    k.nama_kantin
+                    k.nama_kantin,
+                    u.rating,
+                    u.komentar
                 FROM detail_pesanan dp
                 LEFT JOIN menu m ON dp.id_menu = m.id_menu
                 LEFT JOIN kantin k ON m.id_kantin = k.id_kantin
+                LEFT JOIN ulasan u ON u.id_menu = dp.id_menu AND u.id_user = $id_user
                 WHERE dp.id_pesanan = $id_pesanan
             ");
 
@@ -179,8 +182,15 @@ body {
                             <h2 class="font-headline font-extrabold text-base leading-tight text-stone-800 truncate mt-1">
                                 <?= htmlspecialchars($row['nama_kantin']) ?>
                             </h2>
-                            <p class="text-[11px] text-stone-400 mt-1">
-                                <?= (int)$row['total_item'] ?> item - <?= date('d M Y, H:i', strtotime($row['tanggal'])) ?>
+                            <div class="text-[11px] text-stone-500 mt-1 flex flex-col gap-1">
+                                <?php foreach ($items as $idx => $itm): if($idx >= 2) { echo '<span class="text-stone-400 italic">+'.(count($items)-2).' menu lainnya</span>'; break; } ?>
+                                <a href="detail_menu.php?id=<?= $itm['id_menu'] ?>" class="hover:text-orange-600 hover:underline truncate inline-block">
+                                    <?= (int)$itm['qty'] ?>x <?= htmlspecialchars($itm['nama_menu']) ?>
+                                </a>
+                                <?php endforeach; ?>
+                            </div>
+                            <p class="text-[11px] text-stone-400 mt-2">
+                                <?= date('d M Y, H:i', strtotime($row['tanggal'])) ?>
                             </p>
                         </div>
                         <span class="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wide flex items-center gap-1 whitespace-nowrap <?= $statusColor ?>">
@@ -299,7 +309,7 @@ body {
                             <span class="font-semibold text-right">Rp <?= number_format($subtotal_items,0,',','.') ?></span>
                         </div>
                         <div class="flex justify-between gap-4">
-                            <span class="text-zinc-500">Pajak</span>
+                            <span class="text-zinc-500">Biaya Layanan</span>
                             <span class="font-semibold text-right">Rp <?= number_format($pajak,0,',','.') ?></span>
                         </div>
                         <div class="flex justify-between gap-4">
@@ -330,13 +340,35 @@ body {
             </div>
 
             <?php if ($isSelesai): ?>
-            <div class="px-4 pb-4 -mt-1 flex flex-wrap gap-2">
+            <div class="px-4 pb-4 -mt-1 flex flex-col gap-2 border-t border-stone-100 pt-3">
                 <?php foreach ($items as $item): ?>
-                <a href="ulasan.php?id_detail=<?= (int)$item['id_detail'] ?>"
-                   class="inline-flex items-center gap-1 rounded-2xl bg-yellow-50 text-yellow-700 border border-yellow-100 px-3 py-2 text-[11px] font-black">
-                    <span class="material-symbols-outlined text-sm">star</span>
-                    Ulas <?= htmlspecialchars($item['nama_menu']) ?>
-                </a>
+                <div class="flex items-center justify-between bg-zinc-50 rounded-xl p-2.5">
+                    <a href="detail_menu.php?id=<?= $item['id_menu'] ?>" class="text-xs font-bold text-stone-700 hover:text-orange-600 truncate flex-1 pr-2">
+                        <?= htmlspecialchars($item['nama_menu']) ?>
+                    </a>
+                    
+                    <?php if (!empty($item['rating'])): ?>
+                    <div class="flex flex-col items-end shrink-0">
+                        <div class="flex items-center gap-1 text-yellow-500">
+                            <span class="material-symbols-outlined text-[14px]">star</span>
+                            <span class="text-xs font-black text-stone-700"><?= (int)$item['rating'] ?></span>
+                        </div>
+                        <?php if(!empty($item['komentar'])): ?>
+                        <p class="text-[10px] text-stone-500 max-w-[150px] truncate">"<?= htmlspecialchars($item['komentar']) ?>"</p>
+                        <?php endif; ?>
+                    </div>
+                    <a href="ulasan.php?id_detail=<?= (int)$item['id_detail'] ?>"
+                       class="ml-3 shrink-0 inline-flex items-center gap-1 rounded-lg bg-stone-200 text-stone-600 px-2 py-1 text-[10px] font-black hover:bg-stone-300">
+                        Edit
+                    </a>
+                    <?php else: ?>
+                    <a href="ulasan.php?id_detail=<?= (int)$item['id_detail'] ?>"
+                       class="shrink-0 inline-flex items-center gap-1 rounded-lg bg-yellow-100 text-yellow-700 px-3 py-1.5 text-[11px] font-black hover:bg-yellow-200">
+                        <span class="material-symbols-outlined text-[14px]">star</span>
+                        Ulas
+                    </a>
+                    <?php endif; ?>
+                </div>
                 <?php endforeach; ?>
             </div>
             <?php endif; ?>

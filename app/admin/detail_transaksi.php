@@ -8,19 +8,19 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
-$id_transaksi = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-if (!$id_transaksi) {
-    header('Location: Laporan_transaksi.php');
+$id_pesanan = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+if (!$id_pesanan) {
+    header('Location: laporan_transaksi.php');
     exit();
 }
 
-// Query data transaksi
+// Query data transaksi dari pesanan
 $query_transaksi = mysqli_query($koneksi, "
-    SELECT t.*, u.username, u.email, k.nama_kantin
-    FROM transaksi t
+    SELECT t.id_pesanan as id_transaksi, t.*, u.username, u.email, k.nama_kantin
+    FROM pesanan t
     LEFT JOIN users u ON t.id_user = u.id_user
     LEFT JOIN kantin k ON t.id_kantin = k.id_kantin
-    WHERE t.id_transaksi = $id_transaksi
+    WHERE t.id_pesanan = $id_pesanan
     LIMIT 1
 ");
 
@@ -29,7 +29,7 @@ if (!$query_transaksi || mysqli_num_rows($query_transaksi) === 0) {
 }
 
 $transaksi = mysqli_fetch_assoc($query_transaksi);
-$id_pesanan = (int)($transaksi['id_pesanan'] ?? 0);
+$id_transaksi = $id_pesanan;
 
 // Query detail item pesanan
 $items = [];
@@ -241,8 +241,8 @@ $statusClass = match($transaksi['status']) {
                         <span class="font-semibold text-slate-800">Rp <?= number_format($subtotal_items ?: $transaksi['total_harga'], 0, ',', '.') ?></span>
                     </div>
                     <div class="flex justify-between py-1 text-slate-500 text-sm">
-                        <span>Pajak (Pendapatan Admin)</span>
-                        <span class="font-semibold text-slate-800">Rp <?= number_format($transaksi['jumlah_pajak'] ?? 1000, 0, ',', '.') ?></span>
+                        <span>Biaya Layanan (Pendapatan Admin)</span>
+                        <span class="font-semibold text-slate-800">Rp <?= number_format($transaksi['pajak'] ?? 1000, 0, ',', '.') ?></span>
                     </div>
                     <div class="flex justify-between py-1 text-slate-500 text-sm">
                         <span>Metode Pembayaran</span>
@@ -250,7 +250,7 @@ $statusClass = match($transaksi['status']) {
                     </div>
                     <div class="flex justify-between py-3 border-t border-slate-100 mt-3 text-slate-800 font-extrabold text-base">
                         <span>Total Pembayaran</span>
-                        <span class="text-primary-orange text-lg">Rp <?= number_format(($subtotal_items ? $subtotal_items + ($transaksi['jumlah_pajak'] ?? 1000) : $transaksi['total_harga'] + ($transaksi['jumlah_pajak'] ?? 1000)), 0, ',', '.') ?></span>
+                        <span class="text-primary-orange text-lg">Rp <?= number_format(($subtotal_items ? $subtotal_items + ($transaksi['pajak'] ?? 1000) : $transaksi['total_harga']), 0, ',', '.') ?></span>
                     </div>
                 </div>
             </div>

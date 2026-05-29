@@ -44,11 +44,11 @@ $jumlah_kantin    = $result_kantin ? (mysqli_fetch_assoc($result_kantin)['total'
 $result_menu      = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM menu");
 $jumlah_menu      = $result_menu ? (mysqli_fetch_assoc($result_menu)['total'] ?? 0) : 0;
 
-$result_transaksi = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi");
+$result_transaksi = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan");
 $jumlah_transaksi = $result_transaksi ? (mysqli_fetch_assoc($result_transaksi)['total'] ?? 0) : 0;
 
 // Seluruh Pendapatan Semua Kantin
-$result_pajak     = mysqli_query($koneksi, "SELECT COALESCE(SUM(total_harga), 0) as total FROM transaksi");
+$result_pajak     = mysqli_query($koneksi, "SELECT COALESCE(SUM(total_harga), 0) as total FROM pesanan WHERE status='Selesai'");
 $pendapatan_admin = $result_pajak ? (mysqli_fetch_assoc($result_pajak)['total'] ?? 0) : 0;
 
 // Grafik 7 hari

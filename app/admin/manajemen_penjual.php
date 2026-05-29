@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 session_start();
 include(__DIR__ . '/../../config/config.php');
 
@@ -19,7 +19,7 @@ if (isset($_GET['success']) && $_GET['success'] === 'hapus') {
 
 $search = mysqli_real_escape_string($koneksi, trim($_GET['search'] ?? ''));
 $sql = "SELECT u.*, k.id_kantin FROM users u 
-        LEFT JOIN kantin k ON u.id_user = k.id_penjual
+        LEFT JOIN kantin k ON u.id_user = k.id_user
         WHERE u.role='penjual'";
 if ($search !== '') {
     $sql .= " AND (u.username LIKE '%$search%' OR u.email LIKE '%$search%')";

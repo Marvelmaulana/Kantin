@@ -105,7 +105,7 @@ function is_active($page) {
         <!-- Income Report -->
         <a href="laporan_pendapatan_admin.php" class="menu-link flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors duration-200 <?= ($current_page === 'laporan_pendapatan_admin.php') ? 'bg-white/20 font-semibold' : '' ?>">
             <span class="material-symbols-outlined text-xl">attach_money</span>
-            <span>Laporan Pajak</span>
+            <span>Laporan Pendapatan</span>
         </a>
 
         <!-- Kantin Report -->

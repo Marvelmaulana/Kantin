@@ -20,9 +20,6 @@ if (isset($_GET['success']) && $_GET['success'] === 'hapus') {
     $message_type = 'error';
 }
 
-// Pagination
-$per_page = 10;
-$page = admin_validate_id($_GET['page'] ?? 1) ?: 1;
 
 // Search with prepared statement
 $search = admin_validate_string($_GET['search'] ?? '', 0);
@@ -31,7 +28,7 @@ $search_params = [];
 $search_types = '';
 
 if ($search) {
-    $search_where = " WHERE (k.nama_kantin LIKE ? OR k.deskripsi LIKE ? OR u.username LIKE ?)";
+    $search_where = " WHERE (k.nama_kantin LIKE ? OR k.deskripsi LIKE ? OR COALESCE(u1.username, u2.username) LIKE ?)";
     $search_term = '%' . $search . '%';
     $search_params = [$search_term, $search_term, $search_term];
     $search_types = 'sss';
@@ -39,22 +36,17 @@ if ($search) {
 
 // Count total records
 try {
-    $count_sql = "SELECT COUNT(*) as total FROM kantin k LEFT JOIN users u ON k.id_user=u.id_user" . $search_where;
+    $count_sql = "SELECT COUNT(*) as total FROM kantin k LEFT JOIN users u1 ON k.id_user=u1.id_user LEFT JOIN users u2 ON k.id_penjual=u2.id_user" . $search_where;
     $total_kantin = admin_query_count($koneksi, $count_sql, $search_params, $search_types);
 } catch (Exception $e) {
     $total_kantin = 0;
 }
 
-// Get pagination info
-$paging = admin_pagination_calc($total_kantin, $per_page, $page);
-$limit_params = array_merge($search_params, [$paging['offset'], $per_page]);
-$limit_types = $search_types . 'ii';
-
-// Fetch kantin with pagination
+// Fetch all kantin (No pagination)
 try {
-    $sql = "SELECT k.*, u.username AS pemilik FROM kantin k LEFT JOIN users u ON k.id_user=u.id_user" . 
-           $search_where . " ORDER BY k.id_kantin DESC LIMIT ? OFFSET ?";
-    $kantins = admin_query_fetch_all($koneksi, $sql, $limit_params, $limit_types);
+    $sql = "SELECT k.*, COALESCE(u1.username, u2.username, k.nama_penjual) AS pemilik FROM kantin k LEFT JOIN users u1 ON k.id_user=u1.id_user LEFT JOIN users u2 ON k.id_penjual=u2.id_user" . 
+           $search_where . " ORDER BY k.id_kantin DESC";
+    $kantins = admin_query_fetch_all($koneksi, $sql, $search_params, $search_types);
 } catch (Exception $e) {
     $kantins = [];
     $message = 'Error loading data: ' . htmlspecialchars($e->getMessage());
@@ -148,37 +140,7 @@ try {
             </tbody>
         </table>
         
-        <!-- Pagination -->
-        <?php if ($paging['total_pages'] > 1): ?>
-        <div class="mt-6 flex justify-center gap-2 items-center">
-            <?php if ($paging['has_prev']): ?>
-                <a href="?page=1<?= $search ? '&search=' . urlencode($search) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100">&laquo;</a>
-                <a href="?page=<?= $paging['prev_page'] ?><?= $search ? '&search=' . urlencode($search) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100">&lsaquo;</a>
-            <?php endif; ?>
-            
-            <?php for ($i = 1; $i <= $paging['total_pages']; $i++): ?>
-                <?php if ($i == $paging['current_page']): ?>
-                    <span class="px-3 py-2 rounded-lg bg-primary-orange text-white font-bold"><?= $i ?></span>
-                <?php else: ?>
-                    <a href="?page=<?= $i ?><?= $search ? '&search=' . urlencode($search) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100"><?= $i ?></a>
-                <?php endif; ?>
-            <?php endfor; ?>
-            
-            <?php if ($paging['has_next']): ?>
-                <a href="?page=<?= $paging['next_page'] ?><?= $search ? '&search=' . urlencode($search) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100">&rsaquo;</a>
-                <a href="?page=<?= $paging['total_pages'] ?><?= $search ? '&search=' . urlencode($search) : '' ?>" class="px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100">&raquo;</a>
-            <?php endif; ?>
-        </div>
-        <?php endif; ?>
-        
-        <?php endif; ?>
-    </div>
-                        </div>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
+
         <?php endif; ?>
     </div>
 </main>

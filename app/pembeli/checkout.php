@@ -347,7 +347,7 @@ body::before {
             <span class="font-bold text-gray-700">Rp <?= number_format($total_bayar, 0, ',', '.') ?></span>
         </div>
         <div class="flex justify-between items-center mb-3">
-            <span class="text-sm text-gray-500 font-semibold">Pajak<?= count($kantinCheckoutIds) > 1 ? ' (' . count($kantinCheckoutIds) . ' kantin)' : '' ?></span>
+            <span class="text-sm text-gray-500 font-semibold">Biaya Layanan<?= count($kantinCheckoutIds) > 1 ? ' (' . count($kantinCheckoutIds) . ' kantin)' : '' ?></span>
             <span class="font-bold text-gray-700">Rp <?= number_format($pajakCheckout, 0, ',', '.') ?></span>
         </div>
         <div class="h-[2px] bg-gradient-to-r from-orange-200 via-orange-400 to-orange-200 rounded-full mb-3"></div>

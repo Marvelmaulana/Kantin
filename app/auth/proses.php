@@ -47,7 +47,7 @@ if (isset($_POST['login_btn'])) {
                 // Jika penjual, ambil data kantin
                 if ($user_data['role'] === 'penjual') {
                     $id_user = $user_data['id_user'];
-                    $query_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kantin WHERE id_penjual = '$id_user' LIMIT 1");
+                    $query_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kantin WHERE id_user = '$id_user' LIMIT 1");
                     
                     if ($query_kantin) {
                         $data_kantin = mysqli_fetch_assoc($query_kantin);

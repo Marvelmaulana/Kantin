@@ -48,7 +48,7 @@ $id_kantin = (int)$_SESSION['id_kantin'];
 // VALIDASI OWNERSHIP KANTIN
 // ================================
 $check_kantin = mysqli_query($koneksi, "
-    SELECT id_kantin, id_penjual 
+    SELECT id_kantin, id_user 
     FROM kantin 
     WHERE id_kantin = $id_kantin 
     LIMIT 1
@@ -71,7 +71,7 @@ $verify_user = mysqli_query($koneksi, "
     FROM users 
     WHERE id_user = $id_user 
     AND role = 'penjual'
-    AND (id_kantin = $id_kantin OR id_user = {$kantin_data['id_penjual']})
+    AND (id_kantin = $id_kantin OR id_user = {$kantin_data['id_user']})
     LIMIT 1
 ");
 
@@ -94,8 +94,7 @@ $jam_tutup = isset($data['jam_tutup']) ? trim($data['jam_tutup']) : '';
 $tipe_operasi = isset($data['tipe_operasi']) ? trim($data['tipe_operasi']) : 'manual';
 
 // Validasi format jam
-$jam_buka_validated = kk_validate_time_format($jam_buka);
-if (empty($jam_buka) || !$jam_buka_validated) {
+if (empty($jam_buka) || !kk_validate_jam($jam_buka)) {
     http_response_code(400);
     echo json_encode([
         'success' => false,
@@ -104,8 +103,7 @@ if (empty($jam_buka) || !$jam_buka_validated) {
     exit;
 }
 
-$jam_tutup_validated = kk_validate_time_format($jam_tutup);
-if (empty($jam_tutup) || !$jam_tutup_validated) {
+if (empty($jam_tutup) || !kk_validate_jam($jam_tutup)) {
     http_response_code(400);
     echo json_encode([
         'success' => false,
@@ -123,9 +121,9 @@ if (!in_array($tipe_operasi, ['manual', 'otomatis'], true)) {
 // UPDATE DATABASE
 // ================================
 try {
-    // Format dengan validated time (sudah HH:MM:SS)
-    $jam_buka_db = $jam_buka_validated;
-    $jam_tutup_db = $jam_tutup_validated;
+    // Format dengan :00 untuk seconds
+    $jam_buka_db = $jam_buka . ':00';
+    $jam_tutup_db = $jam_tutup . ':00';
 
     $jam_buka_esc = mysqli_real_escape_string($koneksi, $jam_buka_db);
     $jam_tutup_esc = mysqli_real_escape_string($koneksi, $jam_tutup_db);

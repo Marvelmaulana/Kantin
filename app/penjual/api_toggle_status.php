@@ -46,7 +46,7 @@ $id_kantin = (int)$_SESSION['id_kantin'];
 // VALIDASI OWNERSHIP KANTIN
 // ================================
 $check_kantin = mysqli_query($koneksi, "
-    SELECT id_kantin, id_penjual, status_buka, tipe_operasi
+    SELECT id_kantin, id_user, status_buka, tipe_operasi
     FROM kantin 
     WHERE id_kantin = $id_kantin 
     LIMIT 1
@@ -69,7 +69,7 @@ $verify_user = mysqli_query($koneksi, "
     FROM users 
     WHERE id_user = $id_user 
     AND role = 'penjual'
-    AND (id_kantin = $id_kantin OR id_user = {$kantin_data['id_penjual']})
+    AND (id_kantin = $id_kantin OR id_user = {$kantin_data['id_user']})
     LIMIT 1
 ");
 

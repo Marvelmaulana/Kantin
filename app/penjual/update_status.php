@@ -45,7 +45,15 @@ mysqli_stmt_bind_param($stmt, 'sii', $status, $id_p, $id_k);
 $ok = mysqli_stmt_execute($stmt);
 mysqli_stmt_close($stmt);
 
-// 6. Redirect balik dengan pesan
+// 6. Jika status Selesai, buat transaksi agar masuk ke laporan admin
+if ($ok && $status === 'Selesai') {
+    include_once(__DIR__ . '/../../includes/pembeli_helpers.php');
+    if (function_exists('kk_create_transaction')) {
+        kk_create_transaction($koneksi, $id_p);
+    }
+}
+
+// 7. Redirect balik dengan pesan
 // Catatan: update ini otomatis terlihat pembeli karena mereka query tabel pesanan yang sama
 if ($ok) {
     if ($status === 'Selesai') {
