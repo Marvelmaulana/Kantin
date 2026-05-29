@@ -11,9 +11,7 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
 // 2. AMBIL DATA MENU
 $message = '';
 $message_type = 'success';
-if (isset($_GET['success']) && $_GET['success'] === 'hapus') {
-    $message = 'Menu berhasil dihapus.';
-} elseif (isset($_GET['error'])) {
+if (isset($_GET['error'])) {
     $message = urldecode($_GET['error']);
     $message_type = 'error';
 }
@@ -79,7 +77,6 @@ $query = mysqli_query($koneksi, $sql);
                 <span class="material-symbols-outlined text-primary-orange">restaurant</span> 
                 <span class="text-primary-orange"><?= mysqli_num_rows($query) ?></span> Produk Aktif
             </div>
-            <a href="tambah_menu.php" class="bg-primary-orange text-white px-5 py-3 rounded-2xl font-bold shadow-lg flex items-center gap-2 hover:scale-105 transition-all text-sm whitespace-nowrap">Tambah Menu</a>
         </div>
     </header>
     <?php if ($message !== ''): ?>
@@ -143,10 +140,6 @@ $query = mysqli_query($koneksi, $sql);
                 <span class="inline-flex items-center justify-center w-max px-4 py-2 text-[10px] font-black uppercase tracking-widest rounded-full bg-orange-50 text-orange-700 border border-orange-100">
                     <?= htmlspecialchars($menu['status'] ?? 'Tersedia') ?>
                 </span>
-                <div class="flex flex-wrap gap-3 pt-4">
-                    <a href="edit_menu.php?id=<?= $menu['id_menu'] ?>" class="flex-1 text-center px-4 py-3 rounded-2xl bg-slate-100 text-slate-700 text-sm font-semibold hover:bg-primary-orange hover:text-white transition">Edit</a>
-                    <a href="proses_hapus_menu.php?id=<?= $menu['id_menu'] ?>" onclick="return confirm('Hapus menu ini?')" class="flex-1 text-center px-4 py-3 rounded-2xl bg-red-50 text-red-700 text-sm font-semibold hover:bg-red-600 hover:text-white transition">Hapus</a>
-                </div>
             </div>
         </div>
         <?php endwhile; ?>

@@ -76,14 +76,14 @@ function getConversations($koneksi, $id_user, $role) {
     if ($role === 'penjual') {
         $id_kantin = (int)($_SESSION['id_kantin'] ?? 0);
         $sql = "SELECT c.*,
-                       u.username as buyer_name, u.email as buyer_email,
-                       k.nama_kantin,
+                       COALESCE(u.username, 'Pembeli') as buyer_name, u.email as buyer_email,
+                       COALESCE(k.nama_kantin, 'Kantin') as nama_kantin,
                        (SELECT COUNT(*) FROM chat_messages cm
                         WHERE cm.id_conversation = c.id_conversation
                         AND cm.id_sender != $id_user AND cm.is_read = 0) as unread_count
                 FROM chat_conversations c
-                JOIN users u ON c.id_buyer = u.id_user
-                JOIN kantin k ON c.id_kantin = k.id_kantin
+                LEFT JOIN users u ON c.id_buyer = u.id_user
+                LEFT JOIN kantin k ON c.id_kantin = k.id_kantin
                 WHERE c.id_seller = $id_user
                 AND EXISTS (
                     SELECT 1 FROM chat_messages cmx
@@ -92,12 +92,12 @@ function getConversations($koneksi, $id_user, $role) {
                 ORDER BY COALESCE(c.last_message_at, c.created_at) DESC, c.updated_at DESC";
     } else {
         $sql = "SELECT c.*,
-                       u.username as seller_name,
+                       COALESCE(u.username, 'Penjual') as seller_name,
                        (SELECT COUNT(*) FROM chat_messages cm
                         WHERE cm.id_conversation = c.id_conversation
                         AND cm.id_sender != $id_user AND cm.is_read = 0) as unread_count
                 FROM chat_conversations c
-                JOIN users u ON c.id_seller = u.id_user
+                LEFT JOIN users u ON c.id_seller = u.id_user
                 WHERE c.id_buyer = $id_user
                 ORDER BY COALESCE(c.last_message_at, c.created_at) DESC, c.updated_at DESC";
     }
@@ -133,9 +133,9 @@ function getMessages($koneksi, $id_conversation, $id_user, $role) {
         return ['success' => false, 'error' => 'Access denied'];
     }
 
-    $sql = "SELECT cm.*, u.username as sender_name
+    $sql = "SELECT cm.*, COALESCE(u.username, 'User') as sender_name
             FROM chat_messages cm
-            JOIN users u ON cm.id_sender = u.id_user
+            LEFT JOIN users u ON cm.id_sender = u.id_user
             WHERE cm.id_conversation = $id_conversation
             ORDER BY cm.created_at ASC";
 
@@ -191,9 +191,9 @@ function sendMessage($koneksi, $id_conversation, $id_user, $role, $message) {
                             WHERE id_conversation = $id_conversation");
 
     // Get message details
-    $msg_result = mysqli_query($koneksi, "SELECT cm.*, u.username as sender_name
+    $msg_result = mysqli_query($koneksi, "SELECT cm.*, COALESCE(u.username, 'User') as sender_name
                                           FROM chat_messages cm
-                                          JOIN users u ON cm.id_sender = u.id_user
+                                          LEFT JOIN users u ON cm.id_sender = u.id_user
                                           WHERE cm.id_message = $id_message");
 
     $msg_data = mysqli_fetch_assoc($msg_result);

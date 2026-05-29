@@ -32,6 +32,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $message = 'Format email tidak valid.';
         $message_type = 'error';
+    } elseif (!preg_match('/@gmail\.com$/', $email)) {
+        $message = 'Email harus berakhir dengan @gmail.com';
+        $message_type = 'error';
     } elseif (!$id_kantin || $id_kantin <= 0) {
         $message = 'Anda wajib memilih Kantin untuk penjual ini.';
         $message_type = 'error';
@@ -166,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <div>
             <label class="block text-sm sm:text-base font-bold mb-2">Email</label>
-            <input name="email" type="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" required class="w-full px-4 py-3 sm:py-4 border rounded-2xl text-base" />
+            <input name="email" type="email" value="<?= htmlspecialchars($_POST['email'] ?? '') ?>" placeholder="contoh@gmail.com" pattern=".*@gmail\.com$" required class="w-full px-4 py-3 sm:py-4 border rounded-2xl text-base" />
         </div>
         <div>
             <label class="block text-sm sm:text-base font-bold mb-2">Password</label>

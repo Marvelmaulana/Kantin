@@ -28,11 +28,11 @@ while ($k = mysqli_fetch_assoc($q_kantin)) $allKantin[] = $k;
 
 // Ambil conversations dengan last message
 $q_conv = mysqli_query($koneksi, "
-    SELECT c.*, u.username AS seller_name, k.nama_kantin AS kantin_name, k.logo AS kantin_logo,
+    SELECT c.*, COALESCE(u.username, 'Penjual') AS seller_name, COALESCE(k.nama_kantin, 'Kantin') AS kantin_name, k.logo AS kantin_logo,
            (SELECT COUNT(*) FROM chat_messages cm WHERE cm.id_conversation = c.id_conversation AND cm.id_sender != $id_user AND cm.is_read = 0) AS unread_count
     FROM chat_conversations c
-    JOIN users u ON c.id_seller = u.id_user
-    JOIN kantin k ON c.id_kantin = k.id_kantin
+    LEFT JOIN users u ON c.id_seller = u.id_user
+    LEFT JOIN kantin k ON c.id_kantin = k.id_kantin
     WHERE c.id_buyer = $id_user
     ORDER BY COALESCE(c.last_message_at, c.created_at) DESC
 ");
@@ -102,14 +102,7 @@ body {
     background: #fff1ee;
     border-left: 3px solid #f97316;
 }
-.online-dot {
-    width: 12px; height: 12px;
-    background: #22c55e;
-    border: 2px solid white;
-    border-radius: 50%;
-    position: absolute;
-    bottom: 0; right: 0;
-}
+
 </style>
 </head>
 <body class="bg-white">
@@ -192,7 +185,6 @@ body {
                             <?php endif; ?>
                         </div>
                         <?php if ($unread > 0): ?>
-                        <div class="online-dot" style="background:#f97316;border-color:#fff7ed"></div>
                         <?php endif; ?>
                     </div>
                     <!-- Content -->

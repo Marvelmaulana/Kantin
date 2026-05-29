@@ -35,6 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $message = 'Format email tidak valid.';
         $message_type = 'error';
+    } elseif (!preg_match('/@gmail\.com$/', $email)) {
+        $message = 'Email harus berakhir dengan @gmail.com';
+        $message_type = 'error';
     } else {
         $exists = mysqli_query($koneksi, "SELECT id_user FROM users WHERE (username='$username' OR email='$email') AND id_user<>$id_user LIMIT 1");
         if (mysqli_num_rows($exists) > 0) {
@@ -112,7 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
         <div>
             <label class="block text-sm font-bold mb-2">Email</label>
-            <input name="email" type="email" value="<?= htmlspecialchars($_POST['email'] ?? $penjual['email']) ?>" required class="w-full px-4 py-3 border rounded-2xl" />
+            <input name="email" type="email" value="<?= htmlspecialchars($_POST['email'] ?? $penjual['email']) ?>" placeholder="contoh@gmail.com" pattern=".*@gmail\.com$" required class="w-full px-4 py-3 border rounded-2xl" />
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

@@ -121,6 +121,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
     <meta charset="utf-8"/><meta content="width=device-width,initial-scale=1.0" name="viewport"/>
     <title>Laporan Pendapatan Admin - Kantin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
@@ -148,6 +149,42 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
         .glow-card{box-shadow:0 25px 80px rgba(251,146,60,0.16);}
         .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .table-container table { min-width: 600px; }
+        
+        /* Chart Modal Styles */
+        .chart-container {
+            transition: all 0.3s ease;
+        }
+        .chart-container.expanded {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .chart-expanded-content {
+            background: white;
+            border-radius: 1.5rem;
+            padding: 2rem;
+            width: 100%;
+            max-width: 90vw;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 80px rgba(0, 0, 0, 0.3);
+        }
+        
+        @media (max-width: 768px) {
+            .chart-expanded-content {
+                padding: 1.5rem;
+                max-height: 80vh;
+            }
+        }
+        
         @media (max-width: 640px) {
             .mobile-card { display: block !important; }
             .mobile-card thead { display: none; }
@@ -157,6 +194,139 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
             .mobile-card tbody td::before { content: attr(data-label); font-weight: 700; color: #666; width: 40%; }
         }
     </style>
+    <script>
+        // Format Rupiah
+        function formatRp(value) {
+            return 'Rp ' + Math.round(value).toLocaleString('id-ID');
+        }
+        
+        // Chart Data from PHP
+        const chartLabels = <?= json_encode(array_column($grafik_data, 'label')) ?>;
+        const chartData = <?= json_encode(array_column($grafik_data, 'nilai')) ?>;
+        const totalRevenue = chartData.reduce((a, b) => a + b, 0);
+        const avgRevenue = totalRevenue / 7;
+        const maxRevenue = Math.max(...chartData);
+        const minRevenue = Math.min(...chartData);
+        
+        let revenueChartInstance = null;
+        let revenueChartExpandedInstance = null;
+        
+        function createChart(canvasId, isExpanded = false) {
+            const ctx = document.getElementById(canvasId)?.getContext('2d');
+            if (!ctx) return null;
+            
+            return new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'Biaya Layanan Harian',
+                        data: chartData,
+                        borderColor: '#E25E3E',
+                        backgroundColor: (context) => {
+                            const g = context.chart.ctx.createLinearGradient(0, 0, 0, isExpanded ? 500 : 300);
+                            g.addColorStop(0, 'rgba(226, 94, 62, 0.2)');
+                            g.addColorStop(1, 'rgba(226, 94, 62, 0.01)');
+                            return g;
+                        },
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#E25E3E',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2.5,
+                        pointRadius: isExpanded ? 7 : 5,
+                        pointHoverRadius: isExpanded ? 10 : 8,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: 'rgba(51, 65, 85, 0.9)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            padding: 12,
+                            titleFont: { weight: 'bold', size: 12 },
+                            bodyFont: { size: 11 },
+                            callbacks: {
+                                label: function(context) {
+                                    return formatRp(context.parsed.y);
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 50000,
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' },
+                            ticks: {
+                                stepSize: 500,
+                                callback: function(value) {
+                                    if (value === 0) return 'Rp0';
+                                    if (value >= 1000000) return 'Rp' + (value / 1000000).toFixed(1) + 'M';
+                                    if (value >= 1000) return 'Rp' + (value / 1000).toFixed(0) + 'K';
+                                    return 'Rp' + value;
+                                },
+                                font: { size: isExpanded ? 12 : 10 }
+                            }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { font: { size: isExpanded ? 12 : 10 } }
+                        }
+                    },
+                    interaction: { intersect: false, mode: 'index' }
+                }
+            });
+        }
+        
+        function expandChart() {
+            const modal = document.getElementById('chartModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+                
+                // Update statistics
+                document.getElementById('totalRevenue').textContent = formatRp(totalRevenue);
+                document.getElementById('avgRevenue').textContent = formatRp(avgRevenue);
+                document.getElementById('maxRevenue').textContent = formatRp(maxRevenue);
+                document.getElementById('minRevenue').textContent = formatRp(minRevenue);
+                
+                // Initialize expanded chart
+                setTimeout(() => {
+                    if (revenueChartExpandedInstance) revenueChartExpandedInstance.destroy();
+                    revenueChartExpandedInstance = createChart('revenueChartExpanded', true);
+                }, 50);
+            }
+        }
+        
+        function closeExpandedChart() {
+            const modal = document.getElementById('chartModal');
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        }
+        
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeExpandedChart();
+            }
+        });
+        
+        // Initialize chart when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            if (revenueChartInstance) revenueChartInstance.destroy();
+            revenueChartInstance = createChart('revenueChart', false);
+        });
+    </script>
 </head>
 <body class="text-slate-800 flex min-h-screen overflow-x-hidden">
 
@@ -249,26 +419,55 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
 
     <!-- Grafik Pendapatan 7 Hari -->
     <div class="bg-white rounded-2xl shadow-sm border border-slate-50 p-4 md:p-6 mb-6">
-        <div class="mb-4">
-            <h4 class="text-base font-extrabold text-[#003049] flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary-orange">bar_chart</span>
-                Tren Pendapatan Biaya Layanan 7 Hari Terakhir
-            </h4>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Ringkasan total pendapatan biaya layanan per hari</p>
+        <div class="mb-4 sm:mb-6 flex items-center justify-between">
+            <div>
+                <h4 class="text-base md:text-lg font-extrabold text-[#003049]">Tren Pendapatan Biaya Layanan 7 Hari Terakhir</h4>
+                <p class="text-xs sm:text-sm text-slate-500 mt-1">Ringkasan total pendapatan biaya layanan per hari</p>
+            </div>
+            <button onclick="expandChart()" class="ml-auto px-3 py-2 sm:px-4 sm:py-2 rounded-lg bg-primary-orange hover:bg-orange-600 text-white text-xs sm:text-sm font-bold transition-all hover:scale-105 flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm sm:text-base">fullscreen</span>
+                <span class="hidden sm:inline">Perbesar</span>
+            </button>
         </div>
-        <div class="overflow-x-auto pb-2">
-            <div class="flex items-end justify-between h-32 sm:h-40 md:h-56 gap-1 sm:gap-2 min-w-[300px] sm:min-w-full">
-                <?php foreach($grafik_data as $g): $height = ($g['nilai'] / $max_val) * 100; ?>
-                <div class="flex-1 flex flex-col items-center gap-1 sm:gap-2 group relative">
-                    <div class="absolute -top-6 sm:-top-8 bg-[#003049] text-white text-[8px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none">
-                        Rp<?= number_format($g['nilai'], 0, ',', '.') ?>
-                    </div>
-                    <div class="w-full bg-slate-100 rounded-t relative flex-1 overflow-hidden min-h-[20px]">
-                        <div class="absolute bottom-0 left-0 w-full bg-gradient-to-t from-primary-orange to-orange-400 rounded-t transition-all duration-700 ease-out" style="height:<?= $height ?>%"></div>
-                    </div>
-                    <span class="text-[7px] sm:text-[9px] font-black <?= $g['is_today'] ? 'text-primary-orange font-bold' : 'text-slate-400' ?>"><?= $g['label'] ?></span>
+        <div class="relative h-48 sm:h-64 md:h-80">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Chart Expanded Modal -->
+    <div id="chartModal" class="hidden chart-container" onclick="closeExpandedChart()">
+        <div class="chart-expanded-content" onclick="event.stopPropagation()">
+            <div class="flex items-center justify-between mb-6">
+                <div>
+                    <h3 class="text-xl sm:text-2xl font-extrabold text-[#003049]">Grafik Biaya Layanan - 7 Hari Terakhir</h3>
+                    <p class="text-sm text-slate-500 mt-1">Visualisasi lengkap total pendapatan biaya layanan per hari</p>
                 </div>
-                <?php endforeach; ?>
+                <button onclick="closeExpandedChart()" class="text-slate-400 hover:text-slate-600 transition">
+                    <span class="material-symbols-outlined text-2xl">close</span>
+                </button>
+            </div>
+            <div class="relative h-96 sm:h-[500px]">
+                <canvas id="revenueChartExpanded"></canvas>
+            </div>
+            <div class="mt-6 pt-6 border-t border-slate-200">
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <p class="text-xs text-slate-500 font-bold">Total 7 Hari</p>
+                        <p class="text-lg sm:text-xl font-extrabold text-primary-orange" id="totalRevenue">Rp0</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <p class="text-xs text-slate-500 font-bold">Rata-rata/Hari</p>
+                        <p class="text-lg sm:text-xl font-extrabold text-blue-600" id="avgRevenue">Rp0</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <p class="text-xs text-slate-500 font-bold">Tertinggi</p>
+                        <p class="text-lg sm:text-xl font-extrabold text-green-600" id="maxRevenue">Rp0</p>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-lg">
+                        <p class="text-xs text-slate-500 font-bold">Terendah</p>
+                        <p class="text-lg sm:text-xl font-extrabold text-rose-600" id="minRevenue">Rp0</p>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

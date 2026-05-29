@@ -124,10 +124,6 @@ tailwind.config = { theme: { extend: { colors: { primary: '#f97316' } } } }
                         </div>
                         <div>
                             <h3 id="chatBuyerName" class="font-bold text-gray-900">-</h3>
-                            <p class="text-xs text-gray-500">
-                                <i class="fa-solid fa-circle text-green-500 text-[8px] mr-1"></i>
-                                <span id="chatBuyerStatus"><?= t('chat.online') ?></span>
-                            </p>
                         </div>
                     </div>
                     <button onclick="closeChat()" class="lg:hidden p-2 text-gray-400 hover:text-gray-600">
