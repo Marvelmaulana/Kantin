@@ -78,7 +78,8 @@ if ($aksi == 'edit') {
     $kategori = mysqli_real_escape_string($koneksi, $_POST['kategori'] ?? 'Makanan');
     $deskripsi = mysqli_real_escape_string($koneksi, $_POST['deskripsi'] ?? '');
     $opsi_pilihan = mysqli_real_escape_string($koneksi, $_POST['opsi_pilihan'] ?? '');
-    $status = mysqli_real_escape_string($koneksi, $_POST['status'] ?? 'Tersedia');
+    $stok = (int)($_POST['stok'] ?? 0);
+    $status = ($stok <= 0) ? 'Habis' : 'Tersedia';
 
     $fotoSet = '';
     if (!empty($_FILES['foto']['name'])) {
@@ -95,7 +96,7 @@ if ($aksi == 'edit') {
     mysqli_query($koneksi, "
         UPDATE menu
         SET nama_menu='$nama', harga='$harga', kategori='$kategori', deskripsi='$deskripsi',
-            opsi_pilihan='$opsi_pilihan', status='$status' $fotoSet
+            opsi_pilihan='$opsi_pilihan', stok='$stok', status='$status' $fotoSet
         WHERE id_menu=$id AND id_kantin='$id_k'
     ");
     header("Location: kelola_menu_penjual.php");

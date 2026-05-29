@@ -20,14 +20,9 @@ if (!$user_data || $user_data['role'] !== 'penjual') {
 $id_kantin = !empty($user_data['id_kantin']) ? (int)$user_data['id_kantin'] : (!empty($_SESSION['id_kantin']) ? (int)$_SESSION['id_kantin'] : 0);
 
 if (empty($id_kantin)) {
-    $q_k = mysqli_query($koneksi, "SELECT id_kantin FROM kantin WHERE id_user = $id_user LIMIT 1");
-    if ($q_k && mysqli_num_rows($q_k) > 0) {
-        $id_kantin = (int)mysqli_fetch_assoc($q_k)['id_kantin'];
-        // Update users table untuk sinkronisasi
-        mysqli_query($koneksi, "UPDATE users SET id_kantin = $id_kantin WHERE id_user = $id_user");
-    } else {
-        header("Location: ../auth/login.php?error=kantin_tidak_ditemukan"); exit();
-    }
+    // Fallback: tidak ada lagi query ke kantin karena relasi sudah di users.id_kantin
+    header("Location: ../auth/login.php?error=kantin_tidak_terikat");
+    exit();
 }
 
 $_SESSION['id_kantin']    = $id_kantin;
@@ -38,9 +33,8 @@ $_SESSION['nama_penjual'] = $user_data['username'];
 // DATA KANTIN
 // ================================
 $q_kantin   = mysqli_query($koneksi, "
-    SELECT k.*, COALESCE(k.nama_penjual, u.username) as nama_penjual
-    FROM kantin k LEFT JOIN users u ON k.id_user = u.id_user
-    WHERE k.id_kantin = $id_kantin LIMIT 1
+    SELECT * FROM kantin
+    WHERE id_kantin = $id_kantin LIMIT 1
 ");
 $data_kantin = mysqli_fetch_assoc($q_kantin);
 if (!$data_kantin) die("❌ Kantin tidak ditemukan");

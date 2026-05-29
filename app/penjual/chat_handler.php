@@ -261,13 +261,13 @@ function startBuyerConversation($koneksi, $id_user, $id_kantin) {
         return ['success' => false, 'error' => 'Kantin ID required'];
     }
 
-    // Get seller id for this kantin
-    $kantin = mysqli_query($koneksi, "SELECT id_user FROM kantin WHERE id_kantin = $id_kantin");
-    if (!$kantin || mysqli_num_rows($kantin) === 0) {
-        return ['success' => false, 'error' => 'Kantin not found'];
+    // Get seller id for this kantin from users table
+    $seller_query = mysqli_query($koneksi, "SELECT id_user FROM users WHERE id_kantin = $id_kantin AND role = 'penjual' LIMIT 1");
+    if (!$seller_query || mysqli_num_rows($seller_query) === 0) {
+        return ['success' => false, 'error' => 'Seller not found for this kantin'];
     }
-    $kantinData = mysqli_fetch_assoc($kantin);
-    $id_seller = (int)$kantinData['id_user'];
+    $seller_data = mysqli_fetch_assoc($seller_query);
+    $id_seller = (int)$seller_data['id_user'];
 
     if (!$id_seller) {
         return ['success' => false, 'error' => 'Seller not found'];

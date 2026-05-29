@@ -28,15 +28,15 @@ $search_params = [];
 $search_types = '';
 
 if ($search) {
-    $search_where = " WHERE (k.nama_kantin LIKE ? OR k.deskripsi LIKE ? OR COALESCE(u1.username, u2.username) LIKE ?)";
+    $search_where = " WHERE (k.nama_kantin LIKE ?)";
     $search_term = '%' . $search . '%';
-    $search_params = [$search_term, $search_term, $search_term];
-    $search_types = 'sss';
+    $search_params = [$search_term];
+    $search_types = 's';
 }
 
 // Count total records
 try {
-    $count_sql = "SELECT COUNT(*) as total FROM kantin k LEFT JOIN users u1 ON k.id_user=u1.id_user LEFT JOIN users u2 ON k.id_penjual=u2.id_user" . $search_where;
+    $count_sql = "SELECT COUNT(DISTINCT k.id_kantin) as total FROM kantin k" . $search_where;
     $total_kantin = admin_query_count($koneksi, $count_sql, $search_params, $search_types);
 } catch (Exception $e) {
     $total_kantin = 0;
@@ -44,7 +44,9 @@ try {
 
 // Fetch all kantin (No pagination)
 try {
-    $sql = "SELECT k.*, COALESCE(u1.username, u2.username, k.nama_penjual) AS pemilik FROM kantin k LEFT JOIN users u1 ON k.id_user=u1.id_user LEFT JOIN users u2 ON k.id_penjual=u2.id_user" . 
+    $sql = "SELECT k.*, 
+               (SELECT GROUP_CONCAT(u.username SEPARATOR ', ') FROM users u WHERE u.id_kantin = k.id_kantin AND u.role='penjual' LIMIT 5) as penjual_list
+        FROM kantin k" . 
            $search_where . " ORDER BY k.id_kantin DESC";
     $kantins = admin_query_fetch_all($koneksi, $sql, $search_params, $search_types);
 } catch (Exception $e) {
@@ -113,7 +115,7 @@ try {
                 <tr class="text-sm text-slate-500 uppercase border-b">
                     <th class="py-3 px-4">ID</th>
                     <th class="py-3 px-4">Nama Kantin</th>
-                    <th class="py-3 px-4">Pemilik</th>
+                    <th class="py-3 px-4">Nama Penjual</th>
                     <th class="py-3 px-4">Deskripsi</th>
                     <th class="py-3 px-4">Aksi</th>
                 </tr>
@@ -123,7 +125,20 @@ try {
                 <tr class="border-b hover:bg-slate-50 transition-all">
                     <td class="py-4 px-4">#<?= htmlspecialchars($k['id_kantin']) ?></td>
                     <td class="py-4 px-4 font-bold"><?= htmlspecialchars($k['nama_kantin']) ?></td>
-                    <td class="py-4 px-4"><?= htmlspecialchars($k['pemilik'] ?: '-') ?></td>
+                    <td class="py-4 px-4">
+                        <?php 
+                        $penjual_arr = !empty($k['penjual_list']) ? explode('||', $k['penjual_list']) : [];
+                        if (count($penjual_arr) > 0) {
+                            echo '<div class="flex flex-wrap gap-1.5">';
+                            foreach($penjual_arr as $p) {
+                                echo '<span class="px-2.5 py-1 bg-orange-50 text-primary-orange border border-orange-100 text-[11px] font-bold rounded-xl whitespace-nowrap"><span class="material-symbols-outlined text-[12px] align-middle mr-0.5">person</span>' . htmlspecialchars(trim($p)) . '</span>';
+                            }
+                            echo '</div>';
+                        } else {
+                            echo '<span class="text-slate-400 text-xs italic">Belum ada penjual</span>';
+                        }
+                        ?>
+                    </td>
                     <td class="py-4 px-4 text-slate-500 truncate"><?= htmlspecialchars(substr($k['deskripsi'] ?? '-', 0, 50)) ?></td>
                     <td class="py-4 px-4">
                         <div class="flex flex-wrap gap-2">

@@ -9,7 +9,7 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
 
 // === FILTER INPUT ===
 $filter_status = $_GET['status'] ?? '';
-$filter_tanggal = $_GET['tanggal'] ?? '';
+$filter_tanggal = $_GET['tanggal'] ?? date('Y-m-d');
 $halaman = isset($_GET['halaman']) ? max(1, (int)$_GET['halaman']) : 1;
 $per_halaman = 10;
 $offset = ($halaman - 1) * $per_halaman;
@@ -27,19 +27,25 @@ if ($filter_tanggal) {
 
 $where_clause = count($where_conditions) > 0 ? 'WHERE ' . implode(' AND ', $where_conditions) : '';
 
-// === STATISTIK (DENGAN FILTER) ===
-$stat_total = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan t $where_clause"))['total'] ?? 0;
+// === STATISTIK (HANYA BERDASARKAN TANGGAL, MENGABAIKAN FILTER STATUS) ===
+$where_date_conditions = [];
+if ($filter_tanggal) {
+    $where_date_conditions[] = "DATE(t.tanggal) = '$safe_tanggal'";
+}
+$where_date_clause = count($where_date_conditions) > 0 ? 'WHERE ' . implode(' AND ', $where_date_conditions) : '';
 
-$stat_selesai = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan t WHERE t.status='Selesai' AND " . ($where_clause ? str_replace('WHERE ', '', $where_clause) : '1=1')))['total'] ?? 0;
+$stat_total = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan t $where_date_clause"))['total'] ?? 0;
 
-$stat_pending = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan t WHERE t.status='Pending' AND " . ($where_clause ? str_replace('WHERE ', '', $where_clause) : '1=1')))['total'] ?? 0;
+$stat_selesai = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan t " . ($where_date_clause ? $where_date_clause . " AND " : "WHERE ") . "t.status='Selesai'"))['total'] ?? 0;
 
-$result_pendapatan = mysqli_query($koneksi, "SELECT COALESCE(SUM(t.total_harga), 0) as total FROM pesanan t WHERE t.status='Selesai' AND " . ($where_clause ? str_replace('WHERE ', '', $where_clause) : '1=1'));
+$stat_pending = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan t " . ($where_date_clause ? $where_date_clause . " AND " : "WHERE ") . "t.status='Pending'"))['total'] ?? 0;
+
+$result_pendapatan = mysqli_query($koneksi, "SELECT COALESCE(SUM(t.total_harga), 0) as total FROM pesanan t " . ($where_date_clause ? $where_date_clause . " AND " : "WHERE ") . "t.status='Selesai'");
 $stat_pendapatan = $result_pendapatan ? mysqli_fetch_assoc($result_pendapatan)['total'] : 0;
 
 // === QUERY DATA TRANSAKSI (DENGAN PAGINATION) ===
 $query_data = mysqli_query($koneksi, "
-    SELECT t.id_pesanan as id_transaksi, t.id_user, t.id_kantin, t.total_harga, t.status, t.tanggal,
+    SELECT t.id_pesanan as id_transaksi, u.username, k.nama_kantin, t.total_harga, t.status, t.tanggal,
            u.username, u.email,
            k.nama_kantin
     FROM pesanan t

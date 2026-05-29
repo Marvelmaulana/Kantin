@@ -13,12 +13,11 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
 // Ambil data kantin dengan statistik
 $query_kantin = mysqli_query($koneksi, "
     SELECT k.id_kantin, k.nama_kantin, k.status_buka, k.rating, k.total_ulasan, k.logo,
-           u.username as nama_penjual,
+           (SELECT GROUP_CONCAT(u.username SEPARATOR ', ') FROM users u WHERE u.id_kantin = k.id_kantin AND u.role='penjual' LIMIT 5) as nama_penjual,
            COUNT(DISTINCT m.id_menu) as total_menu,
            COALESCE(SUM(dp.qty), 0) as total_terjual,
            COALESCE(SUM(CASE WHEN p.status IN ('Selesai', 'Siap Diambil') THEN p.total_harga ELSE 0 END), 0) as total_pendapatan
     FROM kantin k
-    LEFT JOIN users u ON k.id_penjual = u.id_user
     LEFT JOIN menu m ON k.id_kantin = m.id_kantin
     LEFT JOIN detail_pesanan dp ON m.id_menu = dp.id_menu
     LEFT JOIN pesanan p ON dp.id_pesanan = p.id_pesanan
@@ -45,7 +44,7 @@ $res = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM menu");
 $total_menu_keseluruhan = ($res && $row = mysqli_fetch_assoc($res)) ? $row['total'] : 0;
 
 // Kantin dengan rating terbaik
-$res = mysqli_query($koneksi, "SELECT k.*, u.username as nama_penjual FROM kantin k LEFT JOIN users u ON k.id_user = u.id_user ORDER BY k.rating DESC LIMIT 1");
+$res = mysqli_query($koneksi, "SELECT k.*, (SELECT GROUP_CONCAT(u.username SEPARATOR ', ') FROM users u WHERE u.id_kantin = k.id_kantin AND u.role='penjual' LIMIT 5) as nama_penjual FROM kantin k ORDER BY k.rating DESC LIMIT 1");
 $best_kantin = ($res && $row = mysqli_fetch_assoc($res)) ? $row : [];
 
 // Filter
@@ -57,26 +56,21 @@ if ($filterStatus) {
     $safe_status = mysqli_real_escape_string($koneksi, $filterStatus);
     $where[] = "k.status_buka = '$safe_status'";
 }
-if ($filterPenjual) {
-    $safe_penjual = mysqli_real_escape_string($koneksi, $filterPenjual);
-    $where[] = "u.id_user = '$safe_penjual'";
-}
 
 $where_sql = implode(' AND ', $where);
 
 $query_filtered = mysqli_query($koneksi, "
     SELECT k.id_kantin, k.nama_kantin, k.status_buka, k.rating, k.total_ulasan, k.logo,
-           u.username as nama_penjual, u.id_user as id_user,
+           (SELECT GROUP_CONCAT(u.username SEPARATOR ', ') FROM users u WHERE u.id_kantin = k.id_kantin AND u.role='penjual' LIMIT 5) as nama_penjual,
            COUNT(DISTINCT m.id_menu) as total_menu,
            COALESCE(SUM(dp.qty), 0) as total_terjual,
            COALESCE(SUM(CASE WHEN p.status IN ('Selesai', 'Siap Diambil') THEN p.total_harga ELSE 0 END), 0) as total_pendapatan
     FROM kantin k
-    LEFT JOIN users u ON k.id_user = u.id_user
     LEFT JOIN menu m ON k.id_kantin = m.id_kantin
     LEFT JOIN detail_pesanan dp ON m.id_menu = dp.id_menu
     LEFT JOIN pesanan p ON dp.id_pesanan = p.id_pesanan
     WHERE $where_sql
-    GROUP BY k.id_kantin, k.nama_kantin, k.status_buka, k.rating, k.total_ulasan, k.logo, u.id_user, u.username
+    GROUP BY k.id_kantin, k.nama_kantin, k.status_buka, k.rating, k.total_ulasan, k.logo
     ORDER BY k.rating DESC, total_pendapatan DESC
     LIMIT 200
 ");
@@ -86,11 +80,8 @@ if (!$query_filtered) {
     $query_filtered = mysqli_query($koneksi, "SELECT * FROM kantin WHERE 1=0");
 }
 
-// List penjual untuk filter
-$daftar_penjual = mysqli_query($koneksi, "SELECT DISTINCT u.id_user, u.username FROM users u JOIN kantin k ON u.id_user = k.id_user ORDER BY u.username");
-if (!$daftar_penjual) {
-    $daftar_penjual = null;
-}
+// Daftar status untuk filter
+$daftar_status = ['Buka', 'Tutup'];
 ?>
 <!DOCTYPE html>
 <html lang="id">

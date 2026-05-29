@@ -14,14 +14,11 @@ if (!isset($_SESSION['id_user'])) {
 
 $id_user = (int)$_SESSION['id_user'];
 
-// ✅ Gunakan id_kantin dari session atau query dari database
+// ✅ Gunakan id_kantin dari session atau dari user data
 if (!isset($_SESSION['id_kantin'])) {
-    // Fallback: cari dari database menggunakan id_user
-    $q_kantin_fallback = mysqli_query($koneksi, "SELECT id_kantin FROM kantin WHERE id_user = $id_user LIMIT 1");
-    if ($q_kantin_fallback && mysqli_num_rows($q_kantin_fallback) > 0) {
-        $kantin_data = mysqli_fetch_assoc($q_kantin_fallback);
-        $_SESSION['id_kantin'] = $kantin_data['id_kantin'];
-    } else {
+    // Fallback: ambil dari user data
+    $_SESSION['id_kantin'] = $user['id_kantin'] ?? null;
+    if (!$_SESSION['id_kantin']) {
         die("Data kantin tidak ditemukan. Hubungi admin untuk setup kantin Anda.");
     }
 }
@@ -114,7 +111,6 @@ if(isset($_POST['simpan'])){
             $update_users .= " WHERE id_user = $id_user";
             
             mysqli_query($koneksi, $update_users);
-            mysqli_query($koneksi, "UPDATE kantin SET nama_penjual = '$username' WHERE id_kantin = $id_kantin");
             
             $_SESSION['username'] = $username;
             $_SESSION['nama_penjual'] = $username;
@@ -175,7 +171,7 @@ if(isset($_POST['simpan'])){
 
     if (!$hasError) {
         $_SESSION['success'] = "Profil berhasil diperbarui!";
-        header("Location: dashboard_penjual.php");
+        header("Location: edit_profil.php");
         exit();
     }
 }

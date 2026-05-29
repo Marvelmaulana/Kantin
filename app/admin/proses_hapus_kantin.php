@@ -28,7 +28,7 @@ if (!$id_kantin) {
 try {
     // Fetch kantin data with logo and banner
     $kantin = admin_query_fetch_one($koneksi, 
-        "SELECT id_kantin, id_user, id_penjual, logo, banner FROM kantin WHERE id_kantin = ? LIMIT 1", 
+        "SELECT id_kantin, logo, banner FROM kantin WHERE id_kantin = ? LIMIT 1", 
         [$id_kantin], 'i');
     
     if (!$kantin) {
@@ -36,7 +36,7 @@ try {
         exit();
     }
     
-    $id_user = (int)($kantin['id_user'] ?? 0);
+    // id_user tidak lagi ada di tabel kantin
     $logo_file = $kantin['logo'] ?? null;
     $banner_file = $kantin['banner'] ?? null;
     
@@ -50,11 +50,8 @@ try {
         if (!empty($m['foto_menu'])) $menu_photos[] = $m['foto_menu'];
     }
     
-    // Also get id_penjual for user cleanup
-    $id_penjual = (int)($kantin['id_penjual'] ?? 0);
-    
     // Execute delete with transaction
-    admin_execute_transaction($koneksi, function($koneksi) use ($id_kantin, $id_user, $id_penjual, $logo_file, $banner_file) {
+    admin_execute_transaction($koneksi, function($koneksi) use ($id_kantin, $id_user, $logo_file, $banner_file) {
         // 1. Delete ulasan (reviews) for menus in this canteen
         admin_query_execute($koneksi, 
             "DELETE FROM ulasan WHERE id_menu IN (SELECT id_menu FROM menu WHERE id_kantin = ?)", 
@@ -105,19 +102,21 @@ try {
             "DELETE FROM kantin WHERE id_kantin = ?", 
             [$id_kantin], 'i');
         
-        // 11. Update user if linked via id_user
+        // Cek apakah id_user masih terhubung dengan kantin lain
+        $kantin_count = 0;
         if ($id_user > 0) {
+            $check = admin_query_fetch_all($koneksi, "SELECT id_kantin FROM kantin WHERE id_user = ?", [$id_user], 'i');
+            $kantin_count = count($check);
+        }
+        
+        // 11. Delete user if linked via id_user AND no other kantins reference them
+        if ($id_user > 0 && $kantin_count === 0) {
             admin_query_execute($koneksi, 
-                "UPDATE users SET id_kantin = NULL, nama_kantin = NULL WHERE id_user = ? AND role = 'penjual'", 
+                "DELETE FROM users WHERE id_user = ? AND role = 'penjual'", 
                 [$id_user], 'i');
         }
         
-        // 12. Update user if linked via id_penjual
-        if ($id_penjual > 0 && $id_penjual !== $id_user) {
-            admin_query_execute($koneksi, 
-                "UPDATE users SET id_kantin = NULL, nama_kantin = NULL WHERE id_user = ? AND role = 'penjual'", 
-                [$id_penjual], 'i');
-        }
+        // Removed id_penjual logic as it doesn't exist.
         
         // Log action (will silently fail if admin_logs table doesn't exist)
         admin_log_action($koneksi, $_SESSION['id_user'], 'DELETE', 'kantin', $id_kantin, 

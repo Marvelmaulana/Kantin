@@ -23,13 +23,7 @@ $id_kantin = (int)($penjual['id_kantin'] ?? 0);
 
 mysqli_begin_transaction($koneksi);
 try {
-    if ($id_kantin > 0) {
-        mysqli_query($koneksi, "DELETE FROM keranjang WHERE id_menu IN (SELECT id_menu FROM menu WHERE id_kantin=$id_kantin)");
-        mysqli_query($koneksi, "DELETE FROM favorit WHERE id_menu IN (SELECT id_menu FROM menu WHERE id_kantin=$id_kantin)");
-        mysqli_query($koneksi, "DELETE FROM menu WHERE id_kantin=$id_kantin");
-        mysqli_query($koneksi, "DELETE FROM kantin WHERE id_kantin=$id_kantin");
-    }
-
+    // Hapus penjual - kantin tetap ada dan bisa memiliki penjual lain
     mysqli_query($koneksi, "DELETE FROM users WHERE id_user=$id_user AND role='penjual'");
     mysqli_commit($koneksi);
     header("Location: manajemen_penjual.php?success=hapus");

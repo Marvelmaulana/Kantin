@@ -44,23 +44,30 @@ if (isset($_POST['login_btn'])) {
             // ✅ Login berhasil - buat session
             if (create_user_session($user_data)) {
                 
-                // Jika penjual, ambil data kantin
+                // Jika penjual, ambil data kantin dari users table
                 if ($user_data['role'] === 'penjual') {
-                    $id_user = $user_data['id_user'];
-                    $query_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kantin WHERE id_user = '$id_user' LIMIT 1");
+                    $id_kantin = $user_data['id_kantin'] ?? null;
                     
-                    if ($query_kantin) {
-                        $data_kantin = mysqli_fetch_assoc($query_kantin);
-                        if ($data_kantin) {
-                            $_SESSION['id_kantin'] = $data_kantin['id_kantin'];
-                            $_SESSION['nama_kantin'] = $data_kantin['nama_kantin'];
+                    if ($id_kantin) {
+                        $query_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kantin WHERE id_kantin = $id_kantin LIMIT 1");
+                        
+                        if ($query_kantin) {
+                            $data_kantin = mysqli_fetch_assoc($query_kantin);
+                            if ($data_kantin) {
+                                $_SESSION['id_kantin'] = $data_kantin['id_kantin'];
+                                $_SESSION['nama_kantin'] = $data_kantin['nama_kantin'];
+                            } else {
+                                // Kantin tidak ditemukan
+                                echo "<script>alert('Data kantin tidak ditemukan. Hubungi admin.'); window.location='login.php';</script>";
+                                exit();
+                            }
                         } else {
-                            // Penjual tidak punya kantin
-                            echo "<script>alert('Akun penjual belum memiliki data kantin. Hubungi admin untuk setup kantin Anda.'); window.location='login.php';</script>";
+                            echo "<script>alert('Error: Database query gagal'); window.location='login.php';</script>";
                             exit();
                         }
                     } else {
-                        echo "<script>alert('Error: Database query gagal'); window.location='login.php';</script>";
+                        // Penjual tidak punya kantin
+                        echo "<script>alert('Akun penjual belum ditautkan ke kantin. Hubungi admin.'); window.location='login.php';</script>";
                         exit();
                     }
                 }

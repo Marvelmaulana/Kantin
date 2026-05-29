@@ -17,12 +17,12 @@ if ($id_kantin <= 0) {
 }
 
 $q_kantin = mysqli_query($koneksi, "
-    SELECT k.*, u.username AS pemilik,
+    SELECT k.*,
+           (SELECT GROUP_CONCAT(u.username SEPARATOR ', ') FROM users u WHERE u.id_kantin = k.id_kantin AND u.role='penjual' LIMIT 5) AS pemilik,
            COALESCE(AVG(rm.nilai_rating),0) AS avg_rating,
            COUNT(rm.id_rating) AS total_rating,
            COUNT(DISTINCT m.id_menu) AS total_menu
     FROM kantin k
-    LEFT JOIN users u ON k.id_user = u.id_user
     LEFT JOIN menu m ON k.id_kantin=m.id_kantin AND COALESCE(m.status,'Tersedia') <> 'Habis'
     LEFT JOIN rating_menu rm ON m.id_menu=rm.id_menu
     WHERE k.id_kantin=$id_kantin

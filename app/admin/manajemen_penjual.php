@@ -18,13 +18,13 @@ if (isset($_GET['success']) && $_GET['success'] === 'hapus') {
 }
 
 $search = mysqli_real_escape_string($koneksi, trim($_GET['search'] ?? ''));
-$sql = "SELECT u.*, k.id_kantin FROM users u 
-        LEFT JOIN kantin k ON u.id_user = k.id_user
+$sql = "SELECT u.*, k.id_kantin, k.nama_kantin FROM users u 
+        LEFT JOIN kantin k ON u.id_kantin = k.id_kantin
         WHERE u.role='penjual'";
 if ($search !== '') {
-    $sql .= " AND (u.username LIKE '%$search%' OR u.email LIKE '%$search%')";
+    $sql .= " AND (u.username LIKE '%$search%' OR u.email LIKE '%$search%' OR k.nama_kantin LIKE '%$search%')";
 }
-$sql .= " ORDER BY k.id_kantin ASC";
+$sql .= " ORDER BY u.id_user DESC";
 $query = mysqli_query($koneksi, $sql);
 if (!$query) {
     die("Query Error: " . mysqli_error($koneksi));
@@ -55,6 +55,18 @@ $total_penjual = mysqli_num_rows($query);
                 }
             }
         }
+
+        // Auto submit ketika input dikosongkan
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.querySelector('input[name="search"]');
+            if (searchInput) {
+                searchInput.addEventListener('input', function() {
+                    if (this.value.trim() === '') {
+                        document.getElementById('search_form').submit();
+                    }
+                });
+            }
+        });
     </script>
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #FFF9F8; }
@@ -79,9 +91,12 @@ $total_penjual = mysqli_num_rows($query);
                 </div>
             </div>
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
-                <form method="GET" class="relative w-full sm:w-[320px]">
-                    <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
-                    <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari penjual atau email..." class="pl-12 pr-4 py-3 w-full rounded-2xl border border-slate-200 focus:border-primary-orange focus:ring-primary-orange/20" />
+                <form method="GET" id="search_form" class="relative w-full sm:w-auto flex gap-2">
+                    <div class="relative flex-1 sm:flex-none">
+                        <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
+                        <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari penjual..." class="pl-12 pr-4 py-3 w-full sm:w-[280px] rounded-2xl border border-slate-200 focus:border-primary-orange focus:ring-primary-orange/20" />
+                    </div>
+                    <button type="submit" class="px-4 py-3 bg-primary-orange text-white rounded-2xl font-bold hover:bg-orange-600 transition-all">Cari</button>
                 </form>
                 <a href="tambah_penjual.php" class="bg-primary-orange text-white px-5 py-3 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 hover:bg-orange-600 transition-all w-full sm:w-auto">
                     <span class="material-symbols-outlined">person_add</span> Tambah Penjual
@@ -93,6 +108,13 @@ $total_penjual = mysqli_num_rows($query);
     <?php if ($message !== ''): ?>
     <div class="mb-6 px-5 py-4 rounded-2xl border <?= $message_type==='success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700' ?> font-bold text-sm">
         <?= $message ?>
+    </div>
+    <?php endif; ?>
+
+    <?php if ($search !== ''): ?>
+    <div class="mb-6 px-5 py-4 rounded-2xl border bg-blue-50 border-blue-100 text-blue-700 font-medium text-sm flex items-center justify-between">
+        <span>Hasil pencarian untuk: <span class="font-bold">"<?= htmlspecialchars($search) ?>"</span> - <span class="font-bold text-blue-600"><?= $total_penjual ?></span> penjual</span>
+        <a href="manajemen_penjual.php" class="text-blue-700 hover:text-blue-900 font-bold underline ml-4">Reset</a>
     </div>
     <?php endif; ?>
 
@@ -131,8 +153,8 @@ $total_penjual = mysqli_num_rows($query);
                                 <div>
                                     <p class="font-bold text-[#003049] text-base group-hover:text-primary-orange transition-colors"><?= htmlspecialchars($penjual['username']) ?></p>
                                     <div class="flex items-center gap-1 mt-0.5">
-                                        <span class="material-symbols-outlined text-[12px] text-accent-blue">verified</span>
-                                        <span class="text-[9px] text-accent-blue font-black uppercase tracking-tighter">Official Merchant</span>
+                                        <span class="material-symbols-outlined text-[12px] text-accent-blue">storefront</span>
+                                        <span class="text-[9px] text-accent-blue font-black uppercase tracking-tighter"><?= htmlspecialchars($penjual['nama_kantin'] ?? 'Belum Ditentukan') ?></span>
                                     </div>
                                 </div>
                             </div>

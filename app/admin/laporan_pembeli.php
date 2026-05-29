@@ -57,7 +57,7 @@ if ($kelas_result) {
 }
 
 // Filter
-$filterTanggal = $_GET['tanggal'] ?? '';
+$filterTanggal = $_GET['tanggal'] ?? date('Y-m-d');
 $filterKelas = $_GET['kelas'] ?? '';
 $filterStatus = $_GET['status'] ?? ''; // aktif, tidak aktif
 

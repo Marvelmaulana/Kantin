@@ -116,8 +116,7 @@ try {
 
     $update_query = mysqli_query($koneksi, "
         UPDATE kantin 
-        SET status_buka = '$new_status_esc',
-            updated_at = CURRENT_TIMESTAMP
+        SET status_buka = '$new_status_esc'
         WHERE id_kantin = $id_kantin
     ");
 

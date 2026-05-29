@@ -21,6 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_user'])) {
     if ($username === '' || $email === '' || $password === '') {
         $message = 'Semua kolom wajib diisi.';
         $message_type = 'error';
+    } elseif (preg_match('/\s/', $username)) {
+        $message = 'Username tidak boleh mengandung spasi.';
+        $message_type = 'error';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $message = 'Format email tidak valid.';
         $message_type = 'error';
@@ -247,7 +250,8 @@ $query = mysqli_query($koneksi, $query_sql);
             <input type="hidden" name="tambah_user" value="1" />
             <div>
                 <label class="text-sm font-bold">Username</label>
-                <input name="username" required class="w-full px-3 py-2 border rounded mt-2" />
+                <input name="username" pattern="^\S+$" title="Username tidak boleh menggunakan spasi" required class="w-full px-3 py-2 border rounded mt-2" />
+                <p class="text-xs text-red-400 mt-1">*Username tidak boleh menggunakan spasi</p>
             </div>
             <div>
                 <label class="text-sm font-bold">Email</label>

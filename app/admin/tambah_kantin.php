@@ -62,6 +62,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (!$owner_id && (empty($username) || empty($email))) {
             $message = 'Username dan email harus diisi saat membuat akun penjual baru.';
             $message_type = 'error';
+        } elseif (!$owner_id && preg_match('/\s/', $username)) {
+            $message = 'Username tidak boleh mengandung spasi.';
+            $message_type = 'error';
         } elseif (!$owner_id && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $message = 'Format email tidak valid!';
             $message_type = 'error';
@@ -120,7 +123,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 $logo_insert = $logo ? "'$logo'" : 'NULL';
                 $banner_insert = $banner ? "'$banner'" : 'NULL';
-                $insert_kantin = mysqli_query($koneksi, "INSERT INTO kantin (id_user,nama_kantin,deskripsi,logo,banner,jam_buka,jam_tutup,tipe_operasi,status_buka,created_at) VALUES ($id_user,'$nama_kantin','$deskripsi',$logo_insert,$banner_insert,'$jam_buka','$jam_tutup','$tipe_operasi','$status_buka',NOW())");
+                $insert_kantin = mysqli_query($koneksi, "INSERT INTO kantin (nama_kantin,deskripsi,logo,banner,jam_buka,jam_tutup,tipe_operasi,status_buka,created_at) VALUES ('$nama_kantin','$deskripsi',$logo_insert,$banner_insert,'$jam_buka','$jam_tutup','$tipe_operasi','$status_buka',NOW())");
 
                 if ($insert_kantin) {
                     $kantin_id = mysqli_insert_id($koneksi);
@@ -145,7 +148,7 @@ if (!isset($_SESSION['csrf_token'])) {
 }
 
 // Ambil daftar penjual untuk opsi pemilik (jika ada)
-$penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHERE role='penjual' AND id_user NOT IN (SELECT id_user FROM kantin WHERE id_user IS NOT NULL) ORDER BY username ASC");
+$penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHERE role='penjual' ORDER BY username ASC");
 ?>
 
 <!DOCTYPE html>
@@ -270,8 +273,10 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
                             Username
                         </label>
                         <input type="text" name="username"
+                               pattern="^\S*$" title="Username tidak boleh menggunakan spasi"
                                placeholder="contoh: penjual_rapi"
                                class="w-full px-4 py-3 border border-slate-100 rounded-2xl focus:outline-none focus:border-primary-orange focus:ring-2 focus:ring-orange-100 transition-all bg-slate-50">
+                        <p class="text-xs text-red-500 mt-1 font-semibold">*Username tidak boleh mengandung spasi</p>
                         <p class="text-xs text-slate-400 mt-1">Gunakan untuk login ke sistem. Biarkan kosong jika memilih pemilik yang sudah ada.</p>
                     </div>
 
@@ -282,7 +287,7 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
                             Email
                         </label>
                         <input type="email" name="email"
-                               placeholder="contoh@email.com"
+                               placeholder="contoh@gmail.com"
                                class="w-full px-4 py-3 border border-slate-100 rounded-2xl focus:outline-none focus:border-primary-orange focus:ring-2 focus:ring-orange-100 transition-all bg-slate-50">
                         <p class="text-xs text-slate-400 mt-1">Email unik untuk setiap penjual. Biarkan kosong jika menggunakan akun penjual yang sudah ada.</p>
                     </div>

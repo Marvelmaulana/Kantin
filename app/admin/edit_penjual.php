@@ -21,7 +21,7 @@ if (!$penjual) {
 
 $message = '';
 $message_type = 'success';
-$kantins = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kantin WHERE id_user IS NULL OR id_user=0 OR id_kantin=" . intval($penjual['id_kantin']) . " ORDER BY nama_kantin ASC");
+$kantins = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kantin ORDER BY nama_kantin ASC");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = mysqli_real_escape_string($koneksi, trim($_POST['username'] ?? ''));
@@ -43,12 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             mysqli_begin_transaction($koneksi);
             try {
-                if ($penjual['id_kantin'] > 0 && $penjual['id_kantin'] !== $id_kantin) {
-                    mysqli_query($koneksi, "UPDATE kantin SET id_user=NULL WHERE id_kantin=" . intval($penjual['id_kantin']));
-                }
-                if ($id_kantin > 0) {
-                    mysqli_query($koneksi, "UPDATE kantin SET id_user=$id_user WHERE id_kantin=$id_kantin");
-                }
+                // Update users dengan id_kantin dan nama_kantin yang baru
                 $set_password = '';
                 if ($password !== '') {
                     $hash = password_hash($password, PASSWORD_DEFAULT);

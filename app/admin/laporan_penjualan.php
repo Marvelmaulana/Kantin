@@ -58,7 +58,7 @@ while ($kat = mysqli_fetch_assoc($kat_result)) {
 }
 
 // Filter
-$filterTanggal = $_GET['tanggal'] ?? '';
+$filterTanggal = $_GET['tanggal'] ?? date('Y-m-d');
 $filterKantin = $_GET['kantin'] ?? '';
 $filterKategori = $_GET['kategori'] ?? '';
 
