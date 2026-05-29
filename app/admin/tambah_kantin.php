@@ -1,6 +1,9 @@
 <?php
 session_start();
 include(__DIR__ . '/../../config/config.php');
+include(__DIR__ . '/../../includes/pembeli_helpers.php');
+kk_ensure_buyer_schema($koneksi);
+date_default_timezone_set('Asia/Jakarta');
 
 // PROTEKSI HALAMAN
 if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
@@ -24,8 +27,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $email = mysqli_real_escape_string($koneksi, trim($_POST['email'] ?? ''));
         $nama_kantin = mysqli_real_escape_string($koneksi, trim($_POST['nama_kantin'] ?? ''));
         $deskripsi = mysqli_real_escape_string($koneksi, trim($_POST['deskripsi'] ?? ''));
-        $jam_buka = $_POST['jam_buka'] ?? '07:00:00';
-        $jam_tutup = $_POST['jam_tutup'] ?? '15:00:00';
+        
+        // ✅ Validasi dan format jam dengan proper
+        $jam_buka_raw = $_POST['jam_buka'] ?? '07:00';
+        $jam_tutup_raw = $_POST['jam_tutup'] ?? '15:00';
+        
+        $jam_buka_formatted = kk_validate_time_format($jam_buka_raw);
+        $jam_tutup_formatted = kk_validate_time_format($jam_tutup_raw);
+        
+        if (!$jam_buka_formatted) {
+            $message = 'Format jam buka tidak valid. Gunakan format HH:MM (contoh: 07:00)';
+            $message_type = 'error';
+        } elseif (!$jam_tutup_formatted) {
+            $message = 'Format jam tutup tidak valid. Gunakan format HH:MM (contoh: 15:00)';
+            $message_type = 'error';
+        }
+        
+        $jam_buka = $message_type === 'error' ? '07:00:00' : mysqli_real_escape_string($koneksi, $jam_buka_formatted);
+        $jam_tutup = $message_type === 'error' ? '15:00:00' : mysqli_real_escape_string($koneksi, $jam_tutup_formatted);
         $tipe_operasi = $_POST['tipe_operasi'] ?? 'manual'; // manual atau otomatis
         $status_buka = $_POST['status_buka'] ?? 'Tutup';
         $owner_id = isset($_POST['owner_id']) && $_POST['owner_id'] !== '' ? (int)$_POST['owner_id'] : null;
@@ -35,7 +54,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $allowed = ['jpg', 'jpeg', 'png', 'webp'];
 
         // Validasi
-        if (empty($nama_kantin)) {
+        if ($message_type === 'error') {
+            // Jam validation error already set
+        } elseif (empty($nama_kantin)) {
             $message = 'Nama kantin harus diisi!';
             $message_type = 'error';
         } elseif (!$owner_id && (empty($username) || empty($email))) {

@@ -9,27 +9,6 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     header('Location: ../auth/login.php');
     exit();
 }
-?>
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Laporan Pembeli</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="flex">
-    <?php include '../../includes/sidebar_admin.php'; ?>
-    
-    <main class="flex-1 p-8">
-        <h1 class="text-2xl font-bold">Laporan Pembeli</h1>
-        <p class="mt-4 text-slate-600">Halaman laporan pembeli sedang dalam pengembangan.</p>
-        
-        <!-- Placeholder content -->
-        <div class="mt-8 bg-slate-100 p-6 rounded-lg">
-            <p class="text-slate-600">Fitur ini akan menampilkan laporan detail untuk setiap pembeli.</p>
-        </div>
-    </main>
 
 // Ambil data pembeli dengan statistik
 $query_pembeli = mysqli_query($koneksi, "
@@ -67,9 +46,9 @@ $kelas_result = mysqli_query($koneksi, "
     SELECT u.kelas, COUNT(*) as jumlah, COALESCE(SUM(p.total_harga), 0) as total_belanja
     FROM users u
     LEFT JOIN pesanan p ON u.id_user = p.id_user
-    WHERE u.role = 'pembeli'
+    WHERE u.role = 'pembeli' AND u.kelas IS NOT NULL
     GROUP BY u.kelas
-    ORDER BY u.kelas
+    ORDER BY CAST(u.kelas AS UNSIGNED) ASC
 ");
 if ($kelas_result) {
     while ($ks = mysqli_fetch_assoc($kelas_result)) {

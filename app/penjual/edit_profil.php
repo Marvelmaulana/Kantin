@@ -5,6 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 include(__DIR__ . '/../../config/config.php');
+include(__DIR__ . '/../../includes/pembeli_helpers.php');
 
 if (!isset($_SESSION['id_user'])) {
     header("Location: ../auth/login.php");
@@ -13,12 +14,24 @@ if (!isset($_SESSION['id_user'])) {
 
 $id_user = (int)$_SESSION['id_user'];
 
-// HAPUS ini dari atas
+// ✅ Gunakan id_kantin dari session atau query dari database
+if (!isset($_SESSION['id_kantin'])) {
+    // Fallback: cari dari database menggunakan id_penjual
+    $q_kantin_fallback = mysqli_query($koneksi, "SELECT id_kantin FROM kantin WHERE id_penjual = $id_user LIMIT 1");
+    if ($q_kantin_fallback && mysqli_num_rows($q_kantin_fallback) > 0) {
+        $kantin_data = mysqli_fetch_assoc($q_kantin_fallback);
+        $_SESSION['id_kantin'] = $kantin_data['id_kantin'];
+    } else {
+        die("Data kantin tidak ditemukan. Hubungi admin untuk setup kantin Anda.");
+    }
+}
+
+$id_kantin = (int)$_SESSION['id_kantin'];
+
+// Ambil data user
 $q_user = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = $id_user");
 $user = mysqli_fetch_assoc($q_user);
 if (!$user) die("User tidak ditemukan");
-
-$id_kantin = (int)$user['id_kantin'];
 
 $q_kantin = mysqli_query($koneksi, "SELECT * FROM kantin WHERE id_kantin = $id_kantin");
 $data = mysqli_fetch_assoc($q_kantin);
@@ -28,13 +41,20 @@ if(isset($_POST['simpan'])){
     $username    = mysqli_real_escape_string($koneksi, trim($_POST['username'] ?? ''));
     $nama_kantin = mysqli_real_escape_string($koneksi, trim($_POST['nama_kantin'] ?? ''));
     $deskripsi   = mysqli_real_escape_string($koneksi, trim($_POST['deskripsi'] ?? ''));
-    $jam_buka    = mysqli_real_escape_string($koneksi, $_POST['jam_buka'] ?? $data['jam_buka']);
-    $jam_tutup   = mysqli_real_escape_string($koneksi, $_POST['jam_tutup'] ?? $data['jam_tutup']);
-    $tipe_operasi = mysqli_real_escape_string($koneksi, $_POST['tipe_operasi'] ?? $data['tipe_operasi'] ?? 'manual');
-    $status_buka = ($_POST['status_buka'] ?? $data['status_buka'] ?? 'Buka') === 'Tutup' ? 'Tutup' : 'Buka';
+    $alamat      = mysqli_real_escape_string($koneksi, trim($_POST['alamat'] ?? ''));
+    
+    // ✅ Jam buka-tutup BISA diedit penjual
+    $jam_buka_raw = trim($_POST['jam_buka'] ?? '07:00');
+    $jam_tutup_raw = trim($_POST['jam_tutup'] ?? '15:00');
+    
+    // Format time dengan :00 untuk detik
+    $jam_buka = preg_match('/^\d{2}:\d{2}$/', $jam_buka_raw) ? $jam_buka_raw . ':00' : '07:00:00';
+    $jam_tutup = preg_match('/^\d{2}:\d{2}$/', $jam_tutup_raw) ? $jam_tutup_raw . ':00' : '15:00:00';
+    
+    // ✅ Mode SELALU otomatis - hanya auto open/close berdasarkan jam
+    $tipe_operasi = 'otomatis';
     $logo        = $data['logo'];
     $banner      = $data['banner'];
-    $hasError    = false;
 
     $allowed = ['jpg', 'jpeg', 'png', 'webp'];
 
@@ -85,24 +105,25 @@ if(isset($_POST['simpan'])){
     }
 
     // ✅ Update nama kantin ke tabel kantin
-    if (!empty($nama_kantin)) {
-        if ($tipe_operasi === 'otomatis') {
-            date_default_timezone_set('Asia/Jakarta');
-            $isOpenNow = kk_is_kantin_open(array_merge($data, [
-                'jam_buka' => $jam_buka,
-                'jam_tutup' => $jam_tutup,
-                'tipe_operasi' => 'otomatis',
-            ]), date('H:i'));
-            $status_buka = $isOpenNow ? 'Buka' : 'Tutup';
-        }
+    if (!empty($nama_kantin) && !$hasError) {
+        // ✅ Hitung status berdasarkan jam operasional (selalu otomatis)
+        date_default_timezone_set('Asia/Jakarta');
+        $isOpenNow = kk_is_kantin_open([
+            'jam_buka' => $jam_buka,
+            'jam_tutup' => $jam_tutup,
+            'tipe_operasi' => 'otomatis',
+            'status_buka' => 'Buka',
+        ], date('H:i'));
+        $status_buka = $isOpenNow ? 'Buka' : 'Tutup';
 
         mysqli_query($koneksi, "
             UPDATE kantin SET
                 nama_kantin  = '$nama_kantin',
                 deskripsi    = '$deskripsi',
+                alamat       = '$alamat',
                 jam_buka     = '$jam_buka',
                 jam_tutup    = '$jam_tutup',
-                tipe_operasi = '$tipe_operasi',
+                tipe_operasi = 'otomatis',
                 status_buka  = '$status_buka',
                 logo         = '$logo',
                 banner       = '$banner'
@@ -112,9 +133,10 @@ if(isset($_POST['simpan'])){
         $_SESSION['nama_kantin'] = $nama_kantin;
         $data['nama_kantin']  = $nama_kantin;
         $data['deskripsi']    = $deskripsi;
+        $data['alamat']       = $alamat;
         $data['jam_buka']     = $jam_buka;
         $data['jam_tutup']    = $jam_tutup;
-        $data['tipe_operasi'] = $tipe_operasi;
+        $data['tipe_operasi'] = 'otomatis';
         $data['status_buka']  = $status_buka;
         $data['logo']         = $logo;
         $data['banner']       = $banner;
@@ -124,12 +146,10 @@ if(isset($_POST['simpan'])){
         $user['username'] = $username;
         $data['nama_kantin']  = $nama_kantin ?: $data['nama_kantin'];
         $data['deskripsi']    = $deskripsi;
+        $data['alamat']       = $alamat;
         $data['jam_buka']     = $jam_buka;
         $data['jam_tutup']    = $jam_tutup;
-        $data['tipe_operasi'] = $tipe_operasi;
-        $data['status_buka']  = $status_buka;
-        $data['logo']         = $logo;
-        $data['banner']       = $banner;
+        $data['tipe_operasi'] = 'otomatis';
     }
 
     if (!$hasError) {
@@ -318,43 +338,60 @@ $is_kantin_open = kk_is_kantin_open($data);
            value="<?= htmlspecialchars($data['nama_kantin']) ?>"
            class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
 </div>
-                <!-- STATUS -->
+
+<!-- ALAMAT KANTIN -->
+<div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.15s">
+    <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
+        <span class="material-symbols-outlined align-middle text-base mr-1">location_on</span>
+        Alamat Kantin
+    </label>
+    <input type="text" name="alamat"
+           value="<?= htmlspecialchars($data['alamat'] ?? '') ?>"
+           placeholder="Misal: Gedung Utama, Lantai 2"
+           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
+</div>
+                <!-- STATUS KANTIN -->
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.15s">
                     <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
                         <span class="material-symbols-outlined align-middle text-base mr-1">toggle_on</span>
-                        Status Kantin
+                        Status Kantin (Otomatis)
                     </label>
-                    <div class="rounded-2xl border border-gray-100 bg-gray-50 px-5 py-3.5 text-gray-800 text-sm font-semibold">
-                        Mode operasional sekarang diatur dari Dashboard Penjual.
-                    </div>
-                    <div class="mt-4 rounded-2xl border border-gray-100 bg-white px-5 py-3.5 text-sm font-semibold text-gray-700">
+                    <div class="rounded-2xl border border-gray-100 bg-white px-5 py-3.5 text-sm font-semibold text-gray-700">
                         Status saat ini: <span class="font-black text-<?= $is_kantin_open ? 'green' : 'red' ?>-600"><?= $is_kantin_open ? 'Buka' : 'Tutup' ?></span>
                     </div>
-                    <div class="mt-4 rounded-2xl border border-gray-100 bg-white px-5 py-3.5 text-sm font-semibold text-gray-700">
-                        Mode Operasional: <span class="font-black"><?= ($data['tipe_operasi'] ?? 'manual') === 'otomatis' ? 'Otomatis' : 'Manual' ?></span>
+                    <div class="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700">
+                        <span class="material-symbols-outlined align-middle text-base mr-1">info</span>
+                        Status akan berubah otomatis sesuai jam operasional
                     </div>
                 </div>
 
-                <!-- JAM BUKA -->
+                <!-- JAM OPERASIONAL -->
                 <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.2s">
                     <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
                         <span class="material-symbols-outlined align-middle text-base mr-1">schedule</span>
-                        Jam Buka
+                        Jam Operasional (Sistem Otomatis)
                     </label>
-                    <input type="time" name="jam_buka"
-                           value="<?= $data['jam_buka'] ?>"
-                           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
-                </div>
-
-                <!-- JAM TUTUP -->
-                <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50 card-fade" style="animation-delay:.25s">
-                    <label class="text-xs font-bold text-orange-500 uppercase tracking-widest block mb-3">
-                        <span class="material-symbols-outlined align-middle text-base mr-1">nightlight</span>
-                        Jam Tutup
-                    </label>
-                    <input type="time" name="jam_tutup"
-                           value="<?= $data['jam_tutup'] ?>"
-                           class="w-full border border-gray-100 bg-gray-50 rounded-2xl px-5 py-3.5 text-gray-800 font-semibold outline-none focus:border-orange-400 transition-all">
+                    <div class="grid grid-cols-2 gap-4">
+                        <!-- JAM BUKA -->
+                        <div>
+                            <label class="block text-xs text-gray-600 font-semibold mb-2">Jam Buka</label>
+                            <input type="time" name="jam_buka"
+                                   value="<?= isset($data['jam_buka']) ? substr($data['jam_buka'], 0, 5) : '07:00' ?>"
+                                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:ring-0 font-semibold text-gray-900 bg-white outline-none">
+                        </div>
+                        
+                        <!-- JAM TUTUP -->
+                        <div>
+                            <label class="block text-xs text-gray-600 font-semibold mb-2">Jam Tutup</label>
+                            <input type="time" name="jam_tutup"
+                                   value="<?= isset($data['jam_tutup']) ? substr($data['jam_tutup'], 0, 5) : '15:00' ?>"
+                                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-orange-500 focus:ring-0 font-semibold text-gray-900 bg-white outline-none">
+                        </div>
+                    </div>
+                    <div class="mt-3 p-3 bg-blue-50 border border-blue-100 rounded-xl text-xs text-blue-700">
+                        <span class="material-symbols-outlined align-middle text-base mr-1">info</span>
+                        Status kantin akan berubah otomatis buka/tutup sesuai jam yang Anda atur di atas
+                    </div>
                 </div>
 
             </div>
@@ -371,13 +408,101 @@ $is_kantin_open = kk_is_kantin_open($data);
             </div>
 
             <!-- INFO BOX -->
-            <div class="mt-6 bg-orange-50 border border-orange-100 rounded-3xl p-5 flex gap-4 items-start card-fade" style="animation-delay:.35s">
-                <span class="material-symbols-outlined text-orange-500 mt-0.5">info</span>
+            <div class="mt-6 bg-blue-50 border border-blue-100 rounded-3xl p-5 flex gap-4 items-start card-fade" style="animation-delay:.35s">
+                <span class="material-symbols-outlined text-blue-600 mt-0.5">info</span>
                 <div>
-                    <p class="font-bold text-orange-700 text-sm mb-1">Info Jam Operasional</p>
-                    <p class="text-sm text-gray-500 leading-relaxed">
-                            Dalam mode Otomatis, kantin akan buka/tutup sesuai jam yang diatur. Dalam mode Manual, status buka/tutup dapat diatur secara langsung.
-            <div class="mt-8 flex gap-4 card-fade" style="animation-delay:.4s">
+                    <p class="font-bold text-blue-700 text-sm mb-1">✅ Sistem Buka-Tutup Otomatis</p>
+                    <p class="text-sm text-gray-600 leading-relaxed">
+                        Kantin akan otomatis <strong>Buka</strong> dan <strong>Tutup</strong> sesuai jam operasional yang Anda atur. Status tidak perlu dikontrol manual - sistem yang atur!
+                    </p>
+                </div>
+            </div>
+
+            <!-- MENU PREVIEW SECTION -->
+            <div class="mt-8 bg-gradient-to-br from-white to-blue-50 rounded-3xl p-6 shadow-sm border border-blue-100 card-fade" style="animation-delay:.4s">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-11 h-11 rounded-2xl bg-blue-100 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-blue-600">restaurant_menu</span>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-black text-gray-900">Menu Kantin Anda</h3>
+                        <p class="text-xs text-gray-500 mt-0.5">Daftar menu yang ditampilkan ke pembeli</p>
+                    </div>
+                    <a href="kelola_menu_penjual.php" class="ml-auto px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white text-sm font-bold rounded-xl transition">
+                        <span class="material-symbols-outlined align-middle text-base mr-1">edit</span>Kelola Menu
+                    </a>
+                </div>
+                
+                <?php 
+                // Ambil preview menu
+                $q_preview_menu = mysqli_query($koneksi, "
+                    SELECT id_menu, nama_menu, harga, foto, stok, status, kategori
+                    FROM menu 
+                    WHERE id_kantin = $id_kantin
+                    ORDER BY CASE WHEN status='Tersedia' THEN 0 ELSE 1 END, id_menu DESC
+                    LIMIT 6
+                ");
+                $menu_preview_count = mysqli_num_rows($q_preview_menu);
+                ?>
+                
+                <?php if ($menu_preview_count === 0): ?>
+                <div class="text-center py-8">
+                    <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                        <span class="material-symbols-outlined text-gray-300 text-3xl">restaurant_menu</span>
+                    </div>
+                    <p class="text-gray-500 font-semibold mb-4">Belum ada menu. Tambahkan menu untuk mulai berjualan!</p>
+                    <a href="kelola_menu_penjual.php" class="inline-block px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-bold rounded-xl transition">
+                        <span class="material-symbols-outlined align-middle text-base mr-1">add</span>Tambah Menu Pertama
+                    </a>
+                </div>
+                <?php else: ?>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+                    <?php while ($m = mysqli_fetch_assoc($q_preview_menu)): ?>
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md transition group">
+                        <!-- Foto -->
+                        <div class="relative w-full h-24 bg-gray-100 overflow-hidden">
+                            <?php 
+                            $foto_menu = !empty($m['foto']) && file_exists("../../uploads/" . $m['foto']) 
+                                ? "../../uploads/" . $m['foto']
+                                : "../../uploads/default/default-logo.svg";
+                            ?>
+                            <img src="<?= htmlspecialchars($foto_menu) ?>" 
+                                 alt="<?= htmlspecialchars($m['nama_menu']) ?>"
+                                 class="w-full h-full object-cover group-hover:scale-110 transition">
+                            
+                            <!-- Badge Status -->
+                            <div class="absolute top-2 right-2">
+                                <span class="inline-block text-[10px] font-bold px-2 py-1 rounded-lg 
+                                    <?= $m['status'] === 'Tersedia' && $m['stok'] > 0 
+                                        ? 'bg-green-100 text-green-700' 
+                                        : 'bg-red-100 text-red-700' ?>">
+                                    <?= $m['stok'] > 0 ? 'Stok: ' . $m['stok'] : 'Habis' ?>
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Info -->
+                        <div class="p-3">
+                            <p class="text-xs text-gray-500 font-semibold uppercase"><?= htmlspecialchars($m['kategori']) ?></p>
+                            <h4 class="font-bold text-sm text-gray-900 line-clamp-2 mb-2"><?= htmlspecialchars($m['nama_menu']) ?></h4>
+                            <p class="text-lg font-black text-orange-600">Rp <?= number_format($m['harga'], 0, ',', '.') ?></p>
+                        </div>
+                    </div>
+                    <?php endwhile; ?>
+                </div>
+                
+                <?php if ($menu_preview_count >= 6): ?>
+                <div class="text-center mt-4">
+                    <a href="kelola_menu_penjual.php" class="text-orange-600 hover:text-orange-700 text-sm font-bold">
+                        Lihat semua menu →
+                    </a>
+                </div>
+                <?php endif; ?>
+                <?php endif; ?>
+            </div>
+
+            <!-- BUTTONS -->
+            <div class="mt-8 flex gap-4 flex-col sm:flex-row">
                 <button type="submit" name="simpan"
                         class="flex items-center gap-3 bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-8 py-4 rounded-2xl font-bold shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:scale-[1.02] active:scale-[0.98] transition-all duration-200">
                     <span class="material-symbols-outlined">save</span>
@@ -392,8 +517,6 @@ $is_kantin_open = kk_is_kantin_open($data);
 
         </form>
     </main>
-
-    <script>
     // ✅ Validasi form username
     function validasiForm() {
         const username = document.getElementById('usernameInput').value.trim();

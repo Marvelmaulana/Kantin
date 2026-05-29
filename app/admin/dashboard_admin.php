@@ -2,16 +2,34 @@
 session_start();
 include(__DIR__ . '/../../config/config.php');
 include(__DIR__ . '/../../includes/language_helper.php');
-include(__DIR__ . '/../../includes/pembeli_helpers.php');
-kk_ensure_buyer_schema($koneksi);
+include(__DIR__ . '/../../includes/auth_helpers.php');
 
 // Initialize message variables to avoid "Undefined variable" warnings
 $message = '';
 $message_type = '';
 
-if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
-    header("Location: ../auth/login.php"); exit();
+// SECURITY: Session & Role Validation
+if (!isset($_SESSION['id_user'])) {
+    header("Location: ../auth/login.php");
+    exit();
 }
+
+if (($_SESSION['role'] ?? '') !== 'admin') {
+    header("Location: ../auth/login.php");
+    exit();
+}
+
+// SECURITY: Session Timeout Check (1 hour)
+$session_timeout = 3600; // 1 hour in seconds
+if (isset($_SESSION['login_time']) && (time() - $_SESSION['login_time']) > $session_timeout) {
+    session_destroy();
+    header("Location: ../auth/login.php?reason=timeout");
+    exit();
+}
+
+// Update last activity time
+$_SESSION['login_time'] = time();
+
 
 // Statistik
 $result_pembeli   = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM users WHERE role='pembeli'");
@@ -29,8 +47,8 @@ $jumlah_menu      = $result_menu ? (mysqli_fetch_assoc($result_menu)['total'] ??
 $result_transaksi = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM transaksi");
 $jumlah_transaksi = $result_transaksi ? (mysqli_fetch_assoc($result_transaksi)['total'] ?? 0) : 0;
 
-// Pendapatan Admin (dari pajak)
-$result_pajak     = mysqli_query($koneksi, "SELECT COALESCE(SUM(jumlah_pajak), 0) as total FROM transaksi");
+// Seluruh Pendapatan Semua Kantin
+$result_pajak     = mysqli_query($koneksi, "SELECT COALESCE(SUM(total_harga), 0) as total FROM transaksi");
 $pendapatan_admin = $result_pajak ? (mysqli_fetch_assoc($result_pajak)['total'] ?? 0) : 0;
 
 // Grafik 7 hari
@@ -39,12 +57,19 @@ $days_label  = ['Mon'=>'SEN','Tue'=>'SEL','Wed'=>'RAB','Thu'=>'KAM','Fri'=>'JUM'
 for ($i = 6; $i >= 0; $i--) {
     $date   = date('Y-m-d', strtotime("-$i days"));
     $day_en = date('D', strtotime($date));
-    $res_g  = mysqli_query($koneksi, "SELECT SUM(total_harga) as total FROM pesanan WHERE DATE(tanggal)='$date' AND status='Selesai'");
+    
+    // SECURITY: Use parameterized query to prevent SQL injection
+    $date_escaped = mysqli_real_escape_string($koneksi, $date);
+    $res_g  = mysqli_query($koneksi, "SELECT SUM(total_harga) as total FROM pesanan 
+                                      WHERE DATE(tanggal)='$date_escaped' AND status='Selesai'");
+    
     $nilai_grafik = 0;
-    if ($res_g) {
+    if ($res_g && $res_g instanceof mysqli_result) {
         $row = mysqli_fetch_assoc($res_g);
-        $nilai_grafik = $row['total'] ?? 0;
+        $nilai_grafik = isset($row['total']) && $row['total'] ? (float)$row['total'] : 0;
+        mysqli_free_result($res_g);
     }
+    
     $grafik_data[] = ['label'=>$days_label[$day_en], 'nilai'=>$nilai_grafik, 'is_today'=>($i==0)];
 }
 $max_val = max(array_column($grafik_data, 'nilai'));
@@ -222,7 +247,7 @@ if (!$max_val || $max_val <= 0) {
                 <span class="material-symbols-outlined text-lg sm:text-xl">trending_up</span>
             </div>
             <div class="text-center">
-                <p class="text-[8px] sm:text-[9px] font-black text-rose-500 uppercase tracking-wider leading-tight">Pajak</p>
+                <p class="text-[8px] sm:text-[9px] font-black text-rose-500 uppercase tracking-wider leading-tight">Seluruh Pendapatan</p>
                 <h3 class="text-xs sm:text-sm lg:text-base font-extrabold text-[#2a2a2a] mt-0.5">Rp <?= number_format($pendapatan_admin, 0, ',', '.') ?></h3>
             </div>
         </a>
@@ -253,7 +278,7 @@ if (!$max_val || $max_val <= 0) {
 
     <!-- Footer -->
     <div class="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-slate-500 pb-4">
-        <p>© 2024-<?= date('Y') ?> <span class="font-bold text-[#2a2a2a]">Kantin Kita</span>. Dashboard Admin System.</p>
+        <p>© 2025-<?= date('Y') ?> <span class="font-bold text-[#2a2a2a]">Kantin Kita</span>. Dashboard Admin System.</p>
     </div>
 </main>
 

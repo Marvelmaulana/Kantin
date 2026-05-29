@@ -18,12 +18,17 @@ if (isset($_GET['success']) && $_GET['success'] === 'hapus') {
 }
 
 $search = mysqli_real_escape_string($koneksi, trim($_GET['search'] ?? ''));
-$sql = "SELECT * FROM users WHERE role='penjual'";
+$sql = "SELECT u.*, k.id_kantin FROM users u 
+        LEFT JOIN kantin k ON u.id_user = k.id_penjual
+        WHERE u.role='penjual'";
 if ($search !== '') {
-    $sql .= " AND (username LIKE '%$search%' OR email LIKE '%$search%')";
+    $sql .= " AND (u.username LIKE '%$search%' OR u.email LIKE '%$search%')";
 }
-$sql .= " ORDER BY id_kantin ASC";
+$sql .= " ORDER BY k.id_kantin ASC";
 $query = mysqli_query($koneksi, $sql);
+if (!$query) {
+    die("Query Error: " . mysqli_error($koneksi));
+}
 $total_penjual = mysqli_num_rows($query);
 ?>
 

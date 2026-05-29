@@ -34,6 +34,9 @@ if (!$kantin) {
     exit();
 }
 
+// \u2705 Get kantin status badge
+$kantinStatusBadge = kk_kantin_status_badge($kantin);
+
 $favorit_ids = [];
 $q_fav = mysqli_query($koneksi, "SELECT id_menu FROM favorit WHERE id_user=$id_user");
 while ($f = mysqli_fetch_assoc($q_fav)) $favorit_ids[] = (int)$f['id_menu'];
@@ -142,11 +145,21 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:#fffdfc}.headline{font-f
                     <span class="bg-white/18 backdrop-blur px-3 py-1.5 rounded-full text-xs font-black">
                         <?= (float)$kantin['avg_rating'] > 0 ? round($kantin['avg_rating'],1).' ★' : 'Belum ada rating' ?> (<?= (int)$kantin['total_rating'] ?> ulasan)
                     </span>
+                    <!-- \u2705 Status Badge -->
+                    <span class="<?= $kantinStatusBadge['is_open'] ? 'bg-emerald-500/90' : 'bg-red-500/90' ?> backdrop-blur px-3 py-1.5 rounded-full text-xs font-black flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[11px]"><?= $kantinStatusBadge['icon'] ?></span>
+                        <?= $kantinStatusBadge['status'] ?>
+                    </span>
                 </div>
                 <div class="mt-4 flex flex-wrap gap-3 text-white/90 text-sm">
                     <div class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-2">
                         <span class="material-symbols-outlined text-base">person</span>
                         <span class="font-semibold">Pemilik: <?= htmlspecialchars($kantin['pemilik'] ?: 'Belum ditetapkan') ?></span>
+                    </div>
+                    <!-- \u2705 Jam Operasional -->
+                    <div class="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-2">
+                        <span class="material-symbols-outlined text-base">schedule</span>
+                        <span class="font-semibold"><?= kk_kantin_hours_label($kantin) ?></span>
                     </div>
                 </div>
             </div>

@@ -33,6 +33,7 @@ if (!function_exists('kk_ensure_buyer_schema')) {
             ['pesanan', 'bukti_pembayaran', "ALTER TABLE pesanan ADD COLUMN bukti_pembayaran VARCHAR(255) NULL"],
             ['pesanan', 'created_at', "ALTER TABLE pesanan ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP"],
             ['kantin', 'pasword_kantin', "ALTER TABLE kantin ADD COLUMN pasword_kantin VARCHAR(100) NULL"],
+            ['kantin', 'alamat', "ALTER TABLE kantin ADD COLUMN alamat VARCHAR(255) NULL"],
             ['kantin', 'jam_buka', "ALTER TABLE kantin ADD COLUMN jam_buka TIME NULL DEFAULT '07:00:00'"],
             ['kantin', 'jam_tutup', "ALTER TABLE kantin ADD COLUMN jam_tutup TIME NULL DEFAULT '15:00:00'"],
             ['kantin', 'status_buka', "ALTER TABLE kantin ADD COLUMN status_buka ENUM('Buka','Tutup') NULL DEFAULT 'Buka'"],
@@ -171,31 +172,122 @@ if (!function_exists('kk_refresh_kantin_status')) {
 }
 
 if (!function_exists('kk_is_kantin_open')) {
+    /**
+     * Menentukan status kantin apakah sedang BUKA atau TUTUP
+     * Handle edge case: jam lewat tengah malam, jam kosong/null, dll
+     * 
+     * @param array $kantin Data kantin dari database
+     * @param string $now Format HH:MM (default: waktu sekarang Asia/Jakarta)
+     * @return bool true jika buka, false jika tutup
+     */
     function kk_is_kantin_open($kantin, $now = null) {
+        date_default_timezone_set('Asia/Jakarta');
+        
         $tipe_operasi = $kantin['tipe_operasi'] ?? 'manual';
+        
+        // MODE MANUAL: gunakan status_buka langsung
         if ($tipe_operasi === 'manual') {
             return ($kantin['status_buka'] ?? 'Buka') === 'Buka';
         }
 
+        // MODE OTOMATIS: cek waktu sekarang
         $now = $now ?: date('H:i');
         $open = kk_time_hm($kantin['jam_buka'] ?? '', '07:00');
         $close = kk_time_hm($kantin['jam_tutup'] ?? '', '15:00');
 
+        // Edge case: jam buka sama dengan jam tutup = SELALU BUKA
         if ($open === $close) {
             return true;
         }
 
+        // Normal: jam buka lebih kecil dari jam tutup (tidak ada midnight wrap)
         if ($open < $close) {
             return $now >= $open && $now <= $close;
         }
 
+        // Midnight wrap: jam buka > jam tutup (operasi melintasi tengah malam)
+        // Contoh: buka jam 20:00, tutup jam 08:00
+        // Buka jika: sekarang >= 20:00 ATAU sekarang <= 08:00
         return $now >= $open || $now <= $close;
     }
 }
 
 if (!function_exists('kk_kantin_hours_label')) {
+    /**
+     * Format label jam operasional kantin
+     * @param array $kantin
+     * @return string Format: "HH:MM - HH:MM"
+     */
     function kk_kantin_hours_label($kantin) {
-        return kk_time_hm($kantin['jam_buka'] ?? '', '07:00') . ' - ' . kk_time_hm($kantin['jam_tutup'] ?? '', '15:00');
+        $open = kk_time_hm($kantin['jam_buka'] ?? '', '07:00');
+        $close = kk_time_hm($kantin['jam_tutup'] ?? '', '15:00');
+        return "$open - $close";
+    }
+}
+
+if (!function_exists('kk_kantin_status_badge')) {
+    /**
+     * Tentukan warna dan teks badge untuk status kantin
+     * @param array $kantin
+     * @return array ['status' => 'Buka'|'Tutup', 'color' => 'emerald'|'red', 'icon' => 'check_circle'|'cancel']
+     */
+    function kk_kantin_status_badge($kantin) {
+        $isOpen = kk_is_kantin_open($kantin);
+        return [
+            'status' => $isOpen ? 'BUKA' : 'TUTUP',
+            'color' => $isOpen ? 'emerald' : 'red',
+            'icon' => $isOpen ? 'check_circle' : 'cancel',
+            'is_open' => $isOpen,
+            'hours' => kk_kantin_hours_label($kantin),
+        ];
+    }
+}
+
+if (!function_exists('kk_validate_time_format')) {
+    /**
+     * Validasi format jam HH:MM atau HH:MM:SS
+     * Konversi ke format HH:MM:SS standar untuk database
+     * 
+     * @param string $time Format HH:MM atau HH:MM:SS
+     * @return string|false Format HH:MM:SS atau false jika invalid
+     */
+    function kk_validate_time_format($time) {
+        $time = trim((string)$time);
+        if (empty($time)) {
+            return false;
+        }
+        
+        // Terima format HH:MM (dari input time HTML5)
+        if (preg_match('/^(\d{1,2}):(\d{2})$/', $time, $m)) {
+            $hour = (int)$m[1];
+            $min = (int)$m[2];
+            if ($hour >= 0 && $hour <= 23 && $min >= 0 && $min <= 59) {
+                return sprintf('%02d:%02d:00', $hour, $min);
+            }
+        }
+        
+        // Terima format HH:MM:SS
+        if (preg_match('/^(\d{1,2}):(\d{2}):(\d{2})$/', $time, $m)) {
+            $hour = (int)$m[1];
+            $min = (int)$m[2];
+            $sec = (int)$m[3];
+            if ($hour >= 0 && $hour <= 23 && $min >= 0 && $min <= 59 && $sec >= 0 && $sec <= 59) {
+                return sprintf('%02d:%02d:%02d', $hour, $min, $sec);
+            }
+        }
+        
+        return false;
+    }
+}
+
+if (!function_exists('kk_validate_jam')) {
+    /**
+     * Validasi format jam sederhana HH:MM
+     * @param string $jam
+     * @return bool
+     */
+    function kk_validate_jam($jam) {
+        return preg_match('/^([0-1][0-9]|2[0-3]):([0-5][0-9])$/', trim((string)$jam)) === 1;
     }
 }
 
@@ -419,10 +511,10 @@ if (!function_exists('kk_get_kantin_status_label')) {
         $isOpen = kk_is_kantin_open($kantin);
         if ($isOpen) {
             $jam = kk_kantin_hours_label($kantin);
-            return "Buka (${jam})";
+            return "Buka ({$jam})";
         }
         $jam = kk_kantin_hours_label($kantin);
-        return "Tutup sampai ${jam}";
+        return "Tutup sampai {$jam}";
     }
 }
 
@@ -456,15 +548,6 @@ if (!function_exists('kk_format_jam')) {
         }
         
         return '00:00';
-    }
-}
-
-/**
- * Validasi format jam HH:MM
- */
-if (!function_exists('kk_validate_jam')) {
-    function kk_validate_jam($jam) {
-        return preg_match('/^\d{2}:\d{2}$/', trim((string)$jam)) === 1;
     }
 }
 ?>

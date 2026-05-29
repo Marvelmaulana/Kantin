@@ -4,23 +4,39 @@
 // ================================
 if (session_status() === PHP_SESSION_NONE) session_start();
 include(__DIR__ . '/../../config/config.php');
+include(__DIR__ . '/../../includes/pembeli_helpers.php');
 
 if (!isset($_SESSION['id_user'])) {
     header("Location: ../auth/login.php"); exit();
 }
 
-$id_user  = (int)$_SESSION['id_user'];
-$q_user   = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = $id_user");
-$user_data = mysqli_fetch_assoc($q_user);
-
-if (!$user_data || $user_data['role'] !== 'penjual' || empty($user_data['id_kantin'])) {
+// Verifikasi bahwa user adalah penjual
+if ($_SESSION['role'] !== 'penjual') {
     header("Location: ../auth/login.php?error=penjual_saja"); exit();
 }
 
+// Gunakan id_kantin dari session yang sudah di-set saat login
+if (!isset($_SESSION['id_kantin'])) {
+    // Fallback: cari kantin dari database jika belum ada di session
+    $id_user = (int)$_SESSION['id_user'];
+    $query_kantin = mysqli_query($koneksi, "SELECT id_kantin FROM kantin WHERE id_penjual = $id_user LIMIT 1");
+    if ($query_kantin && mysqli_num_rows($query_kantin) > 0) {
+        $kantin_data = mysqli_fetch_assoc($query_kantin);
+        $_SESSION['id_kantin'] = $kantin_data['id_kantin'];
+    } else {
+        // Penjual tidak punya kantin
+        echo "<script>alert('Akun penjual belum memiliki data kantin. Hubungi admin untuk setup kantin Anda.'); window.location='../auth/login.php';</script>";
+        exit();
+    }
+}
 
-$id_kantin = (int)$user_data['id_kantin'];
-$_SESSION['id_kantin']    = $id_kantin;
-$_SESSION['nama_penjual'] = $user_data['username'];
+$id_kantin = (int)$_SESSION['id_kantin'];
+$id_user  = (int)$_SESSION['id_user'];
+
+// Ambil data user untuk mendapatkan username
+$q_user   = mysqli_query($koneksi, "SELECT username FROM users WHERE id_user = $id_user");
+$user_data = mysqli_fetch_assoc($q_user);
+$_SESSION['nama_penjual'] = $user_data['username'] ?? '';
 
 
 // ================================
@@ -36,22 +52,19 @@ if (!$data_kantin) die("❌ Kantin tidak ditemukan");
 $_SESSION['nama_kantin'] = $data_kantin['nama_kantin'] ?? '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_operasi'])) {
-    $tipe_operasi = mysqli_real_escape_string($koneksi, $_POST['tipe_operasi'] ?? 'manual');
-    $status_buka = (($_POST['status_buka'] ?? $data_kantin['status_buka'] ?? 'Buka') === 'Tutup') ? 'Tutup' : 'Buka';
-
-    if ($tipe_operasi === 'otomatis') {
-        date_default_timezone_set('Asia/Jakarta');
-        $isOpenNow = kk_is_kantin_open(array_merge($data_kantin, [
-            'jam_buka' => $data_kantin['jam_buka'] ?? '07:00:00',
-            'jam_tutup' => $data_kantin['jam_tutup'] ?? '15:00:00',
-            'tipe_operasi' => 'otomatis'
-        ]), date('H:i'));
-        $status_buka = $isOpenNow ? 'Buka' : 'Tutup';
-    }
+    // Mode operasional sekarang selalu OTOMATIS
+    // Status akan dihitung otomatis berdasarkan jam operasional
+    date_default_timezone_set('Asia/Jakarta');
+    $isOpenNow = kk_is_kantin_open(array_merge($data_kantin, [
+        'jam_buka' => $data_kantin['jam_buka'] ?? '07:00:00',
+        'jam_tutup' => $data_kantin['jam_tutup'] ?? '15:00:00',
+        'tipe_operasi' => 'otomatis'
+    ]), date('H:i'));
+    $status_buka = $isOpenNow ? 'Buka' : 'Tutup';
 
     mysqli_query($koneksi, "
         UPDATE kantin SET
-            tipe_operasi = '$tipe_operasi',
+            tipe_operasi = 'otomatis',
             status_buka  = '$status_buka'
         WHERE id_kantin = $id_kantin
     ");
@@ -324,42 +337,21 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
 
                 </div>
 
-                <form method="POST" class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <form method="POST" class="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
                     <div class="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
-                        <p class="text-xs uppercase tracking-[0.25em] text-white/70 mb-3">Mode Operasional</p>
-                        <label class="flex items-center gap-3 p-3 rounded-2xl border border-white/20 bg-white/10 cursor-pointer">
-                            <input type="radio" name="tipe_operasi" value="manual" class="h-4 w-4 text-orange-400" <?= ($data_kantin['tipe_operasi'] ?? 'manual') !== 'otomatis' ? 'checked' : '' ?> onchange="updateModeStatus()">
-                            <span class="text-sm text-white">Manual</span>
-                        </label>
-                        <label class="flex items-center gap-3 p-3 rounded-2xl border border-white/20 bg-white/10 cursor-pointer mt-3">
-                            <input type="radio" name="tipe_operasi" value="otomatis" class="h-4 w-4 text-orange-400" <?= ($data_kantin['tipe_operasi'] ?? '') === 'otomatis' ? 'checked' : '' ?> onchange="updateModeStatus()">
-                            <span class="text-sm text-white">Otomatis</span>
-                        </label>
-                    </div>
-                    <div class="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
-                        <p class="text-xs uppercase tracking-[0.25em] text-white/70 mb-3">Ringkasan</p>
-                        <div class="text-sm text-white/80 mb-3">Mode: <span class="font-semibold text-white"><?= ($data_kantin['tipe_operasi'] ?? 'manual') === 'otomatis' ? 'Otomatis' : 'Manual' ?></span></div>
-                        <div class="text-sm text-white/80">Status: <span class="font-semibold <?= $kantin_buka ? 'text-emerald-200' : 'text-red-200' ?>"><?= $kantin_buka ? 'Buka' : 'Tutup' ?></span></div>
-                    </div>
-                    <div class="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
-                        <p class="text-xs uppercase tracking-[0.25em] text-white/70 mb-3">Manual</p>
-                                <div id="manualStatusPanel" class="<?= ($data_kantin['tipe_operasi'] ?? 'manual') === 'otomatis' ? 'hidden' : '' ?>">
-                            <label class="block text-sm font-semibold text-white/80 mb-2">Status manual</label>
-                            <div class="flex items-center gap-3">
-                                <span class="text-xs text-white/70">Tutup</span>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input id="statusToggle" type="checkbox" class="sr-only" <?= ($data_kantin['status_buka'] ?? 'Buka') === 'Buka' ? 'checked' : '' ?> onchange="updateStatusToggle()" />
-                                    <div class="toggle-track w-14 h-8 rounded-full bg-white/30 transition-colors duration-300"></div>
-                                    <div class="toggle-dot absolute left-1 top-1 w-6 h-6 rounded-full bg-white shadow-lg transition-transform duration-300"></div>
-                                </label>
-                                <span id="statusToggleLabel" class="text-xs font-semibold <?= ($data_kantin['status_buka'] ?? 'Buka') === 'Buka' ? 'text-emerald-200' : 'text-red-200' ?>"><?= ($data_kantin['status_buka'] ?? 'Buka') === 'Buka' ? 'Buka' : 'Tutup' ?></span>
-                            </div>
-                            <input type="hidden" name="status_buka" id="statusHidden" value="<?= ($data_kantin['status_buka'] ?? 'Buka') ?>">
+                        <p class="text-xs uppercase tracking-[0.25em] text-white/70 mb-3">✅ Mode Operasional</p>
+                        <div class="text-sm text-white font-semibold">
+                            Sistem <span class="text-orange-300">OTOMATIS</span>
                         </div>
-                        <button type="submit" name="save_operasi" class="mt-4 w-full rounded-2xl bg-orange-500 px-4 py-3 text-sm font-bold text-white hover:bg-orange-600 transition-all">Simpan</button>
-                        <?php if (isset($_GET['success_mode'])): ?>
-                            <div class="mt-3 rounded-2xl bg-emerald-100 px-3 py-2 text-emerald-800 text-sm font-semibold">Perubahan mode tersimpan.</div>
-                        <?php endif; ?>
+                        <p class="text-xs text-white/60 mt-2">Kantin buka otomatis pada jam 07:00 dan tutup pada jam 15:00</p>
+                    </div>
+                    <div class="rounded-3xl border border-white/20 bg-white/10 p-4 backdrop-blur-xl">
+                        <p class="text-xs uppercase tracking-[0.25em] text-white/70 mb-3">Status Sekarang</p>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-block w-3 h-3 rounded-full <?= $kantin_buka ? 'bg-emerald-400 animate-pulse' : 'bg-red-400' ?>"></span>
+                            <span class="text-lg font-black <?= $kantin_buka ? 'text-emerald-200' : 'text-red-200' ?>"><?= $kantin_buka ? 'BUKA' : 'TUTUP' ?></span>
+                        </div>
+                        <p class="text-xs text-white/60 mt-2">Diperbarui setiap jam secara otomatis</p>
                     </div>
                 </form>
             </div>
@@ -398,8 +390,27 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
         <?php endforeach; ?>
     </div>
 
-    <!-- SECTION: PENGATURAN JAM OPERASIONAL -->
-    <?php include(__DIR__ . '/includes_jam_operasional.php'); ?>
+    <!-- CHART PENJUALAN 7 HARI -->
+    <div class="bg-gradient-to-br from-white to-orange-50 rounded-3xl p-6 shadow-lg border border-orange-100 mb-8">
+        <div class="flex items-center justify-between mb-6">
+            <div class="flex items-center gap-3">
+                <div class="w-11 h-11 rounded-2xl bg-orange-100 flex items-center justify-center">
+                    <i class="fa-solid fa-chart-line text-orange-600 text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-xl font-black text-gray-900">Grafik Penjualan</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">Pendapatan kantin 7 hari terakhir</p>
+                </div>
+            </div>
+            <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-sm font-bold bg-orange-100 text-orange-700">
+                <i class="fa-solid fa-chart-pie text-orange-500"></i>
+                Rp <?= number_format((array_sum($chart_data) ?? 0), 0, ',', '.') ?>
+            </span>
+        </div>
+        <div class="relative h-64 lg:h-80 bg-white rounded-2xl p-4">
+            <canvas id="salesChart"></canvas>
+        </div>
+    </div>
 
     <!-- PESANAN MASUK + MENU SAYA -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -826,32 +837,8 @@ function tutupStruk() {
 }
 function cetakStruk() { window.print(); }
 
-function updateModeStatus() {
-    const manualPanel = document.getElementById('manualStatusPanel');
-    const tipeOperasi = document.querySelector('input[name="tipe_operasi"]:checked')?.value;
-    if (!manualPanel || !tipeOperasi) return;
-    manualPanel.classList.toggle('hidden', tipeOperasi === 'otomatis');
-}
-
-function updateStatusToggle() {
-    const checkbox = document.getElementById('statusToggle');
-    const hidden = document.getElementById('statusHidden');
-    const label = document.getElementById('statusToggleLabel');
-    const track = document.querySelector('.toggle-track');
-    const dot = document.querySelector('.toggle-dot');
-    if (!checkbox || !hidden || !label || !track || !dot) return;
-
-    const isOpen = checkbox.checked;
-    hidden.value = isOpen ? 'Buka' : 'Tutup';
-    label.textContent = isOpen ? 'Buka' : 'Tutup';
-    label.className = isOpen ? 'text-xs font-semibold text-emerald-200' : 'text-xs font-semibold text-red-200';
-    track.classList.toggle('bg-emerald-500/70', isOpen);
-    track.classList.toggle('bg-white/30', !isOpen);
-    dot.classList.toggle('translate-x-6', isOpen);
-}
-
 window.addEventListener('DOMContentLoaded', function() {
-    updateStatusToggle();
+    // Initialize
 });
 
 // Klik backdrop
