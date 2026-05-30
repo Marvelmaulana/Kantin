@@ -53,11 +53,7 @@ if (!isset($_SESSION['id_kantin'])) { header("Location: ../auth/login.php"); exi
                     <textarea name="deskripsi" rows="3" class="w-full bg-stone-50 border-none rounded-2xl px-5 py-4 focus:ring-2 focus:ring-orange-500"></textarea>
                 </div>
 
-                <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2 ml-2">Opsi Level / Pilihan</label>
-                    <textarea name="opsi_pilihan" rows="3" placeholder="Contoh: Original, Pedas Level 1, Pedas Level 2, Tanpa Es" class="w-full bg-stone-50 border-none rounded-2xl px-5 py-4 focus:ring-2 focus:ring-orange-500"></textarea>
-                    <p class="text-[11px] text-stone-400 mt-2 ml-2">Pisahkan dengan koma atau baris baru.</p>
-                </div>
+
 
                 <div>
                     <label class="block text-[10px] font-bold uppercase tracking-widest text-stone-400 mb-2 ml-2">Foto Menu</label>

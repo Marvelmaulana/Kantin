@@ -133,7 +133,8 @@ try {
         UPDATE kantin 
         SET jam_buka = '$jam_buka_esc',
             jam_tutup = '$jam_tutup_esc',
-            tipe_operasi = '$tipe_op_esc'
+            tipe_operasi = '$tipe_op_esc',
+            updated_at = CURRENT_TIMESTAMP
         WHERE id_kantin = $id_kantin
     ");
 

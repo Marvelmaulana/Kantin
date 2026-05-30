@@ -74,7 +74,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $kantin = admin_query_fetch_one($koneksi,
                         "SELECT * FROM kantin WHERE id_kantin = ? LIMIT 1",
                         [$id_kantin], 'i');
-                }
             } catch (Exception $e) {
                 $message = 'Error: ' . htmlspecialchars($e->getMessage());
                 $message_type = 'error';

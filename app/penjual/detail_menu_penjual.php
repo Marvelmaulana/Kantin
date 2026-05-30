@@ -139,21 +139,7 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:linear-gradient(135deg,#
                 <p class="text-sm leading-relaxed text-gray-600"><?= nl2br(htmlspecialchars($data['deskripsi'] ?: 'Belum ada deskripsi.')); ?></p>
             </div>
 
-            <?php if (!empty($opsiList)): ?>
-            <div class="bg-white rounded-3xl border-2 border-orange-100 p-5 shadow-lg">
-                <div class="flex items-center gap-2 mb-4">
-                    <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <i class="fa-solid fa-list-check text-blue-500 text-sm"></i>
-                    </div>
-                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">Level / Pilihan</p>
-                </div>
-                <div class="flex flex-wrap gap-3">
-                    <?php foreach ($opsiList as $opsi): ?>
-                    <span class="inline-flex border-2 border-orange-100 bg-orange-50/60 text-gray-700 rounded-2xl px-5 py-2.5 text-sm font-black"><?= htmlspecialchars($opsi) ?></span>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <?php endif; ?>
+
         </div>
     </div>
 </main>

@@ -279,25 +279,7 @@ function goBack() {
                 </p>
             </div>
 
-            <!-- Level / Pilihan -->
-            <?php if (!empty($opsiList)): ?>
-            <div class="bg-white rounded-3xl border-2 border-orange-100 p-5 shadow-lg">
-                <div class="flex items-center gap-2 mb-4">
-                    <div class="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
-                        <i class="fa-solid fa-list-check text-blue-500 text-sm"></i>
-                    </div>
-                    <p class="text-xs font-black uppercase tracking-widest text-gray-400">Level / Pilihan</p>
-                </div>
-                <div class="flex flex-wrap gap-3">
-                    <?php foreach ($opsiList as $i => $opsi): ?>
-                    <label class="option-chip cursor-pointer">
-                        <input type="radio" name="opsi_pilihan" value="<?= htmlspecialchars($opsi) ?>" class="hidden" <?= $i === 0 ? 'checked' : '' ?>>
-                        <span class="inline-flex border-2 border-orange-100 bg-orange-50/60 text-gray-700 rounded-2xl px-5 py-2.5 text-sm font-black transition-all hover:border-orange-300"><?= htmlspecialchars($opsi) ?></span>
-                    </label>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-            <?php endif; ?>
+
 
             <!-- Jumlah -->
             <div class="bg-white rounded-3xl border-2 border-orange-100 p-5 shadow-lg">
@@ -429,7 +411,7 @@ function goBack() {
 </div>
 
 <!-- TOMBOL AKSI -->
-<div class="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t-2 border-orange-100 shadow-[0_-8px_30px_rgba(249,115,22,0.15)]">
+<div class="fixed bottom-0 left-0 lg:left-72 right-0 z-50 bg-white/95 backdrop-blur-xl border-t-2 border-orange-100 shadow-[0_-8px_30px_rgba(249,115,22,0.15)]">
     <div class="max-w-[1200px] mx-auto px-4 py-4 grid grid-cols-2 gap-3">
         <button type="button" id="btnKeranjang" onclick="prosesKeKeranjang()"
                 class="h-14 rounded-2xl border-2 border-orange-400 text-orange-600 font-black flex items-center justify-center gap-3 transition-all hover:bg-orange-50 hover:border-orange-500 <?= ($isHabis || $isLuarJam) ? 'opacity-40 cursor-not-allowed' : '' ?>"
@@ -484,8 +466,7 @@ function changeQty(n) {
 }
 
 function getOpsi(){
-    const selected = document.querySelector('input[name="opsi_pilihan"]:checked');
-    return selected ? selected.value : '';
+    return '';
 }
 
 function pesanSekarang(){

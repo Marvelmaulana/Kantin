@@ -113,7 +113,7 @@ if (!function_exists('kk_ensure_core_schema')) {
                 jam_buka TIME NULL DEFAULT '07:00:00',
                 jam_tutup TIME NULL DEFAULT '15:00:00',
                 status_buka ENUM('Buka','Tutup') NULL DEFAULT 'Buka',
-                tipe_operasi ENUM('manual','otomatis') NOT NULL DEFAULT 'manual',
+                tipe_operasi ENUM('manual','otomatis') NOT NULL DEFAULT 'otomatis',
                 rating DECIMAL(3,2) NOT NULL DEFAULT 0,
                 total_rating INT NOT NULL DEFAULT 0,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
@@ -269,7 +269,7 @@ if (!function_exists('kk_ensure_core_schema')) {
             $sellerId = (int)($seller['id_user'] ?? 0);
             if ($sellerId) {
                 mysqli_query($koneksi, "INSERT INTO kantin (nama_kantin,deskripsi,jam_buka,jam_tutup,status_buka,tipe_operasi)
-                    VALUES ('Kantin Demo','Kantin contoh untuk mencoba aplikasi.','07:00:00','23:59:00','Buka','manual')");
+                    VALUES ('Kantin Demo','Kantin contoh untuk mencoba aplikasi.','07:00:00','23:59:00','Buka','otomatis')");
                 $kantinId = (int)mysqli_insert_id($koneksi);
                 mysqli_query($koneksi, "UPDATE users SET id_kantin=$kantinId, nama_kantin='Kantin Demo' WHERE id_user=$sellerId");
             }
@@ -315,7 +315,7 @@ if (!function_exists('kk_ensure_core_schema')) {
 
             if (!$kantin) {
                 mysqli_query($koneksi, "INSERT INTO kantin (id_user,nama_kantin,nama_penjual,deskripsi,jam_buka,jam_tutup,status_buka,tipe_operasi)
-                    VALUES ($sellerId,'Kantin Demo',(SELECT username FROM users WHERE id_user=$sellerId),'Kantin contoh untuk mencoba aplikasi.','07:00:00','23:59:00','Buka','manual')");
+                    VALUES ($sellerId,'Kantin Demo',(SELECT username FROM users WHERE id_user=$sellerId),'Kantin contoh untuk mencoba aplikasi.','07:00:00','23:59:00','Buka','otomatis')");
                 $kantin = ['id_kantin' => mysqli_insert_id($koneksi)];
             }
 

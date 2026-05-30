@@ -151,11 +151,7 @@ if (isset($_POST['update'])) {
                 <textarea name="deskripsi" rows="3" class="w-full px-5 py-4 rounded-2xl border bg-slate-50"><?= htmlspecialchars($data['deskripsi'] ?? '') ?></textarea>
             </div>
 
-            <div>
-                <label class="block text-sm font-bold mb-2">Opsi Level / Pilihan</label>
-                <textarea name="opsi_pilihan" rows="2" class="w-full px-5 py-4 rounded-2xl border bg-slate-50" placeholder="Contoh: Original, Pedas Level 1, Pedas Level 2"><?= htmlspecialchars($data['opsi_pilihan'] ?? '') ?></textarea>
-                <p class="text-[11px] text-slate-400 mt-1">Pisahkan dengan koma atau baris baru.</p>
-            </div>
+
 
             <div>
                 <label class="block text-sm font-bold mb-2">Foto Produk</label>

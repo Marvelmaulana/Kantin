@@ -62,40 +62,43 @@ $chat_unread = $data_chat_unread['total'] ?? 0;
 
 <!-- SIDEBAR -->
 <aside id="sidebar"
-class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(251,146,60,0.3),transparent_38%),linear-gradient(180deg,_#351501_0%,_#1f1a18_20%,_#fef1e6_100%)] border-r border-orange-600 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out">
+class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear-gradient(180deg,_#fb923c_0%,_#f97316_40%,_#ea580c_100%)] border-r border-orange-700 z-50 -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out shadow-2xl shadow-orange-500/20">
 
     <div class="flex flex-col h-full p-8 gap-2">
 
         <!-- HEADER -->
-        <div class="mb-10 flex justify-between items-center">
+        <div class="mb-10 flex justify-between items-start">
+            <div class="flex items-center gap-3">
+                <a href="dashboard_penjual.php" class="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/10 hover:bg-white/20 hover:scale-110 transition-all flex-shrink-0 shadow-lg border border-white/20">
+                    <img src="/kantin/uploads/logo/logo_kantin_kita.png" alt="Kantin Kita Logo" class="w-full h-full object-contain rounded-2xl shadow-lg">
+                </a>
+                <div>
+                    <h1 class="text-2xl font-black text-white leading-none"
+                        style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                        Kantin Kita
+                    </h1>
 
-            <div>
-                <h1 class="text-2xl font-black text-white leading-none"
-                    style="font-family: 'Plus Jakarta Sans', sans-serif;">
-                    Kantin Kita
-                </h1>
-
-                <p class="text-[11px] font-bold text-stone-400 tracking-[0.2em] uppercase mt-2">
-                    <?= t('seller.seller_center') ?>
-                </p>
+                    <p class="text-[11px] font-bold text-white/70 tracking-[0.2em] uppercase mt-2">
+                        <?= t('seller.seller_center') ?>
+                    </p>
+                </div>
             </div>
 
-            <button onclick="toggleSidebar()" class="lg:hidden text-stone-400">
+            <button onclick="toggleSidebar()" class="lg:hidden text-white/70 hover:text-white transition mt-1">
                 <span class="material-symbols-outlined">close</span>
             </button>
-
         </div>
 
         <!-- PROFILE -->
-        <div class="mb-8 p-6 rounded-[2rem] bg-gradient-to-br from-orange-500 via-orange-400 to-orange-100 flex items-center gap-4 shadow-[0_30px_80px_-40px_rgba(249,115,22,0.7)]">
+        <div class="mb-8 p-6 rounded-[2rem] bg-gradient-to-br from-white/20 to-white/10 flex items-center gap-4 shadow-lg shadow-black/10 border border-white/30">
 
-            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-orange-600 via-orange-500 to-orange-400 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-orange-500/30">
+            <div class="w-12 h-12 rounded-full bg-gradient-to-br from-white to-white/80 text-orange-600 flex items-center justify-center font-black text-xl shadow-lg shadow-black/20">
                 <?= strtoupper(substr($user_display, 0, 1)); ?>
             </div>
 
             <div class="overflow-hidden">
 
-                <p class="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
+                <p class="text-[10px] font-bold text-white/60 uppercase tracking-wider">
                     <?= t('seller.welcome') ?>
                 </p>
 
@@ -113,7 +116,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[radial
 
             <!-- DASHBOARD -->
             <a href="dashboard_penjual.php"
-               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'dashboard_penjual.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white font-bold shadow-2xl shadow-orange-500/30' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
+               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'dashboard_penjual.php') ? 'bg-white/20 text-white font-bold shadow-2xl shadow-black/20 border border-white/30' : 'text-white/80 hover:bg-white/10 hover:text-white' ?>">
 
                 <span class="material-symbols-outlined">grid_view</span>
 
@@ -122,7 +125,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[radial
 
             <!-- MENU -->
             <a href="kelola_menu_penjual.php"
-               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'kelola_menu_penjual.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white font-bold shadow-2xl shadow-orange-500/30' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
+               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'kelola_menu_penjual.php') ? 'bg-white/20 text-white font-bold shadow-2xl shadow-black/20 border border-white/30' : 'text-white/80 hover:bg-white/10 hover:text-white' ?>">
 
                 <span class="material-symbols-outlined">restaurant_menu</span>
 
@@ -131,7 +134,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[radial
 
             <!-- PESANAN -->
             <a href="pesanan_masuk.php"
-               class="flex items-center justify-between px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'pesanan_masuk.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white font-bold shadow-2xl shadow-orange-500/30' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
+               class="flex items-center justify-between px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'pesanan_masuk.php') ? 'bg-white/20 text-white font-bold shadow-2xl shadow-black/20 border border-white/30' : 'text-white/80 hover:bg-white/10 hover:text-white' ?>">
 
                 <div class="flex items-center gap-4">
                     <span class="material-symbols-outlined">pending_actions</span>
@@ -154,7 +157,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[radial
 
             <!-- CHAT -->
             <a href="chat_penjual.php"
-               class="flex items-center justify-between px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'chat_penjual.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white font-bold shadow-2xl shadow-orange-500/30' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
+               class="flex items-center justify-between px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'chat_penjual.php') ? 'bg-white/20 text-white font-bold shadow-2xl shadow-black/20 border border-white/30' : 'text-white/80 hover:bg-white/10 hover:text-white' ?>">
 
                 <div class="flex items-center gap-4">
                     <span class="material-symbols-outlined">chat</span>
@@ -177,7 +180,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[radial
 
             <!-- RIWAYAT -->
             <a href="riwayat_penjual.php"
-               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'riwayat_penjual.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white font-bold shadow-2xl shadow-orange-500/30' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
+               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'riwayat_penjual.php') ? 'bg-white/20 text-white font-bold shadow-2xl shadow-black/20 border border-white/30' : 'text-white/80 hover:bg-white/10 hover:text-white' ?>">
 
                 <span class="material-symbols-outlined">history</span>
 
@@ -186,7 +189,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[radial
 
             <!-- EDIT PROFIL -->
             <a href="edit_profil.php"
-               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'edit_profil.php') ? 'bg-[linear-gradient(90deg,_#fb923c,_#f97316,_#ea580c)] text-white font-bold shadow-2xl shadow-orange-500/30' : 'text-orange-100 hover:bg-orange-900 hover:text-orange-50' ?>">
+               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'edit_profil.php') ? 'bg-white/20 text-white font-bold shadow-2xl shadow-black/20 border border-white/30' : 'text-white/80 hover:bg-white/10 hover:text-white' ?>">
 
                    <span class="material-symbols-outlined">edit_square</span>
 
@@ -196,11 +199,11 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[radial
         </nav>
 
         <!-- LOGOUT -->
-        <div class="mt-auto pt-6 border-t border-orange-100">
+        <div class="mt-auto pt-6 border-t border-white/20">
 
             <a href="../auth/logout.php"
                onclick="return confirm('<?= t('msg.confirm_logout') ?>')"
-               class="flex items-center gap-4 px-6 py-4 bg-orange-100/90 text-orange-900 hover:bg-orange-200 rounded-2xl font-bold text-sm transition-all shadow-sm border border-orange-200">
+               class="flex items-center gap-4 px-6 py-4 bg-white/20 text-white hover:bg-white/30 rounded-2xl font-bold text-sm transition-all shadow-sm border border-white/30">
 
                 <span class="material-symbols-outlined">logout</span>
 

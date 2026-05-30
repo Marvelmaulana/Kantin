@@ -230,6 +230,21 @@ body::before {
     50% { transform: translateY(-10px) rotate(2deg); }
 }
 
+@keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+@keyframes blob {
+    0% { transform: translate(0px, 0px) scale(1); }
+    33% { transform: translate(30px, -50px) scale(1.1); }
+    66% { transform: translate(-20px, 20px) scale(0.9); }
+    100% { transform: translate(0px, 0px) scale(1); }
+}
+.animate-blob { animation: blob 7s infinite; }
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-4000 { animation-delay: 4s; }
+
 .menu-card { transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1); background: linear-gradient(135deg, #ffffff, #fff4eb); border: 1px solid rgba(251,146,60,.15); border-radius: 30px; }
 .menu-card:hover { transform: translateY(-6px); box-shadow: 0 24px 40px rgba(251,146,60,.12); }
 
@@ -247,8 +262,8 @@ body::before {
     <div class="max-w-[1400px] mx-auto px-4 md:px-6 py-3">
         <div class="flex items-center justify-between gap-4">
             <div class="flex items-center gap-3">
-                <a href="dashboard.php" class="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-xl shadow-orange-200 hover:scale-105 transition-all">
-                    <span class="material-symbols-outlined text-2xl">local_dining</span>
+                <a href="dashboard.php" class="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg hover:scale-105 transition-all">
+                    <img src="/kantin/uploads/logo/logo_kantin_kita.png" alt="Kantin Kita Logo" class="w-full h-full object-contain rounded-2xl">
                 </a>
                 <div>
                     <p class="text-[10px] text-gray-400 font-black uppercase tracking-widest"><?= t('buyer.welcome', ['name' => $nama]) ?></p>
@@ -262,21 +277,59 @@ body::before {
 
 <main class="max-w-[1400px] mx-auto px-4 md:px-6 py-6 space-y-8">
 
-    <!-- HERO BANNER -->
-    <div class="rounded-3xl bg-gradient-to-br from-orange-500 via-orange-600 to-red-600 text-white p-6 md:p-8 overflow-hidden relative shadow-2xl shadow-orange-200/50">
-        <div class="absolute -right-8 -top-8 w-40 h-40 rounded-full bg-white/10"></div>
-        <div class="absolute -right-4 -bottom-4 w-20 h-20 rounded-full bg-white/10"></div>
-        <div class="absolute right-8 bottom-4 text-7xl opacity-90">🍱</div>
-        <div class="relative z-10">
-            <span class="inline-flex items-center gap-1 bg-white/20 backdrop-blur px-3 py-1 rounded-full text-xs font-bold mb-3">
-                <i class="fa-solid fa-fire text-yellow-300"></i> Promo Hari Ini
-            </span>
-            <h2 class="headline text-3xl md:text-5xl font-black leading-tight">Makan Enak,<br>Tanpa Antri!</h2>
-            <p class="text-sm text-white/80 mt-3 max-w-sm">Pesan makanan favoritmu dari berbagai kantin sekolah, langsung diantar.</p>
-            <div class="flex gap-3 mt-5">
-                <a href="semua_menu.php" class="px-5 py-2.5 bg-white text-orange-600 font-bold rounded-full text-sm shadow-lg hover:shadow-xl transition-all hover:scale-105">
-                    Lihat Menu <i class="fa-solid fa-arrow-right ml-1"></i>
-                </a>
+    <!-- HERO BANNER (REDESIGN) -->
+    <div class="relative w-full rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(249,115,22,0.3)] mb-8">
+        <!-- Abstract Animated Background -->
+        <div class="absolute inset-0 bg-gradient-to-r from-orange-500 via-red-500 to-orange-600 bg-[length:200%_200%] animate-[gradient_8s_ease_infinite]"></div>
+        
+        <!-- Decorative Shapes (Blob effects) -->
+        <div class="absolute -top-24 -left-24 w-64 h-64 bg-yellow-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob"></div>
+        <div class="absolute -bottom-24 -right-24 w-64 h-64 bg-red-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000"></div>
+
+        <!-- Pattern / Glass Overlay -->
+        <div class="absolute inset-0 bg-white/10 backdrop-blur-[2px]"></div>
+
+        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between p-8 md:p-12 gap-8">
+            <div class="flex-1 text-center md:text-left">
+                <!-- Badge -->
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/20 backdrop-blur-md border border-white/30 text-white text-xs font-bold uppercase tracking-widest mb-4 shadow-lg transform hover:scale-105 transition-transform">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-yellow-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-yellow-500"></span>
+                    </span>
+                    Selamat Datang di
+                </div>
+
+                <!-- Title -->
+                <h2 class="headline text-5xl md:text-6xl lg:text-7xl font-black text-white leading-tight drop-shadow-md mb-2">
+                    Kantin Kita
+                </h2>
+
+                <!-- Subtitle -->
+                <p class="text-lg md:text-xl text-white/90 font-medium max-w-xl mx-auto md:mx-0 drop-shadow-sm mb-8 leading-relaxed">
+                    Kantin Digital <span class="font-black text-yellow-300">SMKN 1 Boyolangu</span>. Temukan dan pesan makanan favoritmu lebih cepat dan praktis!
+                </p>
+
+                <!-- Action Button -->
+                <div class="flex justify-center md:justify-start">
+                    <a href="semua_menu.php" class="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-orange-600 font-black rounded-full overflow-hidden shadow-[0_8px_30px_rgb(255,255,255,0.3)] transition-all hover:scale-105 hover:shadow-[0_8px_30px_rgb(255,255,255,0.5)]">
+                        <span class="relative z-10 text-sm tracking-wide uppercase">Jelajahi Menu</span>
+                        <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center relative z-10 group-hover:bg-orange-200 transition-colors">
+                            <i class="fa-solid fa-arrow-right text-orange-600 group-hover:translate-x-1 transition-transform"></i>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Floating Illustration / Emojis -->
+            <div class="hidden md:flex relative w-48 h-48 md:w-64 md:h-64 items-center justify-center">
+                <!-- Center Main Emoji -->
+                <div class="absolute text-8xl md:text-[8rem] drop-shadow-2xl floating z-20">🍱</div>
+                <!-- Small Floating Elements -->
+                <div class="absolute top-0 right-10 text-4xl drop-shadow-lg floating" style="animation-delay: -1s;">🍔</div>
+                <div class="absolute bottom-10 left-0 text-5xl drop-shadow-lg floating" style="animation-delay: -2s;">🥤</div>
+                <div class="absolute top-1/2 -right-8 text-3xl drop-shadow-lg floating" style="animation-delay: -1.5s;">🍟</div>
             </div>
         </div>
     </div>

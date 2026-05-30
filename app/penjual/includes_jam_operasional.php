@@ -72,41 +72,6 @@
                     </div>
                 </div>
 
-                <!-- Tipe Operasi -->
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-2">
-                        <i class="fa-solid fa-gears text-purple-500 mr-1.5"></i>
-                        Mode Operasional
-                    </label>
-                    <div class="flex gap-3">
-                        <label class="flex-1 relative flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-orange-300 transition-colors">
-                            <input 
-                                type="radio" 
-                                name="tipe_operasi" 
-                                value="manual"
-                                class="sr-only peer"
-                                <?= ($data_kantin['tipe_operasi'] ?? 'manual') === 'manual' ? 'checked' : '' ?>
-                            />
-                            <div class="w-4 h-4 border-2 border-gray-300 rounded-full peer-checked:border-orange-500 peer-checked:bg-orange-500 transition-colors"></div>
-                            <span class="ml-2.5 font-semibold text-gray-700 peer-checked:text-orange-600">Manual</span>
-                        </label>
-                        <label class="flex-1 relative flex items-center p-3 border-2 border-gray-200 rounded-xl cursor-pointer hover:border-purple-300 transition-colors">
-                            <input 
-                                type="radio" 
-                                name="tipe_operasi" 
-                                value="otomatis"
-                                class="sr-only peer"
-                                <?= ($data_kantin['tipe_operasi'] ?? 'manual') === 'otomatis' ? 'checked' : '' ?>
-                            />
-                            <div class="w-4 h-4 border-2 border-gray-300 rounded-full peer-checked:border-purple-500 peer-checked:bg-purple-500 transition-colors"></div>
-                            <span class="ml-2.5 font-semibold text-gray-700 peer-checked:text-purple-600">Otomatis</span>
-                        </label>
-                    </div>
-                    <p class="text-xs text-gray-500 mt-2">
-                        <strong>Manual:</strong> Anda mengatur status buka/tutup secara manual.
-                        <strong>Otomatis:</strong> Status berdasarkan jam yang telah diatur.
-                    </p>
-                </div>
 
                 <!-- Buttons -->
                 <div class="flex gap-3 pt-2">
@@ -153,12 +118,7 @@
                             <?= $kantin_buka ? 'BUKA' : 'TUTUP' ?>
                         </span>
                     </div>
-                    <div class="flex items-center justify-between">
-                        <span class="text-sm text-gray-600">Mode:</span>
-                        <span class="px-2.5 py-1 rounded-lg font-bold text-xs whitespace-nowrap bg-purple-100 text-purple-700">
-                            <?= ucfirst($data_kantin['tipe_operasi'] ?? 'manual') ?>
-                        </span>
-                    </div>
+
                 </div>
             </div>
 
@@ -166,17 +126,6 @@
             <div class="bg-white rounded-2xl p-4 border border-gray-200 space-y-2">
                 <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Aksi Cepat</p>
                 
-                <!-- Toggle Manual Status (hanya tampil jika mode manual) -->
-                <div id="btnToggleManualStatus" class="hidden">
-                    <button 
-                        type="button"
-                        onclick="toggleStatusKantin()"
-                        class="w-full px-3 py-2 rounded-lg font-bold text-sm text-white bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 transition-all active:scale-95 flex items-center justify-center gap-2"
-                    >
-                        <i class="fa-solid fa-power-off"></i>
-                        <span id="labelToggleStatus">Toggle Status</span>
-                    </button>
-                </div>
 
                 <!-- Reset Stok -->
                 <button 
@@ -198,7 +147,6 @@
 ==================================== -->
 <script>
 const idKantin = <?= (int)$id_kantin ?>;
-const tipoOperasiCurrent = '<?= ($data_kantin['tipe_operasi'] ?? 'manual') ?>';
 
 // Update current time
 function updateCurrentTime() {
@@ -211,29 +159,13 @@ function updateCurrentTime() {
 setInterval(updateCurrentTime, 1000);
 updateCurrentTime();
 
-// Update toggle button visibility based on mode
-function updateToggleButtonVisibility() {
-    const modeManual = document.querySelector('input[name="tipe_operasi"]:checked').value === 'manual';
-    const btnToggle = document.getElementById('btnToggleManualStatus');
-    if (modeManual) {
-        btnToggle.classList.remove('hidden');
-    } else {
-        btnToggle.classList.add('hidden');
-    }
-}
-
-document.querySelectorAll('input[name="tipe_operasi"]').forEach(el => {
-    el.addEventListener('change', updateToggleButtonVisibility);
-});
-updateToggleButtonVisibility();
-
 // Form submission
 document.getElementById('formJamOperasional').addEventListener('submit', async (e) => {
     e.preventDefault();
     
     const jamBuka = document.getElementById('jamBuka').value;
     const jamTutup = document.getElementById('jamTutup').value;
-    const tipoOperasi = document.querySelector('input[name="tipe_operasi"]:checked').value;
+    const tipoOperasi = 'otomatis';
     
     if (!jamBuka || !jamTutup) {
         showAlert('alertJamOperasional', 'Jam buka dan jam tutup harus diisi', 'error');
@@ -271,38 +203,7 @@ document.getElementById('formJamOperasional').addEventListener('submit', async (
     }
 });
 
-// Toggle status kantin (manual mode only)
-async function toggleStatusKantin() {
-    if (!confirm('Ubah status kantin sekarang?')) return;
-    
-    const btn = event.target.closest('button');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
-    
-    try {
-        const formData = new FormData();
-        formData.append('status', 'toggle'); // Server akan auto-toggle
-        
-        const response = await fetch('./api_toggle_status.php', {
-            method: 'POST',
-            body: formData
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showAlert('alertJamOperasional', '✓ Status kantin diubah menjadi: ' + data.data.status_buka, 'success');
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showAlert('alertJamOperasional', '✗ ' + (data.message || 'Gagal mengubah status'), 'error');
-        }
-    } catch (error) {
-        showAlert('alertJamOperasional', '✗ Error: ' + error.message, 'error');
-    } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-power-off"></i> <span id="labelToggleStatus">Toggle Status</span>';
-    }
-}
+
 
 // Reset stok harian
 async function resetStokHarian() {

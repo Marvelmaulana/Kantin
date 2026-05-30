@@ -36,9 +36,10 @@ if (!function_exists('kk_ensure_buyer_schema')) {
             ['kantin', 'jam_buka', "ALTER TABLE kantin ADD COLUMN jam_buka TIME NULL DEFAULT '07:00:00'"],
             ['kantin', 'jam_tutup', "ALTER TABLE kantin ADD COLUMN jam_tutup TIME NULL DEFAULT '15:00:00'"],
             ['kantin', 'status_buka', "ALTER TABLE kantin ADD COLUMN status_buka ENUM('Buka','Tutup') NULL DEFAULT 'Buka'"],
-            ['kantin', 'tipe_operasi', "ALTER TABLE kantin ADD COLUMN tipe_operasi ENUM('manual','otomatis') NOT NULL DEFAULT 'manual'"],
+            ['kantin', 'tipe_operasi', "ALTER TABLE kantin ADD COLUMN tipe_operasi ENUM('manual','otomatis') NOT NULL DEFAULT 'otomatis'"],
             ['kantin', 'total_ulasan', "ALTER TABLE kantin ADD COLUMN total_ulasan INT NOT NULL DEFAULT 0"],
             ['kantin', 'total_rating', "ALTER TABLE kantin ADD COLUMN total_rating INT NOT NULL DEFAULT 0"],
+            ['kantin', 'created_at', "ALTER TABLE kantin ADD COLUMN created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP"],
             ['chat_conversations', 'id_order', "ALTER TABLE chat_conversations ADD COLUMN id_order INT NULL"],
         ];
 
@@ -100,7 +101,7 @@ if (!function_exists('kk_ensure_buyer_schema')) {
         @mysqli_query($koneksi, "UPDATE kantin SET jam_buka = '07:00:00' WHERE jam_buka IS NULL");
         @mysqli_query($koneksi, "UPDATE kantin SET jam_tutup = '15:00:00' WHERE jam_tutup IS NULL");
         @mysqli_query($koneksi, "UPDATE kantin SET status_buka = 'Buka' WHERE status_buka IS NULL");
-        @mysqli_query($koneksi, "UPDATE kantin SET tipe_operasi = 'manual' WHERE tipe_operasi IS NULL");
+        @mysqli_query($koneksi, "UPDATE kantin SET tipe_operasi = 'otomatis' WHERE tipe_operasi IS NULL");
     }
 }
 
@@ -172,8 +173,8 @@ if (!function_exists('kk_refresh_kantin_status')) {
 
 if (!function_exists('kk_is_kantin_open')) {
     function kk_is_kantin_open($kantin, $now = null) {
-        $tipe_operasi = $kantin['tipe_operasi'] ?? 'manual';
-        if ($tipe_operasi === 'manual') {
+        $tipe_operasi = $kantin['tipe_operasi'] ?? 'otomatis';
+        if ($tipe_operasi === 'otomatis' && false) { // disable manual check
             return ($kantin['status_buka'] ?? 'Buka') === 'Buka';
         }
 
@@ -293,21 +294,17 @@ if (!function_exists('kk_create_transaction')) {
         $metode = mysqli_real_escape_string($koneksi, $metode_pembayaran ?: 'Cash');
         
         // Ambil data pesanan
-        $q = mysqli_query($koneksi, "SELECT id_user, id_kantin, total_harga, pajak, metode_pembayaran FROM pesanan WHERE id_pesanan = $id_pesanan");
+        $q = mysqli_query($koneksi, "SELECT id_user, id_kantin, total_harga FROM pesanan WHERE id_pesanan = $id_pesanan");
         if (!$q || mysqli_num_rows($q) === 0) {
             return false;
         }
         
         $pesanan = mysqli_fetch_assoc($q);
         
-        // Gunakan pajak & metode_pembayaran dari pesanan jika tidak dipassing khusus (fallback ke parameter)
-        $pajak = (int)($pesanan['pajak'] ?? $jumlah_pajak);
-        $metode = mysqli_real_escape_string($koneksi, $pesanan['metode_pembayaran'] ?: $metode_pembayaran ?: 'Cash');
-        
         // Buat entry transaksi
         $result = mysqli_query($koneksi, "
             INSERT INTO transaksi (id_user, id_kantin, id_pesanan, total_harga, jumlah_pajak, metode_pembayaran, tanggal, status)
-            VALUES ({$pesanan['id_user']}, {$pesanan['id_kantin']}, $id_pesanan, {$pesanan['total_harga']}, $pajak, '$metode', NOW(), 'Berhasil')
+            VALUES ({$pesanan['id_user']}, {$pesanan['id_kantin']}, $id_pesanan, {$pesanan['total_harga']}, $jumlah_pajak, '$metode', NOW(), 'Berhasil')
         ");
         
         return $result ? true : false;
@@ -423,10 +420,10 @@ if (!function_exists('kk_get_kantin_status_label')) {
         $isOpen = kk_is_kantin_open($kantin);
         if ($isOpen) {
             $jam = kk_kantin_hours_label($kantin);
-            return "Buka ({$jam})";
+            return "Buka (${jam})";
         }
         $jam = kk_kantin_hours_label($kantin);
-        return "Tutup sampai {$jam}";
+        return "Tutup sampai ${jam}";
     }
 }
 
@@ -439,20 +436,6 @@ if (!function_exists('kk_get_kantin_badge')) {
         $class = $isOpen ? 'badge bg-success' : 'badge bg-danger';
         $label = $isOpen ? 'BUKA' : 'TUTUP';
         return '<span class="' . $class . '">' . $label . '</span>';
-    }
-}
-
-/**
- * Mendapatkan data status badge kantin (mengembalikan array)
- */
-if (!function_exists('kk_kantin_status_badge')) {
-    function kk_kantin_status_badge($kantin) {
-        $isOpen = kk_is_kantin_open($kantin);
-        return [
-            'is_open' => $isOpen,
-            'icon' => $isOpen ? 'storefront' : 'store_off',
-            'status' => $isOpen ? 'Buka' : 'Tutup'
-        ];
     }
 }
 
@@ -485,5 +468,34 @@ if (!function_exists('kk_validate_jam')) {
         return preg_match('/^\d{2}:\d{2}$/', trim((string)$jam)) === 1;
     }
 }
-?>
 
+/**
+ * Mendapatkan status badge array kantin
+ */
+if (!function_exists('kk_kantin_status_badge')) {
+    function kk_kantin_status_badge($kantin) {
+        $is_open = kk_is_kantin_open($kantin);
+        return [
+            'is_open' => $is_open,
+            'status' => $is_open ? 'Buka' : 'Tutup',
+            'icon' => $is_open ? 'storefront' : 'block'
+        ];
+    }
+}
+
+/**
+ * Validate and format time to HH:MM:SS
+ */
+if (!function_exists('kk_validate_time_format')) {
+    function kk_validate_time_format($time) {
+        $time = trim((string)$time);
+        if (preg_match('/^([0-1][0-9]|2[0-3]):([0-5][0-9])(:[0-5][0-9])?$/', $time, $matches)) {
+            $hours = $matches[1];
+            $minutes = $matches[2];
+            $seconds = isset($matches[3]) && $matches[3] !== '' ? str_replace(':', '', $matches[3]) : '00';
+            return "$hours:$minutes:$seconds";
+        }
+        return false;
+    }
+}
+?>

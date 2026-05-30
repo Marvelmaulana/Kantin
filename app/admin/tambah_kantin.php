@@ -45,8 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $jam_buka = $message_type === 'error' ? '07:00:00' : mysqli_real_escape_string($koneksi, $jam_buka_formatted);
         $jam_tutup = $message_type === 'error' ? '15:00:00' : mysqli_real_escape_string($koneksi, $jam_tutup_formatted);
-        $tipe_operasi = $_POST['tipe_operasi'] ?? 'manual'; // manual atau otomatis
-        $status_buka = $_POST['status_buka'] ?? 'Tutup';
+        $tipe_operasi = 'otomatis';
+        $status_buka = 'Tutup';
         $owner_id = isset($_POST['owner_id']) && $_POST['owner_id'] !== '' ? (int)$_POST['owner_id'] : null;
         
         $logo = null;
@@ -59,20 +59,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif (empty($nama_kantin)) {
             $message = 'Nama kantin harus diisi!';
             $message_type = 'error';
-        } elseif (!$owner_id && (empty($username) || empty($email))) {
-            $message = 'Username dan email harus diisi saat membuat akun penjual baru.';
-            $message_type = 'error';
-        } elseif (!$owner_id && preg_match('/\s/', $username)) {
-            $message = 'Username tidak boleh mengandung spasi.';
-            $message_type = 'error';
-        } elseif (!$owner_id && !filter_var($email, FILTER_VALIDATE_EMAIL)) {
-            $message = 'Format email tidak valid!';
-            $message_type = 'error';
+        } elseif (!$owner_id && (!empty($username) || !empty($email))) {
+            if (empty($username) || empty($email)) {
+                $message = 'Username dan email harus diisi lengkap jika ingin membuat akun penjual baru.';
+                $message_type = 'error';
+            } elseif (preg_match('/\s/', $username)) {
+                $message = 'Username tidak boleh mengandung spasi.';
+                $message_type = 'error';
+            } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+                $message = 'Format email tidak valid!';
+                $message_type = 'error';
+            }
         } elseif ($owner_id && mysqli_num_rows(mysqli_query($koneksi, "SELECT id_user FROM users WHERE id_user=$owner_id AND role='penjual' LIMIT 1")) === 0) {
             $message = 'Pemilik tidak valid atau bukan penjual.';
             $message_type = 'error';
         } else {
             $id_user = null;
+            $user_created = false;
 
             if ($owner_id) {
                 $owner_check = mysqli_query($koneksi, "SELECT id_user FROM users WHERE id_user=$owner_id AND role='penjual' LIMIT 1");
@@ -82,7 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } else {
                     $id_user = $owner_id;
                 }
-            } else {
+            } elseif (!empty($username) && !empty($email)) {
                 // Validasi username/email untuk akun penjual baru
                 $cek_user = mysqli_query($koneksi, "SELECT id_user FROM users WHERE username='$username' OR email='$email'");
                 if (mysqli_num_rows($cek_user) > 0) {
@@ -93,6 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $insert_user = mysqli_query($koneksi, "INSERT INTO users (username, email, password, role, created_at) VALUES ('$username', '$email', '$password', 'penjual', NOW())");
                     if ($insert_user) {
                         $id_user = mysqli_insert_id($koneksi);
+                        $user_created = true;
                     } else {
                         $message = 'Gagal membuat user: ' . mysqli_error($koneksi);
                         $message_type = 'error';
@@ -100,7 +104,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
             }
 
-            if ($id_user) {
+            if ($message_type !== 'error') {
                 if (!empty($_FILES['logo']['name'])) {
                     $ext_logo = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
                     if (in_array($ext_logo, $allowed)) {
@@ -127,13 +131,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 if ($insert_kantin) {
                     $kantin_id = mysqli_insert_id($koneksi);
-                    mysqli_query($koneksi, "UPDATE users SET id_kantin = $kantin_id, nama_kantin = '$nama_kantin' WHERE id_user = $id_user AND role='penjual'");
-                    $message = 'Kantin berhasil ditambahkan! Password default: kantin123';
+                    if ($id_user) {
+                        mysqli_query($koneksi, "UPDATE users SET id_kantin = $kantin_id, nama_kantin = '$nama_kantin' WHERE id_user = $id_user AND role='penjual'");
+                    }
+                    $message = 'Kantin berhasil ditambahkan!' . ($id_user && $user_created ? ' Password default penjual: kantin123' : '');
                     $message_type = 'success';
                 } else {
                     $message = 'Gagal membuat kantin: ' . mysqli_error($koneksi);
                     $message_type = 'error';
-                    if (!$owner_id && isset($id_user)) {
+                    if ($user_created && $id_user) {
                         mysqli_query($koneksi, "DELETE FROM users WHERE id_user = $id_user");
                     }
                 }
@@ -243,9 +249,7 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
             <span class="material-symbols-outlined mt-0.5"><?= $message_type === 'success' ? 'check_circle' : 'error' ?></span>
             <div>
                 <?= $message ?>
-                <?php if ($kantin_id): ?>
-                <br><a href="manajemen_penjual.php" class="underline font-bold mt-2 inline-block">← Kembali ke Manajemen Kantin</a>
-                <?php endif; ?>
+
             </div>
         </div>
     </div>
@@ -386,38 +390,6 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
             </div>
 
             <div class="p-6 md:p-8 space-y-6">
-                <!-- Tipe Operasi -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label class="block text-sm font-bold text-slate-600 mb-2">
-                            <span class="material-symbols-outlined align-middle text-base mr-1">toggle_on</span>
-                            Mode Operasional
-                        </label>
-                        <div class="space-y-2">
-                            <label class="flex items-center gap-2 cursor-pointer p-3 border border-slate-100 rounded-xl hover:bg-blue-50 transition-all">
-                                <input type="radio" name="tipe_operasi" value="manual" checked onchange="updateStatusOptions()">
-                                <span class="font-semibold text-slate-700">Manual (Buka/Tutup Manual)</span>
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer p-3 border border-slate-100 rounded-xl hover:bg-blue-50 transition-all">
-                                <input type="radio" name="tipe_operasi" value="otomatis" onchange="updateStatusOptions()">
-                                <span class="font-semibold text-slate-700">Otomatis (Sesuai Jam)</span>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Status Manual -->
-                    <div id="statusManualDiv">
-                        <label class="block text-sm font-bold text-slate-600 mb-2">
-                            <span class="material-symbols-outlined align-middle text-base mr-1">storefront</span>
-                            Status Awal
-                        </label>
-                        <select name="status_buka" class="w-full px-4 py-3 border border-slate-100 rounded-2xl focus:outline-none focus:border-primary-orange transition-all bg-slate-50">
-                            <option value="Tutup">Tutup</option>
-                            <option value="Buka">Buka</option>
-                        </select>
-                    </div>
-                </div>
-
                 <!-- Jam Buka -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -443,7 +415,7 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
                 <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4">
                     <p class="text-sm text-blue-700 font-semibold flex items-start gap-2">
                         <span class="material-symbols-outlined mt-0.5">info</span>
-                        <span>Dalam mode <strong>Otomatis</strong>, kantin akan secara otomatis buka/tutup sesuai jam yang diatur. Dalam mode <strong>Manual</strong>, status buka/tutup diatur secara manual oleh penjual.</span>
+                        <span>Kantin akan secara otomatis buka/tutup sesuai jam operasional yang diatur.</span>
                     </p>
                 </div>
             </div>
@@ -455,10 +427,6 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
                 <span class="material-symbols-outlined">add_business</span>
                 <span>Tambahkan Kantin</span>
             </button>
-            <a href="manajemen_penjual.php" class="flex-1 sm:flex-none bg-slate-100 text-slate-600 px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-bold text-sm sm:text-base hover:bg-slate-200 transition-all flex items-center justify-center gap-2">
-                <span class="material-symbols-outlined">arrow_back</span>
-                <span>Batal</span>
-            </a>
         </div>
     </form>
 </main>
@@ -490,19 +458,7 @@ function clearFile(inputName, previewId) {
     document.getElementById(previewId).innerHTML = '';
 }
 
-function updateStatusOptions() {
-    const statusDiv = document.getElementById('statusManualDiv');
-    const tipeOperasi = document.querySelector('input[name="tipe_operasi"]:checked').value;
-    
-    if (tipeOperasi === 'manual') {
-        statusDiv.style.display = 'block';
-    } else {
-        statusDiv.style.display = 'none';
-    }
-}
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', updateStatusOptions);
 </script>
 
 </body>

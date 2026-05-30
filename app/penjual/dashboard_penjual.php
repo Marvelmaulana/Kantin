@@ -20,9 +20,14 @@ if (!$user_data || $user_data['role'] !== 'penjual') {
 $id_kantin = !empty($user_data['id_kantin']) ? (int)$user_data['id_kantin'] : (!empty($_SESSION['id_kantin']) ? (int)$_SESSION['id_kantin'] : 0);
 
 if (empty($id_kantin)) {
-    // Fallback: tidak ada lagi query ke kantin karena relasi sudah di users.id_kantin
-    header("Location: ../auth/login.php?error=kantin_tidak_terikat");
-    exit();
+    $q_k = mysqli_query($koneksi, "SELECT id_kantin FROM kantin WHERE id_user = $id_user LIMIT 1");
+    if ($q_k && mysqli_num_rows($q_k) > 0) {
+        $id_kantin = (int)mysqli_fetch_assoc($q_k)['id_kantin'];
+        // Update users table untuk sinkronisasi
+        mysqli_query($koneksi, "UPDATE users SET id_kantin = $id_kantin WHERE id_user = $id_user");
+    } else {
+        header("Location: ../auth/login.php?error=kantin_tidak_ditemukan"); exit();
+    }
 }
 
 $_SESSION['id_kantin']    = $id_kantin;
@@ -36,34 +41,16 @@ $q_kantin   = mysqli_query($koneksi, "
     SELECT * FROM kantin
     WHERE id_kantin = $id_kantin LIMIT 1
 ");
+
+if (!$q_kantin) {
+    die("❌ Error query kantin: " . mysqli_error($koneksi));
+}
+
 $data_kantin = mysqli_fetch_assoc($q_kantin);
 if (!$data_kantin) die("❌ Kantin tidak ditemukan");
 $_SESSION['nama_kantin'] = $data_kantin['nama_kantin'] ?? '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['save_operasi'])) {
-    $tipe_operasi = mysqli_real_escape_string($koneksi, $_POST['tipe_operasi'] ?? 'manual');
-    $status_buka = (($_POST['status_buka'] ?? $data_kantin['status_buka'] ?? 'Buka') === 'Tutup') ? 'Tutup' : 'Buka';
-
-    if ($tipe_operasi === 'otomatis') {
-        date_default_timezone_set('Asia/Jakarta');
-        $isOpenNow = kk_is_kantin_open(array_merge($data_kantin, [
-            'jam_buka' => $data_kantin['jam_buka'] ?? '07:00:00',
-            'jam_tutup' => $data_kantin['jam_tutup'] ?? '15:00:00',
-            'tipe_operasi' => 'otomatis'
-        ]), date('H:i'));
-        $status_buka = $isOpenNow ? 'Buka' : 'Tutup';
-    }
-
-    mysqli_query($koneksi, "
-        UPDATE kantin SET
-            tipe_operasi = '$tipe_operasi',
-            status_buka  = '$status_buka'
-        WHERE id_kantin = $id_kantin
-    ");
-
-    header('Location: dashboard_penjual.php?success_mode=1');
-    exit();
-}
+// Handle POST requests specific to dashboard if needed in the future
 
 $nama_kantin  = $data_kantin['nama_kantin'] ?? 'Kantin Saya';
 $deskripsi    = $data_kantin['deskripsi']   ?? '';
@@ -306,8 +293,6 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
                 <!-- Badge -->
                 <div class="flex flex-wrap gap-2">
 
-
-
                     <!-- Rating -->
                     <span class="flex items-center gap-1.5 bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-3 py-2 rounded-xl">
                         <i class="fa-solid fa-star text-yellow-300 text-xs"></i>
@@ -361,9 +346,6 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
         </div>
         <?php endforeach; ?>
     </div>
-
-
-
 
     <!-- PESANAN MASUK + MENU SAYA -->
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
@@ -650,7 +632,7 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
     </div>
 
     <div class="flex justify-between">
-        <span class="text-gray-500">Biaya Layanan</span>
+        <span class="text-gray-500">Pajak</span>
         <span class="font-bold text-orange-600" id="s_pajak">-</span>
     </div>
 

@@ -506,7 +506,7 @@ foreach ($grouped as $idKantin => $kantin) {
 
 <?php if ($total_items > 0): ?>
 <!-- COLLAPSIBLE CHECKOUT PANEL -->
-<div class="fixed bottom-0 left-0 right-0 z-50">
+<div class="fixed bottom-0 left-0 lg:left-72 right-0 z-50">
     <!-- Expandable Panel (shown by default when items selected) -->
     <div id="checkoutPanel" class="bg-white/98 backdrop-blur-xl border-t-2 border-orange-200 shadow-[0_-8px_30px_rgba(0,0,0,0.12)]">
         <div class="max-w-[1400px] mx-auto px-4 py-4">
