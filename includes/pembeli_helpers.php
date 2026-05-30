@@ -420,10 +420,10 @@ if (!function_exists('kk_get_kantin_status_label')) {
         $isOpen = kk_is_kantin_open($kantin);
         if ($isOpen) {
             $jam = kk_kantin_hours_label($kantin);
-            return "Buka (${jam})";
+            return "Buka ({$jam})";
         }
         $jam = kk_kantin_hours_label($kantin);
-        return "Tutup sampai ${jam}";
+        return "Tutup sampai {$jam}";
     }
 }
 
