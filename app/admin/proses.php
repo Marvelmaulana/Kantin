@@ -6,13 +6,15 @@
 
 // Set session timeout 1 jam
 ini_set('session.gc_maxlifetime', 3600);
+// Configure session cookie params. Enable 'secure' only when HTTPS is used (helps local HTTP development).
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || (!empty($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https');
 session_set_cookie_params([
     'lifetime' => 3600,
     'path' => '/',
     'domain' => '',
-    'secure' => true,  // Hanya HTTPS
-    'httponly' => true,  // Tidak bisa diakses via JavaScript
-    'samesite' => 'Strict'  // CSRF protection
+    'secure' => (bool)$isHttps,
+    'httponly' => true,
+    'samesite' => 'Strict'
 ]);
 
 session_start();
