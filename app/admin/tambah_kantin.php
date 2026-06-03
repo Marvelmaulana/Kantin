@@ -233,7 +233,7 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
 <main class="flex-1 w-full lg:ml-72 p-4 sm:p-6 md:p-10 min-h-screen">
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:gap-6 mb-8 sm:mb-10 mt-14 lg:mt-0">
         <div class="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
-            <a href="manajemen_penjual.php" class="flex w-10 sm:w-12 h-10 sm:h-12 rounded-2xl bg-white border border-slate-100 items-center justify-center text-slate-400 hover:text-primary-orange transition-all shadow-sm flex-shrink-0">
+            <a href="manajemen_kantin.php" class="flex w-10 sm:w-12 h-10 sm:h-12 rounded-2xl bg-white border border-slate-100 items-center justify-center text-slate-400 hover:text-primary-orange transition-all shadow-sm flex-shrink-0">
                 <span class="material-symbols-outlined text-lg sm:text-2xl">arrow_back</span>
             </a>
             <div class="flex-1 min-w-0">

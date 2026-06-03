@@ -41,7 +41,8 @@ if (!function_exists('kk_table_is_readable')) {
 
         $exists = mysqli_query($koneksi, "SHOW TABLES LIKE '$table'");
         if (!$exists || mysqli_num_rows($exists) === 0) {
-            return true;
+            // Jika tabel tidak ada, artinya tidak dapat dibaca
+            return false;
         }
 
         $check = mysqli_query($koneksi, "SELECT 1 FROM `$table` LIMIT 1");

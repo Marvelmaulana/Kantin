@@ -107,20 +107,26 @@ if (isset($_POST['username']) || isset($_POST['daftar_btn'])) {
     $email_lower = strtolower($email);
     $kelas_for_db = ($user_type === 'siswa' && !empty($kelas)) ? $kelas : null;
 
-    // Gunakan prepared statement untuk keamanan
-    $stmt = $koneksi->prepare(
-        "INSERT INTO users (username, email, password, role, tipe_pengguna, bahasa, kelas) 
-         VALUES (?, ?, ?, ?, ?, ?, ?)"
-    );
+    // Gunakan prepared statement (procedural) untuk kompatibilitas yang lebih luas
+    $sql = "INSERT INTO users (username, email, password, role, tipe_pengguna, bahasa, kelas) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)";
+
+    // Pastikan nilai bahasa sudah ada sebelum bind
+    $bahasa_value = 'id';
+
+    $stmt = mysqli_prepare($koneksi, $sql);
 
     if (!$stmt) {
-        log_registration_error($username, 'Prepare statement failed: ' . $koneksi->error);
-        echo "<script>alert('⚠️ Terjadi kesalahan sistem. Silakan coba lagi.'); window.location='daftar.php';</script>";
+        $err = mysqli_error($koneksi);
+        log_registration_error($username, 'Prepare statement failed: ' . $err);
+        $msg = '⚠️ Terjadi kesalahan sistem. Silakan coba lagi.' . "\\n(" . addslashes($err) . ")";
+        echo "<script>alert('" . $msg . "'); window.location='daftar.php';</script>";
         exit();
     }
 
     // Bind parameters
-    $stmt->bind_param(
+    mysqli_stmt_bind_param(
+        $stmt,
         "sssssss",
         $username,
         $email_lower,
@@ -130,8 +136,6 @@ if (isset($_POST['username']) || isset($_POST['daftar_btn'])) {
         $bahasa_value,
         $kelas_for_db
     );
-
-    $bahasa_value = 'id';
 
     // Execute statement
     if ($stmt->execute()) {

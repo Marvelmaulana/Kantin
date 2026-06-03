@@ -127,11 +127,23 @@ try {
                     <td class="py-4 px-4 font-bold"><?= htmlspecialchars($k['nama_kantin']) ?></td>
                     <td class="py-4 px-4">
                         <?php 
-                        $penjual_arr = !empty($k['penjual_list']) ? explode('||', $k['penjual_list']) : [];
+                        // GROUP_CONCAT in query uses ", " as separator — sesuaikan saat explode
+                        $penjual_arr = [];
+                        if (!empty($k['penjual_list'])) {
+                            // support both separators just in case (legacy '||' or ', ')
+                            $raw = $k['penjual_list'];
+                            if (strpos($raw, '||') !== false) {
+                                $penjual_arr = array_map('trim', explode('||', $raw));
+                            } else {
+                                $penjual_arr = array_map('trim', explode(', ', $raw));
+                            }
+                            $penjual_arr = array_filter($penjual_arr, fn($v) => $v !== '');
+                        }
+
                         if (count($penjual_arr) > 0) {
                             echo '<div class="flex flex-wrap gap-1.5">';
                             foreach($penjual_arr as $p) {
-                                echo '<span class="px-2.5 py-1 bg-orange-50 text-primary-orange border border-orange-100 text-[11px] font-bold rounded-xl whitespace-nowrap"><span class="material-symbols-outlined text-[12px] align-middle mr-0.5">person</span>' . htmlspecialchars(trim($p)) . '</span>';
+                                echo '<span class="px-2.5 py-1 bg-orange-50 text-primary-orange border border-orange-100 text-[11px] font-bold rounded-xl whitespace-nowrap"><span class="material-symbols-outlined text-[12px] align-middle mr-0.5">person</span>' . htmlspecialchars($p) . '</span>';
                             }
                             echo '</div>';
                         } else {

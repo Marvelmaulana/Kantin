@@ -77,6 +77,11 @@ if (!function_exists('set_language')) {
     }
 }
 
+// Automatically set language from query string if provided
+if (isset($_GET['lang']) && in_array($_GET['lang'], ['id', 'en'], true)) {
+    set_language($_GET['lang']);
+}
+
 /**
  * Get current language code
  * @return string Language code

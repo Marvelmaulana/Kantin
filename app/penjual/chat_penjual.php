@@ -35,25 +35,27 @@ tailwind.config = { theme: { extend: { colors: { primary: '#f97316' } } } }
 .conversation-item.active { border-left: 4px solid #f97316; }
 .message-bubble { max-width: 75%; word-wrap: break-word; }
 .message-sent {
-    background: #dcf8c6;
-    color: #111827;
+    background: linear-gradient(135deg, #ff8c20, #f97316);
+    color: #fff;
     border-radius: 18px 18px 4px 18px;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    box-shadow: 0 4px 16px rgba(249,115,22,0.18);
 }
 
 .message-received {
-    background: white;
+    background: #ffffff;
     color: #111827;
     border-radius: 18px 18px 18px 4px;
-    border: 1px solid #e5e7eb;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    border: 1px solid #f1f5f9;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
-.unread-dot { width: 10px; height: 10px; background: #ef4444; border-radius: 50%; animation: pulse 2s infinite; }
+.unread-dot { width: 10px; height: 10px; background: #f97316; border-radius: 50%; animation: pulse 2s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 .scrollbar-thin::-webkit-scrollbar { width: 6px; }
 .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
 .scrollbar-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
 .time-label { font-size: 11px; color: #9ca3af; }
+/* small helper for time text inside sent bubbles */
+.time-sent { font-size: 11px; color: rgba(255,255,255,0.9); }
 </style>
 </head>
 <body class="bg-gradient-to-br from-slate-50 to-orange-50 min-h-screen">
@@ -325,7 +327,7 @@ function renderMessages(messages) {
         <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
             <div class="message-bubble ${isMine ? 'message-sent' : 'message-received'} px-4 py-2.5 ${isMine ? 'text-right' : ''}">
                 <p class="text-sm leading-relaxed">${escapeHtml(msg.message)}</p>
-                <p class="text-xs ${isMine ? 'text-orange-200' : 'text-gray-400'} mt-1">${time}</p>
+                <p class="mt-1 ${isMine ? 'time-sent text-right' : 'text-gray-400 text-xs'}">${time}</p>
             </div>
         </div>
         `;
@@ -342,7 +344,11 @@ async function sendMessage() {
 
     if (!message || !currentConversationId) return;
 
+    const submitBtn = document.querySelector('#messageForm button[type="submit"]');
     try {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+
         const formData = new FormData();
         formData.append('action', 'send_message');
         formData.append('id_conversation', currentConversationId);
@@ -353,15 +359,22 @@ async function sendMessage() {
             body: formData
         });
 
-        const data = await resp.json();
+        let data = null;
+        try { data = await resp.json(); } catch (e) { console.error('Invalid JSON from server', e); }
 
-        if (data.success) {
+        if (data && data.success) {
             input.value = '';
             await loadMessages(currentConversationId);
             await loadConversations(); // Update list
+        } else {
+            console.error('Send message failed', data);
+            alert('Gagal mengirim pesan. Silakan coba lagi.');
         }
     } catch (err) {
         console.error('Failed to send message:', err);
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
     }
 }
 

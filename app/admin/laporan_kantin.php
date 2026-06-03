@@ -57,6 +57,11 @@ if ($filterStatus) {
     $where[] = "k.status_buka = '$safe_status'";
 }
 
+if ($filterPenjual) {
+    $safe_penjual = (int)$filterPenjual;
+    $where[] = "k.id_kantin IN (SELECT id_kantin FROM users WHERE id_user = $safe_penjual AND role='penjual')";
+}
+
 $where_sql = implode(' AND ', $where);
 
 $query_filtered = mysqli_query($koneksi, "
@@ -82,6 +87,9 @@ if (!$query_filtered) {
 
 // Daftar status untuk filter
 $daftar_status = ['Buka', 'Tutup'];
+
+// Ambil daftar penjual untuk filter
+$daftar_penjual = mysqli_query($koneksi, "SELECT id_user, username FROM users WHERE role = 'penjual' ORDER BY username ASC");
 ?>
 <!DOCTYPE html>
 <html lang="id">

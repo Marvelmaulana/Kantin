@@ -69,15 +69,18 @@ body {
     background-clip: text;
 }
 .chat-bubble-sent {
-    background: linear-gradient(135deg, #f97316, #ea580c);
+    background: linear-gradient(135deg, #ff8c20, #f97316);
     color: white;
     border-radius: 18px 18px 4px 18px;
+    box-shadow: 0 4px 16px rgba(249,115,22,0.18);
 }
 .chat-bubble-received {
-    background: #f1f5f9;
+    background: #f8fafc;
     color: #1e293b;
     border-radius: 18px 18px 18px 4px;
+    border: 1px solid #eef2ff;
 }
+.time-sent { font-size: 10px; color: rgba(255,255,255,0.9); }
 .unread-badge {
     min-width: 20px;
     height: 20px;
@@ -457,7 +460,7 @@ function renderMessages(messages) {
         <div class="flex ${isMine ? 'justify-end' : 'justify-start'}">
             <div class="max-w-[80%] ${isMine ? 'chat-bubble-sent' : 'chat-bubble-received'} px-4 py-2.5 ${isMine ? 'text-right' : ''}">
                 <p class="text-sm leading-relaxed">${escapeHtml(msg.message)}</p>
-                <p class="text-[10px] ${isMine ? 'text-orange-200' : 'text-gray-400'} mt-1 flex items-center ${isMine ? 'justify-end' : ''} gap-1">
+                <p class="mt-1 ${isMine ? 'time-sent flex items-center justify-end gap-1' : 'text-gray-400 text-[10px]'}">
                     ${time}
                     ${isMine ? (parseInt(msg.is_read) ? '<i class="fa-solid fa-check-double text-[9px]"></i>' : '<i class="fa-solid fa-check text-[9px]"></i>') : ''}
                 </p>
@@ -476,20 +479,35 @@ async function sendMessage() {
     if (!message || !currentConvId) return;
 
     try {
+        const submitBtn = document.querySelector('#messageForm button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.classList.add('opacity-70', 'cursor-not-allowed');
+
         const formData = new FormData();
         formData.append('action', 'send_message');
         formData.append('id_conversation', currentConvId);
         formData.append('message', message);
 
         const resp = await fetch('../penjual/chat_handler.php', { method: 'POST', body: formData });
-        const data = await resp.json();
+        let data = null;
+        try { data = await resp.json(); } catch (e) { console.error('Invalid JSON from server', e); }
 
-        if (data.success) {
+        if (data && data.success) {
             input.value = '';
             await loadMessages(currentConvId);
+        } else {
+            console.error('Send message failed', data);
+            alert('Gagal mengirim pesan. Silakan coba lagi.');
         }
     } catch (err) {
         console.error(err);
+    }
+    finally {
+        try {
+            const submitBtn = document.querySelector('#messageForm button[type="submit"]');
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-70', 'cursor-not-allowed');
+        } catch (e) {}
     }
 }
 

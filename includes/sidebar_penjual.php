@@ -67,9 +67,9 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear
     <div class="flex flex-col h-full p-8 gap-2">
 
         <!-- HEADER -->
-        <div class="mb-10 flex justify-between items-start">
+        <div class="mb-10 flex justify-between items-start rounded-[2rem] bg-white/10 border border-white/15 p-4 shadow-lg shadow-orange-900/10 backdrop-blur-sm">
             <div class="flex items-center gap-3">
-                <a href="dashboard_penjual.php" class="w-12 h-12 rounded-2xl flex items-center justify-center bg-white/10 hover:bg-white/20 hover:scale-110 transition-all flex-shrink-0 shadow-lg border border-white/20">
+                <a href="dashboard_penjual.php" class="w-12 h-12 rounded-2xl flex items-center justify-center bg-gradient-to-br from-orange-300 via-orange-400 to-orange-500 hover:scale-110 transition-all flex-shrink-0 shadow-xl shadow-orange-500/30 border border-white/20">
                     <img src="/kantin/uploads/logo/logo_kantin_kita.png" alt="Kantin Kita Logo" class="w-full h-full object-contain rounded-2xl shadow-lg">
                 </a>
                 <div>
@@ -78,7 +78,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear
                         Kantin Kita
                     </h1>
 
-                    <p class="text-[11px] font-bold text-white/70 tracking-[0.2em] uppercase mt-2">
+                    <p class="text-[11px] font-bold text-orange-100 uppercase tracking-[0.2em] mt-2">
                         <?= t('seller.seller_center') ?>
                     </p>
                 </div>
@@ -116,7 +116,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear
 
             <!-- DASHBOARD -->
             <a href="dashboard_penjual.php"
-               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'dashboard_penjual.php') ? 'bg-white/20 text-white font-bold shadow-2xl shadow-black/20 border border-white/30' : 'text-white/80 hover:bg-white/10 hover:text-white' ?>">
+               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all border border-transparent <?= ($current_page == 'dashboard_penjual.php') ? 'bg-white/25 text-white font-bold shadow-xl shadow-orange-500/20 border-white/20' : 'text-white/80 hover:bg-white/15 hover:text-white' ?>">
 
                 <span class="material-symbols-outlined">grid_view</span>
 
@@ -125,7 +125,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear
 
             <!-- MENU -->
             <a href="kelola_menu_penjual.php"
-               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'kelola_menu_penjual.php') ? 'bg-white/20 text-white font-bold shadow-2xl shadow-black/20 border border-white/30' : 'text-white/80 hover:bg-white/10 hover:text-white' ?>">
+               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all border border-transparent <?= ($current_page == 'kelola_menu_penjual.php') ? 'bg-white/25 text-white font-bold shadow-xl shadow-orange-500/20 border-white/20' : 'text-white/80 hover:bg-white/15 hover:text-white' ?>">
 
                 <span class="material-symbols-outlined">restaurant_menu</span>
 
@@ -134,7 +134,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear
 
             <!-- PESANAN -->
             <a href="pesanan_masuk.php"
-               class="flex items-center justify-between px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'pesanan_masuk.php') ? 'bg-white/20 text-white font-bold shadow-2xl shadow-black/20 border border-white/30' : 'text-white/80 hover:bg-white/10 hover:text-white' ?>">
+               class="flex items-center justify-between px-6 py-4 rounded-[28px] text-sm transition-all border border-transparent <?= ($current_page == 'pesanan_masuk.php') ? 'bg-white/25 text-white font-bold shadow-xl shadow-orange-500/20 border-white/20' : 'text-white/80 hover:bg-white/15 hover:text-white' ?>">
 
                 <div class="flex items-center gap-4">
                     <span class="material-symbols-outlined">pending_actions</span>
@@ -157,7 +157,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear
 
             <!-- CHAT -->
             <a href="chat_penjual.php"
-               class="flex items-center justify-between px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'chat_penjual.php') ? 'bg-white/20 text-white font-bold shadow-2xl shadow-black/20 border border-white/30' : 'text-white/80 hover:bg-white/10 hover:text-white' ?>">
+               class="flex items-center justify-between px-6 py-4 rounded-[28px] text-sm transition-all border border-transparent <?= ($current_page == 'chat_penjual.php') ? 'bg-white/25 text-white font-bold shadow-xl shadow-orange-500/20 border-white/20' : 'text-white/80 hover:bg-white/15 hover:text-white' ?>">
 
                 <div class="flex items-center gap-4">
                     <span class="material-symbols-outlined">chat</span>
@@ -180,7 +180,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear
 
             <!-- RIWAYAT -->
             <a href="riwayat_penjual.php"
-               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'riwayat_penjual.php') ? 'bg-white/20 text-white font-bold shadow-2xl shadow-black/20 border border-white/30' : 'text-white/80 hover:bg-white/10 hover:text-white' ?>">
+               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all border border-transparent <?= ($current_page == 'riwayat_penjual.php') ? 'bg-white/25 text-white font-bold shadow-xl shadow-orange-500/20 border-white/20' : 'text-white/80 hover:bg-white/15 hover:text-white' ?>">
 
                 <span class="material-symbols-outlined">history</span>
 
@@ -189,7 +189,7 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear
 
             <!-- EDIT PROFIL -->
             <a href="edit_profil.php"
-               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all <?= ($current_page == 'edit_profil.php') ? 'bg-white/20 text-white font-bold shadow-2xl shadow-black/20 border border-white/30' : 'text-white/80 hover:bg-white/10 hover:text-white' ?>">
+               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all border border-transparent <?= ($current_page == 'edit_profil.php') ? 'bg-white/25 text-white font-bold shadow-xl shadow-orange-500/20 border-white/20' : 'text-white/80 hover:bg-white/15 hover:text-white' ?>">
 
                    <span class="material-symbols-outlined">edit_square</span>
 

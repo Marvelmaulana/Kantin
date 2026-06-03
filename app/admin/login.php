@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 include(__DIR__ . '/../../includes/language_helper.php');
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?= get_current_language(); ?>">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -100,7 +100,11 @@ include(__DIR__ . '/../../includes/language_helper.php');
                 <p class="text-[9px] uppercase tracking-widest font-bold text-slate-400 dark:text-slate-500">Portal Admin</p>
             </div>
         </div>
-        <div>
+        <div class="flex items-center gap-3">
+            <button id="languageToggle" type="button" class="p-2.5 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-500 dark:text-slate-400 hover:text-brand-orange dark:hover:text-brand-orange smooth-transition shadow-sm hover:scale-105" title="<?= t('lang.title', 'Ubah Bahasa') ?>" aria-label="<?= t('lang.title', 'Ubah Bahasa') ?>">
+                <span class="material-symbols-outlined text-xl">language</span>
+                <span id="languageLabel" class="ml-2 hidden sm:inline text-[11px] font-bold uppercase"></span>
+            </button>
             <!-- Dark Mode Switcher -->
             <button id="darkModeToggle" class="p-2.5 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-500 dark:text-slate-400 hover:text-brand-orange dark:hover:text-brand-orange smooth-transition shadow-sm hover:scale-105" title="Ganti Tema">
                 <span id="darkIcon" class="material-symbols-outlined block text-xl">light_mode</span>
@@ -210,9 +214,12 @@ include(__DIR__ . '/../../includes/language_helper.php');
 
     <!-- Form & Interactions Logic -->
     <script>
-        // --- 1. Dark Mode Toggle ---
+        // --- 1. Dark Mode + Language Toggle ---
         const darkModeToggle = document.getElementById('darkModeToggle');
         const darkIcon = document.getElementById('darkIcon');
+        const languageToggle = document.getElementById('languageToggle');
+        const languageLabel = document.getElementById('languageLabel');
+        const currentLanguage = '<?= get_current_language(); ?>';
 
         function applyTheme(isDark) {
             if (isDark) {
@@ -223,6 +230,23 @@ include(__DIR__ . '/../../includes/language_helper.php');
                 darkIcon.textContent = 'light_mode';
             }
         }
+
+        function updateLanguageControl(lang) {
+            const nextLang = lang === 'en' ? 'id' : 'en';
+            languageToggle.dataset.nextLang = nextLang;
+            languageLabel.textContent = nextLang.toUpperCase();
+            languageToggle.title = lang === 'en' ? 'Switch to Bahasa Indonesia' : 'Switch to English';
+            languageToggle.setAttribute('aria-label', languageToggle.title);
+        }
+
+        updateLanguageControl(currentLanguage);
+
+        languageToggle.addEventListener('click', () => {
+            const nextLang = languageToggle.dataset.nextLang;
+            const url = new URL(window.location.href);
+            url.searchParams.set('lang', nextLang);
+            window.location.href = url.toString();
+        });
 
         const savedTheme = localStorage.getItem('darkMode');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
