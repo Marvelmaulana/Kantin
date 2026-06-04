@@ -197,7 +197,7 @@ $is_kantin_open = kk_is_kantin_open($data);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Edit Profil Kantin</title>
+    <title><?= t('seller.edit_profile_title', 'Edit Profil Kantin') ?></title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -265,8 +265,8 @@ $is_kantin_open = kk_is_kantin_open($data);
                     <span class="material-symbols-outlined text-white text-lg">edit_square</span>
                 </div>
                 <div>
-                    <h1 class="text-2xl font-black text-gray-900 leading-none">Edit Profil Kantin</h1>
-                    <p class="text-sm text-gray-400 mt-0.5">Kelola informasi dan tampilan kantin kamu</p>
+                    <h1 class="text-2xl font-black text-gray-900 leading-none"><?= t('seller.edit_profile_heading', 'Edit Profil Kantin') ?></h1>
+                    <p class="text-sm text-gray-400 mt-0.5"><?= t('seller.edit_profile_desc', 'Kelola informasi dan tampilan kantin kamu') ?></p>
                 </div>
             </div>
         </div>

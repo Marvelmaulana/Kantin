@@ -146,6 +146,7 @@ return [
     'buyer.welcome' => 'Selamat datang, :name',
     'buyer.title' => 'Kantin Kita',
     'buyer.tagline' => 'Makan cepat, bayar gampang',
+    'buyer.subtitle' => 'Pesan Makanan Favorit',
     'buyer.promo' => 'Menu kantin paling fresh hari ini',
     'buyer.promo_desc' => 'Pilih menu, cek rating, lihat kantin, lalu pantau pesanan dari satu dashboard.',
     'buyer.search_placeholder' => 'Cari menu atau kantin...',
@@ -209,6 +210,23 @@ return [
     'seller.thanks' => 'Terima kasih sudah memesan!',
     'seller.receipt_note' => 'Struk ini sebagai bukti pesanan',
 
+    // Seller Stock Info (partial)
+    'seller.stock_info.title' => 'Informasi Stok',
+    'seller.stock_info.items_available' => 'menu tersedia',
+    'seller.stock_info.total_menus' => 'Total Menu',
+    'seller.stock_info.available' => 'Tersedia',
+    'seller.stock_info.out_of_stock' => 'Habis',
+    'seller.stock_info.no_menu' => 'Belum ada menu',
+    'seller.stock_info.add_menu_prompt' => 'Tambahkan menu untuk memulai',
+
+    // Seller - Profile / Orders
+    'seller.edit_profile_title' => 'Edit Profil Kantin',
+    'seller.edit_profile_heading' => 'Edit Profil Kantin',
+    'seller.edit_profile_desc' => 'Kelola informasi dan tampilan kantin kamu',
+    'seller.order_detail_title' => 'Rincian Pesanan',
+    'seller.order_detail_heading' => 'Rincian Pesanan',
+    'seller.order_detail_desc' => 'Detail pesanan pelanggan',
+
     // General
     'general.anonim' => 'Anonim',
     'general.kantin_default' => 'Kantin Saya',
@@ -216,6 +234,7 @@ return [
     'general.anonymous' => 'Anonim',
     'general.loading' => 'Memuat...',
     'general.an' => '',
+    'loading.please_wait' => 'Harap tunggu',
 
     // Auth - Login
     'auth.login_title' => 'Masuk - Kantin Kita',
@@ -311,6 +330,32 @@ return [
     'admin.name_exists' => 'Nama kantin sudah terdaftar.',
     'admin.add_failed' => 'Gagal menambahkan kantin: ',
 
+    // Admin - Edit Seller/Menu
+    'admin.edit_seller_title' => 'Edit Penjual - Admin',
+    'admin.edit_seller_heading' => 'Edit Penjual',
+    'admin.edit_seller_desc' => 'Perbarui akun penjual dan tautkan ke kantin yang tersedia.',
+    'admin.edit_menu_title' => 'Edit Menu - Admin',
+    'admin.edit_menu_heading' => 'Edit Menu',
+    'admin.edit_menu_desc' => 'Perbarui data menu dan status.',
+
+    // Admin - Edit Canteen
+    'admin.edit_kantin_title' => 'Edit Kantin - Admin',
+    'admin.edit_kantin_heading' => 'Edit Kantin',
+    'admin.edit_kantin_desc' => 'Perbarui informasi dasar kantin. Kelola penjual di menu Manajemen Penjual.',
+
+    // Menu form labels
+    'menu.price_label' => 'Harga',
+    'menu.stock_label' => 'Stok',
+    'menu.category_label' => 'Kategori',
+    'menu.photo_label' => 'Foto Menu',
+    'menu.status_label' => 'Status',
+
+    // Admin - Add Seller / Add Menu
+    'admin.add_kantin_title' => 'Tambah Kantin Baru - Kantin Kita',
+    'admin.add_seller_title' => 'Tambah Penjual - Admin',
+    'admin.add_seller_heading' => 'Tambah Penjual',
+    'admin.add_seller_desc' => 'Buat akun penjual baru dan tautkan ke stand yang tersedia.',
+
     // Seller Menu Management
     'seller_menu.title' => 'Kelola Menu - Kantin Kita',
     'seller_menu.manage_menu' => 'Kelola Menu Kantin',
@@ -389,6 +434,7 @@ return [
     'menu.all_title' => 'Semua Menu - Kantin Kita',
     'menu.all' => 'Semua Menu',
     'menu.sort_kantin' => 'Urut per kantin',
+    'menu.all_sub' => 'Tersedia di atas, habis di bawah',
 
     // Order History
     'history.title' => 'Riwayat Pesanan - Kantin Kita',
@@ -514,4 +560,81 @@ return [
     'seller_history.no_history_desc' => 'Pesanan selesai dan dibatalkan akan muncul di sini.',
     'seller_history.back_incoming' => 'Kembali ke Pesanan Masuk',
     'seller_history.moved' => 'Pesanan selesai dan sudah masuk riwayat.',
+    // Alert / Toast messages (added by i18n assistant)
+    'alert.data_not_found' => 'Data tidak ditemukan!',
+    'alert.menu_updated_status' => 'Menu berhasil diperbarui! Status otomatis: :status',
+    'alert.db_connection_failed' => '⚠️ Koneksi database gagal. Silakan coba lagi nanti.',
+    'alert.invalid_user_type' => 'Tipe pengguna tidak valid!',
+    'alert.select_class_correct' => 'Pilih kelas dengan benar!',
+    'alert.username_taken' => 'Username sudah terdaftar! Gunakan username lain.',
+    'alert.email_taken' => 'Email sudah terdaftar! Gunakan email lain atau login.',
+    'alert.registration_session_failed' => 'Pendaftaran berhasil tapi gagal membuat session. Silakan login.',
+    'alert.registration_save_failed' => '⚠️ Data gagal tersimpan. Silakan coba lagi.',
+    'alert.username_or_email_required' => 'Username atau Email tidak boleh kosong!',
+    'alert.password_required' => 'Password tidak boleh kosong!',
+    'alert.canteen_not_found' => 'Data kantin tidak ditemukan. Hubungi admin.',
+    'alert.db_query_failed' => 'Error: Database query gagal',
+    'alert.seller_not_linked' => 'Akun penjual belum ditautkan ke kantin. Hubungi admin.',
+    'alert.session_create_failed' => 'Gagal membuat session. Silakan coba lagi.',
+    'alert.wrong_password_check' => 'Password salah! Periksa kembali password Anda.',
+    'alert.not_registered' => 'Username atau email tidak terdaftar. Periksa kembali atau daftar akun baru.',
+    'alert.login_required' => 'Silakan login terlebih dahulu',
+    'alert.menu_not_found' => 'Menu tidak ditemukan',
+    'alert.menu_out_of_stock' => 'Maaf, menu ini sedang habis',
+    'alert.canteen_closed_opening' => 'Maaf, :kantin sedang tutup. Jam buka: :time',
+    'alert.insufficient_stock' => 'Maaf, stok tidak mencukupi.',
+    'alert.quantity_exceeds_stock' => 'Jumlah melebihi stok. Sisa stok: :remaining',
+    'alert.added_to_cart' => 'Berhasil ditambah ke keranjang!',
+    'alert.auth_fields_required' => 'Username/Email dan Password tidak boleh kosong!',
+    'alert.database_error_try_again' => 'Kesalahan database. Silakan coba lagi.',
+    'alert.user_not_found_admin' => 'User tidak ditemukan atau bukan admin!',
+    'alert.password_wrong_simple' => 'Password salah!',
+    'alert.admin_use_admin_login' => 'Akun admin hanya dapat masuk melalui halaman Admin.',
+    // Additional UI keys added by assistant
+    'auth.validation_error_title' => 'Validasi Error',
+    'auth.select_user_type' => 'Pilih Tipe Pengguna',
+    'auth.user_type.student' => 'Siswa',
+    'auth.user_type.teacher' => 'Guru',
+    'auth.username' => 'Username',
+    'auth.username_placeholder' => 'nama_pengguna (tanpa spasi)',
+    'auth.username_hint' => 'Hanya huruf, angka, underscore. Contoh: john_doe, siswa2024',
+    'auth.select_class' => 'Pilih Kelas Anda',
+    'auth.class.10' => 'Kelas X (10)',
+    'auth.class.11' => 'Kelas XI (11)',
+    'auth.class.12' => 'Kelas XII (12)',
+    'auth.email_hint' => 'Email harus menggunakan format @gmail.com',
+    'auth.password_rules' => 'Gunakan kombinasi huruf besar, kecil, angka, dan simbol',
+    // Additional admin / UI keys added during i18n sweep
+    'admin.manage_canteens_title' => 'Manajemen Kantin - Kantin Kita',
+    'admin.canteen_list_heading' => 'Daftar Kantin',
+    'admin.canteen_list_desc' => 'Kelola data kantin yang terdaftar di sistem.',
+    'admin.total_canteens' => 'Total: :count Kantin',
+
+    'admin.manage_menus_title' => 'Manajemen Menu - Kantin Kita',
+    'admin.manage_menus_heading' => 'Manajemen Menu',
+    'admin.manage_menus_desc' => 'Monitor semua produk kuliner.',
+
+    'admin.manage_sellers_title' => 'Manajemen Penjual - Kantin Kita',
+    'admin.manage_sellers_heading' => 'Manajemen Penjual',
+    'admin.manage_sellers_desc' => 'Kelola mitra penjual dan stand di platform.',
+
+    'action.search' => 'Cari',
+    'admin.add_seller_button' => 'Tambah Penjual',
+
+    'admin.manage_users_title' => 'Manajemen User - Kantin Kita',
+    'admin.manage_users_heading' => 'Manajemen User',
+    'admin.manage_users_desc' => 'Kelola data pelanggan yang terdaftar di sistem.',
+    'admin.add_user' => 'Tambah User',
+    'admin.promote_classes' => 'Kenaikan Kelas',
+
+    // Checkout / Pembayaran
+    'checkout.success_title' => 'Pembayaran Berhasil - Kantin Kita',
+    'checkout.success_heading' => 'Berhasil!',
+    'checkout.success_label' => 'Pembayaran',
+    'checkout.thanks' => 'Terimakasih',
+    'checkout.process_desc' => 'Pesananmu sedang diproses oleh penjual',
+    'checkout.order_detail_label' => 'Detail Pesanan',
+
+    'cart.subtotal' => 'Subtotal',
+    'cart.service_fee' => 'Biaya Layanan',
 ];

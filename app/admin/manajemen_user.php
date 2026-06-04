@@ -94,7 +94,7 @@ $query = mysqli_query($koneksi, $query_sql);
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Manajemen User - Kantin Kita</title>
+    <title><?= t('admin.manage_users_title', 'Manajemen User - Kantin Kita') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
@@ -130,8 +130,8 @@ $query = mysqli_query($koneksi, $query_sql);
                 <span class="material-symbols-outlined">arrow_back</span>
             </a>
             <div>
-                <h2 class="text-3xl font-extrabold text-[#003049]">Manajemen User</h2>
-                <p class="text-slate-400 font-medium text-sm">Kelola data pelanggan yang terdaftar di sistem.</p>
+                <h2 class="text-3xl font-extrabold text-[#003049]"><?= t('admin.manage_users_heading', 'Manajemen User') ?></h2>
+                <p class="text-slate-400 font-medium text-sm"><?= t('admin.manage_users_desc', 'Kelola data pelanggan yang terdaftar di sistem.') ?></p>
             </div>
         </div>
         
@@ -149,12 +149,12 @@ $query = mysqli_query($koneksi, $query_sql);
     <?php endif; ?>
 
     <div class="flex items-center gap-3 mb-6">
-        <button onclick="openTambahUser()" class="bg-primary-orange text-white px-4 py-3 rounded-2xl font-bold shadow-lg flex items-center gap-2 w-full md:w-auto">
-            <span class="material-symbols-outlined">person_add</span> Tambah User
+            <button onclick="openTambahUser()" class="bg-primary-orange text-white px-4 py-3 rounded-2xl font-bold shadow-lg flex items-center gap-2 w-full md:w-auto">
+            <span class="material-symbols-outlined">person_add</span> <?= t('admin.add_user', 'Tambah User') ?>
         </button>
         <form method="POST" onsubmit="return confirm('Konfirmasi kenaikan kelas massal?')">
             <button type="submit" name="promosi_kelas" class="bg-white border border-orange-200 text-primary-orange px-4 py-3 rounded-2xl font-bold shadow-sm w-full md:w-auto">
-                <span class="material-symbols-outlined">school</span> Kenaikan Kelas
+                <span class="material-symbols-outlined">school</span> <?= t('admin.promote_classes', 'Kenaikan Kelas') ?>
             </button>
         </form>
     </div>

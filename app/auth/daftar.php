@@ -145,7 +145,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                 <div id="errorAlert" class="hidden mb-6 p-4 rounded-2xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-red-600 dark:text-red-400 text-sm flex items-start gap-3">
                     <span class="material-symbols-outlined text-lg mt-0.5 select-none">error</span>
                     <div class="flex-1">
-                        <h4 class="font-bold">Validasi Error</h4>
+                        <h4 class="font-bold"><?= t('auth.validation_error_title', 'Validasi Error') ?></h4>
                         <p id="errorAlertText" class="text-xs mt-0.5"></p>
                     </div>
                     <button type="button" onclick="closeErrorAlert()" class="text-red-400 hover:text-red-600 smooth-transition">
@@ -158,7 +158,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     <!-- Step 1: User Type Selection -->
                     <div class="field-animation">
                         <label class="block text-xs uppercase tracking-widest font-extrabold text-slate-400 dark:text-slate-500 mb-4 px-1">
-                            <span class="material-symbols-outlined text-sm align-middle mr-1 select-none">badge</span> Pilih Tipe Pengguna
+                            <span class="material-symbols-outlined text-sm align-middle mr-1 select-none">badge</span> <?= t('auth.select_user_type', 'Pilih Tipe Pengguna') ?>
                         </label>
                         <div class="grid grid-cols-2 gap-3">
                             <button 
@@ -168,7 +168,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                                 onclick="setUserType('siswa')"
                             >
                                 <span class="text-3xl">👨‍🎓</span>
-                                <span class="text-sm">Siswa</span>
+                                <span class="text-sm"><?= t('auth.user_type.student', 'Siswa') ?></span>
                             </button>
                             <button 
                                 type="button" 
@@ -177,7 +177,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                                 onclick="setUserType('guru')"
                             >
                                 <span class="text-3xl">👨‍🏫</span>
-                                <span class="text-sm">Guru</span>
+                                <span class="text-sm"><?= t('auth.user_type.teacher', 'Guru') ?></span>
                             </button>
                         </div>
                         <input type="hidden" id="userTypeInput" name="user_type" value="siswa">
@@ -186,7 +186,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     <!-- Step 2: Username -->
                     <div class="field-animation" style="animation-delay: 0.1s">
                         <label class="block text-xs uppercase tracking-widest font-extrabold text-slate-400 dark:text-slate-500 mb-3 px-1">
-                            <span class="material-symbols-outlined text-sm align-middle mr-1 select-none">person</span> Username
+                            <span class="material-symbols-outlined text-sm align-middle mr-1 select-none">person</span> <?= t('auth.username', 'Username') ?>
                         </label>
                         <div class="relative">
                             <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg select-none pointer-events-none">account_circle</span>
@@ -195,19 +195,19 @@ include(__DIR__ . '/../../includes/language_helper.php');
                                 name="username" 
                                 id="usernameInput" 
                                 class="input-field w-full pl-11 pr-12 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange" 
-                                placeholder="nama_pengguna (tanpa spasi)" 
+                                placeholder="<?= t('auth.username_placeholder', 'nama_pengguna (tanpa spasi)') ?>" 
                                 required 
                             />
                             <span id="usernameStatus" class="absolute right-3 top-1/2 -translate-y-1/2 text-lg select-none"></span>
                         </div>
-                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1">Hanya huruf, angka, underscore. Contoh: john_doe, siswa2024</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1"><?= t('auth.username_hint', 'Hanya huruf, angka, underscore. Contoh: john_doe, siswa2024') ?></p>
                         <p id="usernameError" class="text-[10px] text-red-500 mt-1 px-1 hidden"></p>
                     </div>
 
                     <!-- Step 3: Email -->
                     <div class="field-animation" style="animation-delay: 0.15s">
                         <label class="block text-xs uppercase tracking-widest font-extrabold text-slate-400 dark:text-slate-500 mb-3 px-1">
-                            <span class="material-symbols-outlined text-sm align-middle mr-1 select-none">mail</span> Email
+                            <span class="material-symbols-outlined text-sm align-middle mr-1 select-none">mail</span> <?= t('auth.email', 'Email') ?>
                         </label>
                         <div class="relative">
                             <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg select-none pointer-events-none">email</span>
@@ -221,7 +221,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                             />
                             <span id="emailStatus" class="absolute right-3 top-1/2 -translate-y-1/2 text-lg select-none"></span>
                         </div>
-                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1">Email harus menggunakan format @gmail.com</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1"><?= t('auth.email_hint', 'Email harus menggunakan format @gmail.com') ?></p>
                         <p id="emailError" class="text-[10px] text-red-500 mt-1 px-1 hidden"></p>
                     </div>
 
@@ -238,10 +238,10 @@ include(__DIR__ . '/../../includes/language_helper.php');
                                 required
                                 class="input-field w-full pl-11 pr-4 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange"
                             >
-                                <option value="">Pilih Kelas Anda</option>
-                                <option value="10">Kelas X (10)</option>
-                                <option value="11">Kelas XI (11)</option>
-                                <option value="12">Kelas XII (12)</option>
+                                <option value=""><?= t('auth.select_class', 'Pilih Kelas Anda') ?></option>
+                                <option value="10"><?= t('auth.class.10', 'Kelas X (10)') ?></option>
+                                <option value="11"><?= t('auth.class.11', 'Kelas XI (11)') ?></option>
+                                <option value="12"><?= t('auth.class.12', 'Kelas XII (12)') ?></option>
                             </select>
                         </div>
                     </div>

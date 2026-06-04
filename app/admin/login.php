@@ -38,16 +38,37 @@ include(__DIR__ . '/../../includes/language_helper.php');
     <style>
         /* Glassmorphism Styles */
         .glass-card {
-            background: rgba(255, 255, 255, 0.45);
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 241, 242, 0.72), rgba(255, 247, 237, 0.66));
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(244, 63, 94, 0.20);
+            box-shadow: 0 24px 60px rgba(244, 63, 94, 0.10), 0 12px 36px rgba(249, 115, 22, 0.10);
         }
         .dark .glass-card {
-            background: rgba(15, 23, 42, 0.45);
+            background:
+                linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(76, 5, 25, 0.45), rgba(67, 20, 7, 0.48));
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 14% 16%, rgba(244, 63, 94, .16), transparent 28%),
+                radial-gradient(circle at 86% 16%, rgba(249, 115, 22, .18), transparent 28%),
+                radial-gradient(circle at 72% 84%, rgba(14, 165, 233, .12), transparent 30%);
+            z-index: 0;
+        }
+
+        header,
+        main,
+        footer {
+            position: relative;
+            z-index: 1;
         }
 
         .smooth-transition {

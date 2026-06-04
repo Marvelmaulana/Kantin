@@ -5,7 +5,7 @@ include(__DIR__ . '/../../includes/pembeli_helpers.php');
 kk_ensure_buyer_schema($koneksi);
 
 if (!isset($_SESSION['id_user'])) {
-    echo "<script>alert('Silakan login terlebih dahulu'); window.location='../auth/login.php';</script>";
+    echo "<script>alert(" . json_encode(t('alert.login_required')) . "); window.location='../auth/login.php';</script>";
     exit();
 }
 
@@ -33,7 +33,7 @@ $cek_menu = mysqli_query($koneksi, "
     WHERE menu.id_menu = $id_menu
 ");
 if (!$cek_menu || mysqli_num_rows($cek_menu) == 0) {
-    echo "<script>alert('Menu tidak ditemukan'); window.location='dashboard.php';</script>";
+    echo "<script>alert(" . json_encode(t('alert.menu_not_found')) . "); window.location='dashboard.php';</script>";
     exit();
 }
 $data_menu = mysqli_fetch_assoc($cek_menu);
@@ -42,13 +42,13 @@ $status_menu = $data_menu['status'] ?? 'Tersedia';
 
 // Cek jika stok habis atau status Habis
 if ($status_menu === 'Habis' || $stok_menu <= 0) {
-    echo "<script>alert('Maaf, menu ini sedang habis'); window.location='detail_menu.php?id=$id_menu';</script>";
+    echo "<script>alert(" . json_encode(t('alert.menu_out_of_stock')) . "); window.location='detail_menu.php?id=$id_menu';</script>";
     exit();
 }
 
 if (!kk_is_kantin_open($data_menu)) {
     $jam = kk_kantin_hours_label($data_menu);
-    echo "<script>alert('Maaf, {$data_menu['nama_kantin']} sedang tutup. Jam buka: $jam'); window.location='detail_menu.php?id=$id_menu';</script>";
+    echo "<script>alert(" . json_encode(t('alert.canteen_closed_opening', ['kantin' => $data_menu['nama_kantin'], 'time' => $jam])) . "); window.location='detail_menu.php?id=$id_menu';</script>";
     exit();
 }
 
@@ -65,9 +65,9 @@ $total_qty = $qty_di_keranjang + $qty;
 if ($total_qty > $stok_menu) {
     $sisa_stok = $stok_menu - $qty_di_keranjang;
     if ($sisa_stok <= 0) {
-        echo "<script>alert('Maaf, stok tidak mencukupi.'); window.location='detail_menu.php?id=$id_menu';</script>";
+        echo "<script>alert(" . json_encode(t('alert.insufficient_stock')) . "); window.location='detail_menu.php?id=$id_menu';</script>";
     } else {
-        echo "<script>alert('Jumlah melebihi stok. Sisa stok: {$sisa_stok}'); window.location='detail_menu.php?id=$id_menu';</script>";
+        echo "<script>alert(" . json_encode(t('alert.quantity_exceeds_stock', ['remaining' => $sisa_stok])) . "); window.location='detail_menu.php?id=$id_menu';</script>";
     }
     exit();
 }
@@ -87,7 +87,7 @@ if (mysqli_query($koneksi, $sql)) {
         header("Location: checkout.php");
         exit();
     } else {
-        echo "<script>alert('Berhasil ditambah ke keranjang!'); window.location='detail_menu.php?id=$id_menu';</script>";
+        echo "<script>alert(" . json_encode(t('alert.added_to_cart')) . "); window.location='detail_menu.php?id=$id_menu';</script>";
         exit();
     }
 } else {

@@ -50,7 +50,7 @@ $action = $nextStatus[$data_t['status']] ?? null;
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rincian Pesanan #<?= $id_pesanan ?></title>
+    <title><?= t('seller.order_detail_title', 'Rincian Pesanan') ?> #<?= $id_pesanan ?></title>
     <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&family=Be+Vietnam+Pro:wght@400;500&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
@@ -102,8 +102,8 @@ $action = $nextStatus[$data_t['status']] ?? null;
 
     <main class="flex-1 w-full lg:ml-64 p-6 md:p-8">
         <div class="mb-6 mt-12 lg:mt-0">
-            <h2 class="text-2xl font-extrabold">Rincian Pesanan</h2>
-            <p class="text-sm text-on-surface-variant">Detail pesanan pelanggan</p>
+            <h2 class="text-2xl font-extrabold"><?= t('seller.order_detail_heading', 'Rincian Pesanan') ?></h2>
+            <p class="text-sm text-on-surface-variant"><?= t('seller.order_detail_desc', 'Detail pesanan pelanggan') ?></p>
         </div>
 
         <div class="bg-white rounded-3xl p-6 shadow-sm border border-orange-50">
@@ -147,7 +147,7 @@ $action = $nextStatus[$data_t['status']] ?? null;
             </div>
 
             <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mt-6">
-                <a href="pesanan_masuk.php" class="px-4 py-2 rounded-xl bg-gray-100 text-sm font-bold hover:bg-gray-200 w-fit">Kembali</a>
+                <a href="pesanan_masuk.php" class="px-4 py-2 rounded-xl bg-gray-100 text-sm font-bold hover:bg-gray-200 w-fit"><?= t('action.back', 'Kembali') ?></a>
                 <div class="text-right">
                     <p class="text-xs text-on-surface-variant">Total</p>
                     <p class="text-xl font-black text-primary">Rp <?= number_format((float)$data_t['total_harga'], 0, ',', '.') ?></p>

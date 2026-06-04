@@ -26,7 +26,7 @@ function log_registration_error($username, $message) {
 // Cek database connection
 if (!$koneksi || mysqli_connect_errno()) {
     log_registration_error('unknown', 'Database connection failed: ' . mysqli_connect_error());
-    echo "<script>alert('⚠️ Koneksi database gagal. Silakan coba lagi nanti.'); window.location='daftar.php';</script>";
+    echo "<script>alert(" . json_encode(t('alert.db_connection_failed')) . "); window.location='daftar.php';</script>";
     exit();
 }
 
@@ -71,7 +71,7 @@ if (isset($_POST['username']) || isset($_POST['daftar_btn'])) {
     // 5️⃣ VALIDASI TIPE PENGGUNA (hanya siswa dan guru yang boleh daftar)
     if (!in_array($user_type, ['siswa', 'guru'], true)) {
         log_registration_error($username, 'Invalid user type: ' . $user_type);
-        echo "<script>alert('Tipe pengguna tidak valid!'); window.location='daftar.php';</script>";
+        echo "<script>alert(" . json_encode(t('alert.invalid_user_type')) . "); window.location='daftar.php';</script>";
         exit();
     }
 
@@ -79,7 +79,7 @@ if (isset($_POST['username']) || isset($_POST['daftar_btn'])) {
     if ($user_type === 'siswa') {
         if (empty($kelas) || !in_array($kelas, ['10', '11', '12'], true)) {
             log_registration_error($username, 'Invalid kelas for siswa: ' . $kelas);
-            echo "<script>alert('Pilih kelas dengan benar!'); window.location='daftar.php';</script>";
+            echo "<script>alert(" . json_encode(t('alert.select_class_correct')) . "); window.location='daftar.php';</script>";
             exit();
         }
     }
@@ -89,10 +89,10 @@ if (isset($_POST['username']) || isset($_POST['daftar_btn'])) {
     if ($check_exists['exists']) {
         if ($check_exists['field'] === 'username') {
             log_registration_error($username, 'Username already exists in database');
-            echo "<script>alert('Username sudah terdaftar! Gunakan username lain.'); window.location='daftar.php';</script>";
+            echo "<script>alert(" . json_encode(t('alert.username_taken')) . "); window.location='daftar.php';</script>";
         } else {
             log_registration_error($username, 'Email already exists in database: ' . $email);
-            echo "<script>alert('Email sudah terdaftar! Gunakan email lain atau login.'); window.location='daftar.php';</script>";
+            echo "<script>alert(" . json_encode(t('alert.email_taken')) . "); window.location='daftar.php';</script>";
         }
         exit();
     }
@@ -164,12 +164,12 @@ if (isset($_POST['username']) || isset($_POST['daftar_btn'])) {
                 exit();
             } else {
                 log_registration_error($username, 'Failed to create user session after insert');
-                echo "<script>alert('Pendaftaran berhasil tapi gagal membuat session. Silakan login.'); window.location='login.php';</script>";
+                echo "<script>alert(" . json_encode(t('alert.registration_session_failed')) . "); window.location='login.php';</script>";
                 exit();
             }
         } else {
             log_registration_error($username, "Insert executed but affected_rows=$affected_rows, insert_id=$user_id");
-            echo "<script>alert('⚠️ Data gagal tersimpan. Silakan coba lagi.'); window.location='daftar.php';</script>";
+            echo "<script>alert(" . json_encode(t('alert.registration_save_failed')) . "); window.location='daftar.php';</script>";
             exit();
         }
 

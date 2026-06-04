@@ -37,7 +37,7 @@ $total_penjual = mysqli_num_rows($query);
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Manajemen Penjual - Kantin Kita</title>
+    <title><?= t('admin.manage_sellers_title', 'Manajemen Penjual - Kantin Kita') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
@@ -86,8 +86,8 @@ $total_penjual = mysqli_num_rows($query);
                     <span class="material-symbols-outlined">arrow_back</span>
                 </a>
                 <div>
-                    <h2 class="text-3xl font-extrabold text-[#003049]">Manajemen Penjual</h2>
-                    <p class="text-slate-400 font-medium text-sm">Kelola mitra penjual dan stand di platform.</p>
+                    <h2 class="text-3xl font-extrabold text-[#003049]"><?= t('admin.manage_sellers_heading', 'Manajemen Penjual') ?></h2>
+                    <p class="text-slate-400 font-medium text-sm"><?= t('admin.manage_sellers_desc', 'Kelola mitra penjual dan stand di platform.') ?></p>
                 </div>
             </div>
             <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
@@ -96,10 +96,10 @@ $total_penjual = mysqli_num_rows($query);
                         <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
                         <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari penjual..." class="pl-12 pr-4 py-3 w-full sm:w-[280px] rounded-2xl border border-slate-200 focus:border-primary-orange focus:ring-primary-orange/20" />
                     </div>
-                    <button type="submit" class="px-4 py-3 bg-primary-orange text-white rounded-2xl font-bold hover:bg-orange-600 transition-all">Cari</button>
+                    <button type="submit" class="px-4 py-3 bg-primary-orange text-white rounded-2xl font-bold hover:bg-orange-600 transition-all"><?= t('action.search', 'Cari') ?></button>
                 </form>
                 <a href="tambah_penjual.php" class="bg-primary-orange text-white px-5 py-3 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 hover:bg-orange-600 transition-all w-full sm:w-auto">
-                    <span class="material-symbols-outlined">person_add</span> Tambah Penjual
+                    <span class="material-symbols-outlined">person_add</span> <?= t('admin.add_seller_button', 'Tambah Penjual') ?>
                 </a>
             </div>
         </div>

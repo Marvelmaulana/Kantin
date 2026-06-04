@@ -61,7 +61,7 @@ $subtotalPesanan = max(0, (int)($pesanan['total_harga'] ?? 0) - $pajak);
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Pembayaran Berhasil - Kantin Kita</title>
+<title><?= t('checkout.success_title', 'Pembayaran Berhasil - Kantin Kita') ?></title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
@@ -128,8 +128,8 @@ body {
                 <span class="material-symbols-outlined text-white text-lg">check</span>
             </div>
             <div>
-                <h1 class="headline font-black text-lg gradient-text">Berhasil!</h1>
-                <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">Pembayaran</p>
+                <h1 class="headline font-black text-lg gradient-text"><?= t('checkout.success_heading', 'Berhasil!') ?></h1>
+                <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-widest"><?= t('checkout.success_label', 'Pembayaran') ?></p>
             </div>
         </div>
     </div>
@@ -141,8 +141,8 @@ body {
         <div class="w-28 h-28 mx-auto rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-2xl shadow-green-200/50 mb-4">
             <span class="material-symbols-outlined text-white text-5xl">celebration</span>
         </div>
-        <h2 class="headline text-3xl font-black text-gray-800 mb-2">Terimakasih</h2>
-        <p class="text-gray-500 text-sm">Pesananmu sedang diproses oleh penjual</p>
+        <h2 class="headline text-3xl font-black text-gray-800 mb-2"><?= t('checkout.thanks', 'Terimakasih') ?></h2>
+        <p class="text-gray-500 text-sm"><?= t('checkout.process_desc', 'Pesananmu sedang diproses oleh penjual') ?></p>
     </div>
 
     <div class="bg-white rounded-3xl border-2 border-green-100 shadow-lg overflow-hidden">
@@ -172,7 +172,7 @@ body {
         </div>
 
         <div class="p-5 space-y-3">
-            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3">Detail Pesanan</p>
+            <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mb-3"><?= t('checkout.order_detail_label', 'Detail Pesanan') ?></p>
             <?php while ($item = mysqli_fetch_assoc($q_detail)): ?>
             <div class="flex items-center gap-3">
                 <img src="<?= kk_upload_url($item['foto'] ?? '', 'menu') ?>"
@@ -190,15 +190,15 @@ body {
 
             <div class="pt-3 mt-3 border-t border-dashed border-gray-200">
                 <div class="flex justify-between items-center mb-2">
-                    <span class="font-semibold text-gray-500">Subtotal</span>
+                    <span class="font-semibold text-gray-500"><?= t('cart.subtotal', 'Subtotal') ?></span>
                     <span class="font-bold text-gray-700">Rp <?= number_format($subtotalPesanan, 0, ',', '.') ?></span>
                 </div>
                 <div class="flex items-center justify-between">
-                    <span class="font-semibold text-gray-500">Biaya Layanan</span>
+                    <span class="font-semibold text-gray-500"><?= t('cart.service_fee', 'Biaya Layanan') ?></span>
                     <span class="font-bold text-gray-700">Rp <?= number_format($pajak, 0, ',', '.') ?></span>
                 </div>
                 <div class="flex justify-between items-center pt-2 border-t border-dashed border-gray-200">
-                    <span class="font-semibold text-gray-500">Total Bayar</span>
+                    <span class="font-semibold text-gray-500"><?= t('cart.total_payment', 'Total Bayar') ?></span>
                     <span class="headline font-black text-xl gradient-text">
                         Rp <?= number_format($pesanan['total_harga'] ?? 0, 0, ',', '.') ?>
                     </span>

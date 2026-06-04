@@ -49,6 +49,57 @@ $data_chat_unread = mysqli_fetch_assoc($q_chat_unread);
 $chat_unread = $data_chat_unread['total'] ?? 0;
 ?>
 
+<style>
+body {
+    background:
+        radial-gradient(circle at 15% 8%, rgba(249,115,22,.18), transparent 28%),
+        radial-gradient(circle at 88% 16%, rgba(34,197,94,.12), transparent 24%),
+        radial-gradient(circle at 76% 88%, rgba(168,85,247,.11), transparent 30%),
+        linear-gradient(135deg, #fff7ed 0%, #fefce8 40%, #f0fdf4 100%) !important;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background-image:
+        linear-gradient(rgba(249,115,22,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34,197,94,.035) 1px, transparent 1px);
+    background-size: 34px 34px;
+}
+
+main [class*="bg-white"],
+.chat-container,
+.message-received,
+#strutBox,
+#conversationsList [class*="bg-white"],
+#chatArea [class*="bg-white"] {
+    background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(255,247,237,.95) 48%, rgba(240,253,244,.88)) !important;
+    border-color: rgba(251,146,60,.24) !important;
+    box-shadow: 0 18px 40px rgba(249,115,22,.09) !important;
+}
+
+main [class*="bg-gray-50"],
+#messagesContainer {
+    background: linear-gradient(135deg, #fff7ed, #fef3c7, #ecfdf5) !important;
+}
+
+input,
+select,
+textarea {
+    background: linear-gradient(135deg, #fff7ed, #ffffff) !important;
+    border-color: rgba(251,146,60,.28) !important;
+}
+
+table thead,
+.conversation-item:hover,
+.conversation-item.active {
+    background: linear-gradient(135deg, #ffedd5, #fef3c7, #dcfce7) !important;
+}
+</style>
+
 <!-- BUTTON MOBILE -->
 <button onclick="toggleSidebar()" class="lg:hidden fixed top-4 left-4 z-[60] bg-gradient-to-br from-orange-500 to-orange-600 border border-orange-500 p-2 rounded-2xl shadow-2xl shadow-orange-400/30 text-white">
     <span class="material-symbols-outlined">menu</span>

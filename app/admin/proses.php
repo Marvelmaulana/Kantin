@@ -39,7 +39,7 @@ $password_raw = isset($_POST['password']) ? trim($_POST['password']) : '';
 
 // Validate inputs not empty
 if (empty($user_input_raw) || empty($password_raw)) {
-    echo "<script>alert('Username/Email dan Password tidak boleh kosong!'); window.location='login.php';</script>";
+    echo "<script>alert(" . json_encode(t('alert.auth_fields_required')) . "); window.location='login.php';</script>";
     exit();
 }
 
@@ -51,7 +51,7 @@ $query = "SELECT id_user, username, password, role, bahasa FROM users
 
 $stmt = mysqli_prepare($koneksi, $query);
 if (!$stmt) {
-    echo "<script>alert('Kesalahan database. Silakan coba lagi.'); window.location='login.php';</script>";
+    echo "<script>alert(" . json_encode(t('alert.database_error_try_again')) . "); window.location='login.php';</script>";
     exit();
 }
 
@@ -60,7 +60,7 @@ mysqli_stmt_bind_param($stmt, "ss", $user_input_escaped, $user_input_escaped);
 
 // Execute
 if (!mysqli_stmt_execute($stmt)) {
-    echo "<script>alert('Kesalahan database. Silakan coba lagi.'); window.location='login.php';</script>";
+    echo "<script>alert(" . json_encode(t('alert.database_error_try_again')) . "); window.location='login.php';</script>";
     mysqli_stmt_close($stmt);
     exit();
 }
@@ -71,13 +71,13 @@ mysqli_stmt_close($stmt);
 
 // Check user exists
 if (!$data) {
-    echo "<script>alert('User tidak ditemukan atau bukan admin!'); window.location='login.php';</script>";
+    echo "<script>alert(" . json_encode(t('alert.user_not_found_admin')) . "); window.location='login.php';</script>";
     exit();
 }
 
 // Verify password using password_verify (already hashed in database)
 if (!password_verify($password_raw, $data['password'])) {
-    echo "<script>alert('Password salah!'); window.location='login.php';</script>";
+    echo "<script>alert(" . json_encode(t('alert.password_wrong_simple')) . "); window.location='login.php';</script>";
     exit();
 }
 

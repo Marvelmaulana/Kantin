@@ -144,6 +144,59 @@ if (isset($koneksi) && $koneksi) {
     border-top: 3px solid #f97316;
 }
 
+<?php if ($current_page !== 'home' && $navBase !== 'dashboard.php'): ?>
+body {
+    background:
+        radial-gradient(circle at 12% 10%, rgba(251, 146, 60, .18), transparent 28%),
+        radial-gradient(circle at 88% 8%, rgba(78, 205, 196, .14), transparent 25%),
+        radial-gradient(circle at 72% 88%, rgba(236, 72, 153, .10), transparent 30%),
+        linear-gradient(135deg, #fff7ed 0%, #fff1f2 42%, #ecfeff 100%) !important;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background-image:
+        linear-gradient(rgba(249,115,22,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(20,184,166,.04) 1px, transparent 1px);
+    background-size: 32px 32px;
+}
+
+main [class*="bg-white"],
+#leftPanel [class*="bg-white"],
+#rightPanel [class*="bg-white"],
+.receipt-print,
+.chat-bubble-received {
+    background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(255,247,237,.94) 52%, rgba(236,254,255,.88)) !important;
+    border-color: rgba(251,146,60,.24) !important;
+    box-shadow: 0 16px 36px rgba(249,115,22,.08) !important;
+}
+
+main header[class*="bg-white"],
+header[class*="bg-white"],
+#leftPanel > div[class*="bg-white"],
+#rightPanel > div[class*="bg-white"] {
+    background: linear-gradient(135deg, rgba(255,247,237,.96), rgba(255,241,242,.95), rgba(240,253,250,.92)) !important;
+    border-color: rgba(251,146,60,.22) !important;
+}
+
+input,
+select,
+textarea {
+    background: linear-gradient(135deg, #fff7ed, #ffffff) !important;
+    border-color: rgba(251,146,60,.24) !important;
+}
+
+table thead,
+.conversation-item:hover,
+.conversation-item.active {
+    background: linear-gradient(135deg, #fff7ed, #ffedd5, #ecfeff) !important;
+}
+<?php endif; ?>
+
 .kk-mobile-nav a {
     transition: all 0.25s ease;
     border-radius: 14px;

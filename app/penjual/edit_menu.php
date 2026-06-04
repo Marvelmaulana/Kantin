@@ -1,6 +1,7 @@
 <?php
 session_start();
 include(__DIR__ . '/../../config/config.php');
+include(__DIR__ . '/../../includes/language_helper.php');
 
 // PROTEKSI
 if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'penjual') {
@@ -24,7 +25,7 @@ $query = mysqli_query($koneksi, "SELECT * FROM menu WHERE id_menu='$id_menu' AND
 $data  = mysqli_fetch_assoc($query);
 
 if (!$data) {
-    echo "<script>alert('Data tidak ditemukan!'); window.location='kelola_menu_penjual.php';</script>";
+    echo "<script>alert(" . json_encode(t('alert.data_not_found')) . "); window.location='kelola_menu_penjual.php';</script>";
     exit();
 }
 
@@ -75,7 +76,7 @@ if (isset($_POST['update'])) {
     }
 
     if (mysqli_query($koneksi, $sql)) {
-        echo "<script>alert('Menu berhasil diperbarui! Status otomatis: $status'); window.location='kelola_menu_penjual.php';</script>";
+        echo "<script>alert(" . json_encode(t('alert.menu_updated_status', ['status' => $status])) . "); window.location='kelola_menu_penjual.php';</script>";
     } else {
         echo "Error: " . mysqli_error($koneksi);
     }
@@ -87,7 +88,7 @@ if (isset($_POST['update'])) {
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Edit Menu - Kantin Kita</title>
+    <title><?php echo htmlspecialchars(t('edit_menu.title')); ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
@@ -105,8 +106,8 @@ if (isset($_POST['update'])) {
             <span class="material-symbols-outlined">arrow_back</span>
         </a>
         <div>
-            <h2 class="text-3xl font-extrabold text-[#003049]">Edit Menu</h2>
-            <p class="text-slate-400 text-sm">Update stok dan informasi menu secara realtime.</p>
+            <h2 class="text-3xl font-extrabold text-[#003049]"><?php echo htmlspecialchars(t('edit_menu.heading')); ?></h2>
+                <p class="text-slate-400 text-sm"><?php echo htmlspecialchars(t('edit_menu.desc')); ?></p>
         </div>
     </header>
 
@@ -114,28 +115,28 @@ if (isset($_POST['update'])) {
         <form method="POST" enctype="multipart/form-data" class="space-y-6">
             
             <div>
-                <label class="block text-sm font-bold mb-2">Nama Hidangan</label>
+                <label class="block text-sm font-bold mb-2"><?php echo htmlspecialchars(t('edit_menu.name')); ?></label>
                 <input type="text" name="nama_menu" value="<?= $data['nama_menu'] ?>" required class="w-full px-5 py-4 rounded-2xl border bg-slate-50 focus:bg-white outline-none">
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-bold mb-2">Harga (Rp)</label>
+                    <label class="block text-sm font-bold mb-2"><?php echo htmlspecialchars(t('edit_menu.price')); ?> (Rp)</label>
                     <input type="number" name="harga" value="<?= $data['harga'] ?>" required class="w-full px-5 py-4 rounded-2xl border bg-slate-50">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold mb-2">Kategori</label>
+                    <label class="block text-sm font-bold mb-2"><?php echo htmlspecialchars(t('edit_menu.category')); ?></label>
                     <select name="kategori" class="w-full px-5 py-4 rounded-2xl border bg-slate-50">
-                        <option value="Makanan" <?= $data['kategori'] == 'Makanan' ? 'selected' : '' ?>>Makanan</option>
-                        <option value="Minuman" <?= $data['kategori'] == 'Minuman' ? 'selected' : '' ?>>Minuman</option>
-                        <option value="Camilan" <?= $data['kategori'] == 'Camilan' ? 'selected' : '' ?>>Camilan</option>
+                        <option value="Makanan" <?= $data['kategori'] == 'Makanan' ? 'selected' : '' ?>><?php echo htmlspecialchars(t('seller_menu2.food')); ?></option>
+                        <option value="Minuman" <?= $data['kategori'] == 'Minuman' ? 'selected' : '' ?>><?php echo htmlspecialchars(t('seller_menu2.drink')); ?></option>
+                        <option value="Camilan" <?= $data['kategori'] == 'Camilan' ? 'selected' : '' ?>><?php echo htmlspecialchars(t('seller_menu2.snack')); ?></option>
                     </select>
                 </div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                    <label class="block text-sm font-bold mb-2">Stok Saat Ini</label>
+                    <label class="block text-sm font-bold mb-2"><?php echo htmlspecialchars(t('edit_menu.stock')); ?></label>
                     <input type="number" name="stok" value="<?= $data['stok'] ?>" required min="0" class="w-full px-5 py-4 rounded-2xl border bg-slate-50 focus:ring-2 focus:ring-orange-500">
                 </div>
                 <div>

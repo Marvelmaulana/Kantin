@@ -8,6 +8,62 @@ $current_page = basename(parse_url($request_path, PHP_URL_PATH));
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<style>
+body {
+    background:
+        radial-gradient(circle at 14% 8%, rgba(244,63,94,.16), transparent 26%),
+        radial-gradient(circle at 88% 18%, rgba(249,115,22,.18), transparent 30%),
+        radial-gradient(circle at 72% 86%, rgba(14,165,233,.12), transparent 28%),
+        linear-gradient(135deg, #fff7ed 0%, #fff1f2 48%, #f0f9ff 100%) !important;
+}
+
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: -1;
+    background-image:
+        linear-gradient(rgba(244,63,94,.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(249,115,22,.045) 1px, transparent 1px);
+    background-size: 34px 34px;
+}
+
+main [class*="bg-white"],
+.modal-anim,
+form[class*="bg-white"],
+div[class*="bg-white"][class*="rounded"] {
+    background: linear-gradient(135deg, rgba(255,255,255,.96), rgba(255,247,237,.95) 48%, rgba(255,241,242,.9)) !important;
+    border-color: rgba(251,146,60,.24) !important;
+    box-shadow: 0 18px 40px rgba(249,115,22,.09) !important;
+}
+
+main [class*="bg-white/"],
+header[class*="bg-white"],
+div[class*="bg-white/50"] {
+    background: linear-gradient(135deg, rgba(255,247,237,.9), rgba(255,241,242,.88), rgba(240,249,255,.86)) !important;
+    border-color: rgba(244,63,94,.18) !important;
+}
+
+table thead,
+thead[class*="bg-"],
+.glass {
+    background: linear-gradient(135deg, rgba(255,237,213,.86), rgba(255,228,230,.82), rgba(224,242,254,.72)) !important;
+}
+
+tbody tr:hover,
+.hover\:bg-orange-50:hover,
+.hover\:bg-slate-50:hover {
+    background: linear-gradient(135deg, #fff7ed, #fff1f2) !important;
+}
+
+input,
+select,
+textarea {
+    background: linear-gradient(135deg, #fff7ed, #ffffff) !important;
+    border-color: rgba(251,146,60,.28) !important;
+}
+</style>
 
 <button onclick="toggleSidebar()" class="lg:hidden fixed top-4 left-4 z-[60] bg-rose-700/95 border border-rose-600 p-2 rounded-2xl shadow-2xl shadow-rose-500/20 text-white">
     <span class="material-symbols-outlined">menu</span>

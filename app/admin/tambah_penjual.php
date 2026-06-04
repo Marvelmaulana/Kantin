@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tambah Penjual - Admin</title>
+    <title><?= t('admin.add_seller_title', 'Tambah Penjual - Admin') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
@@ -151,10 +151,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="flex-1 w-full lg:ml-72 p-3 sm:p-6 lg:p-10 min-h-screen">
     <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
         <div>
-            <h2 class="text-2xl sm:text-3xl font-extrabold">Tambah Penjual</h2>
-            <p class="text-sm sm:text-base text-slate-500 mt-1">Buat akun penjual baru dan tautkan ke stand yang tersedia.</p>
+            <h2 class="text-2xl sm:text-3xl font-extrabold"><?= t('admin.add_seller_heading', 'Tambah Penjual') ?></h2>
+            <p class="text-sm sm:text-base text-slate-500 mt-1"><?= t('admin.add_seller_desc', 'Buat akun penjual baru dan tautkan ke stand yang tersedia.') ?></p>
         </div>
-        <a href="manajemen_penjual.php" class="px-3 sm:px-4 py-2 rounded-2xl bg-slate-100 text-slate-700 text-sm sm:text-base whitespace-nowrap">Kembali</a>
+        <a href="manajemen_penjual.php" class="px-3 sm:px-4 py-2 rounded-2xl bg-slate-100 text-slate-700 text-sm sm:text-base whitespace-nowrap"><?= t('action.back', 'Kembali') ?></a>
     </header>
     <?php if ($message !== ''): ?>
     <div class="mb-4 sm:mb-6 px-4 sm:px-5 py-3 sm:py-4 rounded-2xl border <?= $message_type==='success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700' ?> font-bold text-sm">

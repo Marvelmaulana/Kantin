@@ -61,7 +61,7 @@ try {
     <meta charset="utf-8"/>
     
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Manajemen Kantin - Kantin Kita</title>
+    <title><?= t('admin.manage_canteens_title', 'Manajemen Kantin - Kantin Kita') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -83,15 +83,15 @@ try {
 <main class="flex-1 w-full lg:ml-72 p-6 md:p-10 min-h-screen">
     <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
         <div>
-            <h2 class="text-3xl font-extrabold">Daftar Kantin</h2>
-            <p class="text-sm text-slate-500">Kelola data kantin yang terdaftar di sistem.</p>
+            <h2 class="text-3xl font-extrabold"><?= t('admin.canteen_list_heading', 'Daftar Kantin') ?></h2>
+            <p class="text-sm text-slate-500"><?= t('admin.canteen_list_desc', 'Kelola data kantin yang terdaftar di sistem.') ?></p>
         </div>
         <div class="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
             <form method="GET" class="relative w-full sm:w-[320px]">
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
                 <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari kantin atau pemilik..." class="pl-12 pr-4 py-3 w-full rounded-2xl border border-slate-200 focus:border-primary-orange focus:ring-primary-orange/20" />
             </form>
-            <a href="tambah_kantin.php" class="bg-primary-orange text-white px-4 py-2 rounded-2xl font-bold shadow-lg hover:bg-orange-600 transition-all">Tambah Kantin</a>
+            <a href="tambah_kantin.php" class="bg-primary-orange text-white px-4 py-2 rounded-2xl font-bold shadow-lg hover:bg-orange-600 transition-all"><?= t('admin.add_kantin', 'Tambah Kantin') ?></a>
         </div>
     </header>
     <?php if ($message !== ''): ?>
@@ -101,7 +101,7 @@ try {
     <?php endif; ?>
     <div class="bg-white rounded-2xl shadow p-6 overflow-auto">
         <div class="flex justify-between items-center mb-4">
-            <h3 class="font-bold">Total: <?= $total_kantin ?> Kantin</h3>
+            <h3 class="font-bold"><?= t('admin.total_canteens', ['count' => $total_kantin]) ?></h3>
         </div>
         
         <?php if (count($kantins) === 0): ?>

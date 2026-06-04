@@ -25,7 +25,7 @@ $q = mysqli_query($koneksi, "
 <html lang="id">
 <head>
 <meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Semua Menu</title>
+<title><?= t('menu.all', 'Semua Menu') ?> - <?= t('buyer.title', 'Kantin Kita') ?></title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800;900&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1" rel="stylesheet"/>
@@ -36,8 +36,8 @@ $q = mysqli_query($koneksi, "
     <div class="max-w-[1400px] mx-auto flex items-center gap-3">
         <button onclick="history.back()" class="w-10 h-10 rounded-2xl bg-stone-100 flex items-center justify-center"><span class="material-symbols-outlined">arrow_back</span></button>
         <div>
-            <h1 class="headline font-black text-lg text-[#b22204]">Semua Menu</h1>
-            <p class="text-[10px] uppercase tracking-widest text-stone-400 font-bold">Tersedia di atas, habis di bawah</p>
+            <h1 class="headline font-black text-lg text-[#b22204]"><?= t('menu.all', 'Semua Menu') ?></h1>
+            <p class="text-[10px] uppercase tracking-widest text-stone-400 font-bold"><?= t('menu.all_sub', 'Tersedia di atas, habis di bawah') ?></p>
         </div>
     </div>
 </header>

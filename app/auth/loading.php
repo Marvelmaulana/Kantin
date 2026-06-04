@@ -1,21 +1,25 @@
 <?php
 session_start();
 
+// Make translation helper available early so `t()` can be used in the <title>
+include_once __DIR__ . '/../../includes/language_helper.php';
+
 if (!isset($_SESSION['role'])) {
-    header("Location: login.php");
+    header('Location: login.php');
     exit();
 }
 
 $role = $_SESSION['role'];
 
-// 🔥 pakai path absolut
-if ($role == 'penjual') {
-    $tujuan = "/kantin/app/penjual/dashboard_penjual.php";
-} elseif ($role == 'admin') {
-    $tujuan = "/kantin/app/admin/dashboard_admin.php";
+// Determine redirect target based on role
+if ($role === 'penjual') {
+    $tujuan = '/kantin/app/penjual/dashboard_penjual.php';
+} elseif ($role === 'admin') {
+    $tujuan = '/kantin/app/admin/dashboard_admin.php';
 } else {
-    $tujuan = "/kantin/app/pembeli/dashboard.php";
+    $tujuan = '/kantin/app/pembeli/dashboard.php';
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -23,16 +27,11 @@ if ($role == 'penjual') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kantin Kita - Loading</title>
+    <title><?= htmlspecialchars(t('general.loading', 'Memuat...') . ' - ' . t('buyer.title', 'Kantin Kita'), ENT_QUOTES, 'UTF-8') ?></title>
 
-    <meta http-equiv="refresh" content="2;url=<?= $tujuan; ?>">
-    
+    <meta http-equiv="refresh" content="2;url=<?= htmlspecialchars($tujuan, ENT_QUOTES, 'UTF-8') ?>">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             min-height: 100vh;
@@ -49,176 +48,31 @@ if ($role == 'penjual') {
         }
 
         /* Dekorasi background */
-        body::before {
+        body::before, body::after {
             content: '';
             position: absolute;
-            top: -50%;
-            right: -10%;
-            width: 600px;
-            height: 600px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            pointer-events: none;
+            width: 600px; height: 600px; border-radius: 50%;
+            background: rgba(255,255,255,0.08); pointer-events: none;
         }
+        body::before { top: -50%; right: -10%; }
+        body::after  { bottom: -50%; left: -10%; }
 
-        body::after {
-            content: '';
-            position: absolute;
-            bottom: -50%;
-            left: -10%;
-            width: 600px;
-            height: 600px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            pointer-events: none;
-        }
+        .loading-container { position: relative; z-index: 10; display:flex; flex-direction:column; justify-content:center; align-items:center; gap:2rem; padding:20px; max-width:500px; width:100%; }
+        .logo-wrapper { width:150px; height:150px; display:flex; justify-content:center; align-items:center; }
+        .kantin-logo { width:100%; height:100%; background-color: rgba(255,255,255,0.95); border-radius:30px; display:flex; justify-content:center; align-items:center; box-shadow:0 20px 60px rgba(0,0,0,0.2); padding:20px; animation:bounce 2s ease-in-out infinite; }
+        .kantin-logo img { width:80%; height:auto; object-fit:contain; }
+        .text-container h1 { font-size:2.2rem; font-weight:800; color:#2C3E50; margin:0; text-shadow:2px 2px 4px rgba(0,0,0,0.1); }
+        .text-container p  { font-size:1rem; color: rgba(255,255,255,0.95); margin-top:10px; font-weight:500; }
 
-        .loading-container {
-            position: relative;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 2rem;
-            padding: 20px;
-            max-width: 500px;
-            width: 100%;
-        }
+        .spinner { display:flex; gap:8px; margin-top:18px; }
+        .dot { width:12px; height:12px; border-radius:50%; background-color:white; animation:pulse-dot 1.4s infinite ease-in-out; box-shadow:0 2px 8px rgba(0,0,0,0.2); }
+        .dot:nth-child(1){ animation-delay:-0.32s; } .dot:nth-child(2){ animation-delay:-0.16s; } .dot:nth-child(3){ animation-delay:0s; }
 
-        .logo-wrapper {
-            position: relative;
-            width: 150px;
-            height: 150px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
+        @keyframes bounce { 0%,100%{ transform:translateY(0);} 50%{ transform:translateY(-18px);} }
+        @keyframes pulse-dot { 0%,60%,100%{ opacity:0.3; transform:scale(0.8);} 30%{ opacity:1; transform:scale(1);} }
 
-        .kantin-logo {
-            width: 100%;
-            height: 100%;
-            background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 30px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
-            padding: 20px;
-            animation: bounce 2s ease-in-out infinite;
-        }
-
-        .kantin-logo img {
-            width: 80%;
-            height: auto;
-            object-fit: contain;
-        }
-
-        .text-container h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            color: #2C3E50;
-            margin: 0;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .text-container p {
-            font-size: 1rem;
-            color: rgba(255, 255, 255, 0.9);
-            margin-top: 10px;
-            font-weight: 500;
-        }
-
-        /* Loading spinner */
-        .spinner {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            margin-top: 20px;
-        }
-
-        .dot {
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background-color: white;
-            animation: pulse-dot 1.4s infinite ease-in-out;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-        }
-
-        .dot:nth-child(1) {
-            animation-delay: -0.32s;
-        }
-
-        .dot:nth-child(2) {
-            animation-delay: -0.16s;
-        }
-
-        .dot:nth-child(3) {
-            animation-delay: 0s;
-        }
-
-        /* Animations */
-        @keyframes bounce {
-            0%, 100% {
-                transform: translateY(0);
-            }
-            50% {
-                transform: translateY(-20px);
-            }
-        }
-
-        @keyframes pulse-dot {
-            0%, 60%, 100% {
-                opacity: 0.3;
-                transform: scale(0.8);
-            }
-            30% {
-                opacity: 1;
-                transform: scale(1);
-            }
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .logo-wrapper {
-                width: 120px;
-                height: 120px;
-            }
-
-            .text-container h1 {
-                font-size: 2rem;
-            }
-
-            .loading-container {
-                gap: 1.5rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .logo-wrapper {
-                width: 100px;
-                height: 100px;
-            }
-
-            .text-container h1 {
-                font-size: 1.5rem;
-            }
-
-            .text-container p {
-                font-size: 0.9rem;
-            }
-
-            .dot {
-                width: 10px;
-                height: 10px;
-            }
-
-            .loading-container {
-                gap: 1rem;
-            }
-        }
+        @media (max-width:768px){ .logo-wrapper{width:120px;height:120px;} .text-container h1{font-size:1.8rem;} }
+        @media (max-width:480px){ .logo-wrapper{width:100px;height:100px;} .text-container h1{font-size:1.4rem;} .dot{width:10px;height:10px;} }
     </style>
 </head>
 <body>
@@ -230,16 +84,16 @@ if ($role == 'penjual') {
             </div>
         </div>
 
-        <!-- <div class="text-container">
-            <h1>KANTIN KITA</h1>
-            <p>Memuat aplikasi...</p>
-        </div> -->
+        <div class="text-container">
+            <h1><?= htmlspecialchars(t('general.loading', 'Memuat...'), ENT_QUOTES, 'UTF-8') ?></h1>
+            <p><?= htmlspecialchars(t('loading.please_wait', 'Harap tunggu'), ENT_QUOTES, 'UTF-8') ?></p>
+        </div>
 
-        <!-- <div class="spinner">
+        <div class="spinner" aria-hidden>
             <div class="dot"></div>
             <div class="dot"></div>
             <div class="dot"></div>
-        </div> -->
+        </div>
     </div>
 
 </body>

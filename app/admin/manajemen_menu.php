@@ -28,7 +28,7 @@ $query = mysqli_query($koneksi, $sql);
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Manajemen Menu - Kantin Kita</title>
+    <title><?= t('admin.manage_menus_title', 'Manajemen Menu - Kantin Kita') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" rel="stylesheet"/>
@@ -67,8 +67,8 @@ $query = mysqli_query($koneksi, $sql);
                 <span class="material-symbols-outlined">arrow_back</span>
             </a>
             <div>
-                <h2 class="text-3xl font-extrabold text-[#003049]">Manajemen Menu</h2>
-                <p class="text-slate-400 font-medium text-sm">Monitor semua produk kuliner.</p>
+                <h2 class="text-3xl font-extrabold text-[#003049]"><?= t('admin.manage_menus_heading', 'Manajemen Menu') ?></h2>
+                <p class="text-slate-400 font-medium text-sm"><?= t('admin.manage_menus_desc', 'Monitor semua produk kuliner.') ?></p>
             </div>
         </div>
         

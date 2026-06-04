@@ -40,16 +40,37 @@ include(__DIR__ . '/../../includes/language_helper.php');
     <style>
         /* Glassmorphism Styles */
         .glass-card {
-            background: rgba(255, 255, 255, 0.45);
+            background:
+                linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 247, 237, 0.72), rgba(236, 254, 255, 0.62));
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(251, 146, 60, 0.28);
+            box-shadow: 0 24px 60px rgba(249, 115, 22, 0.12);
         }
         .dark .glass-card {
-            background: rgba(15, 23, 42, 0.45);
+            background:
+                linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(67, 20, 7, 0.55), rgba(19, 78, 74, 0.46));
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(circle at 15% 14%, rgba(255, 107, 53, .18), transparent 28%),
+                radial-gradient(circle at 85% 18%, rgba(78, 205, 196, .18), transparent 26%),
+                radial-gradient(circle at 74% 86%, rgba(236, 72, 153, .12), transparent 30%);
+            z-index: 0;
+        }
+
+        header,
+        main,
+        footer {
+            position: relative;
+            z-index: 1;
         }
 
         /* Hover & Transition Utilities */

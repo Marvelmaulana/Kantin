@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_menu'])) {
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Tambah Menu - Admin</title>
+        <title><?= t('admin.add_menu_title', 'Tambah Menu - Admin') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="text-slate-800 flex overflow-x-hidden">
@@ -64,10 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_menu'])) {
 <main class="flex-1 w-full lg:ml-72 p-6 md:p-10 min-h-screen">
     <header class="flex items-center justify-between mb-6">
         <div>
-            <h2 class="text-2xl font-extrabold">Tambah Menu</h2>
-            <p class="text-sm text-slate-500">Form untuk menambahkan menu baru ke kantin.</p>
+              <h2 class="text-2xl font-extrabold"><?= t('admin.add_menu_heading', 'Tambah Menu') ?></h2>
+              <p class="text-sm text-slate-500"><?= t('admin.add_menu_desc', 'Form untuk menambahkan menu baru ke kantin.') ?></p>
         </div>
-        <a href="manajemen_menu.php" class="px-4 py-2 rounded bg-slate-100">Kembali</a>
+           <a href="manajemen_menu.php" class="px-4 py-2 rounded bg-slate-100"><?= t('action.back', 'Kembali') ?></a>
     </header>
 
     <?php if ($message !== ''): ?>
@@ -80,19 +80,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_menu'])) {
         <input type="hidden" name="tambah_menu" value="1" />
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="block text-sm font-bold">Nama Menu</label>
+                    <label class="block text-sm font-bold"><?= t('seller_menu.menu_name', 'Nama Menu') ?></label>
                 <input name="nama_menu" required class="w-full px-3 py-2 border rounded" />
             </div>
             <div>
-                <label class="block text-sm font-bold">Harga</label>
+                        <label class="block text-sm font-bold"><?= t('menu.price_label', 'Harga') ?></label>
                 <input name="harga" type="number" step="0.01" class="w-full px-3 py-2 border rounded" />
             </div>
             <div>
-                <label class="block text-sm font-bold">Stok</label>
+                        <label class="block text-sm font-bold"><?= t('menu.stock_label', 'Stok') ?></label>
                 <input name="stok" type="number" class="w-full px-3 py-2 border rounded" />
             </div>
             <div>
-                <label class="block text-sm font-bold">Kategori</label>
+                        <label class="block text-sm font-bold"><?= t('menu.category_label', 'Kategori') ?></label>
                 <select name="kategori" class="w-full px-3 py-2 border rounded">
                     <option>Makanan</option>
                     <option>Minuman</option>
@@ -100,11 +100,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_menu'])) {
                 </select>
             </div>
             <div>
-                <label class="block text-sm font-bold">Foto Menu</label>
+                        <label class="block text-sm font-bold"><?= t('menu.photo_label', 'Foto Menu') ?></label>
                 <input type="file" name="foto" accept="image/*" class="w-full" />
             </div>
             <div>
-                <label class="block text-sm font-bold">Status</label>
+                        <label class="block text-sm font-bold"><?= t('menu.status_label', 'Status') ?></label>
                 <select name="status" class="w-full px-3 py-2 border rounded">
                     <option value="Tersedia">Tersedia</option>
                     <option value="Habis">Habis</option>
@@ -122,8 +122,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_menu'])) {
         </div>
 
         <div class="mt-4 flex justify-end gap-3">
-            <a href="manajemen_menu.php" class="px-4 py-2 rounded border">Batal</a>
-            <button type="submit" class="px-4 py-2 rounded bg-primary-orange text-white font-bold">Tambah Menu</button>
+                <a href="manajemen_menu.php" class="px-4 py-2 rounded border"><?= t('action.cancel', 'Batal') ?></a>
+                <button type="submit" class="px-4 py-2 rounded bg-primary-orange text-white font-bold"><?= t('seller_menu.add_new', '+ Tambah Menu Baru') ?></button>
         </div>
     </form>
 </main>

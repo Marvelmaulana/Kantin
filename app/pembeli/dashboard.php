@@ -141,7 +141,7 @@ function renderMenuCard($m, $is_fav) {
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Kantin Kita - Pesan Makanan Favorit</title>
+<title><?= t('buyer.title', 'Kantin Kita') ?> - <?= t('buyer.subtitle', 'Pesan Makanan Favorit') ?></title>
 <script src="https://cdn.tailwindcss.com"></script>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800;900&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">

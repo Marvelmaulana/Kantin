@@ -119,7 +119,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Edit Menu - Admin</title>
+    <title><?= t('admin.edit_menu_title', 'Edit Menu - Admin') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -142,10 +142,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <main class="flex-1 w-full lg:ml-72 p-6 md:p-10 min-h-screen">
     <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
-            <h2 class="text-3xl font-extrabold">Edit Menu</h2>
-            <p class="text-slate-500">Perbarui data menu dan status.</p>
+            <h2 class="text-3xl font-extrabold"><?= t('admin.edit_menu_heading', 'Edit Menu') ?></h2>
+            <p class="text-slate-500"><?= t('admin.edit_menu_desc', 'Perbarui data menu dan status.') ?></p>
         </div>
-        <a href="manajemen_menu.php" class="px-4 py-2 rounded-2xl bg-slate-100 text-slate-700">Kembali</a>
+        <a href="manajemen_menu.php" class="px-4 py-2 rounded-2xl bg-slate-100 text-slate-700"><?= t('action.back', 'Kembali') ?></a>
     </header>
     <?php if ($message !== ''): ?>
     <div class="mb-6 p-4 rounded-2xl <?= $message_type==='success' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-700 border border-red-100' ?>">

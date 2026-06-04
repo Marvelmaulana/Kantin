@@ -146,6 +146,7 @@ return [
     'buyer.welcome' => 'Welcome, :name',
     'buyer.title' => 'Kantin Kita',
     'buyer.tagline' => 'Quick food, easy payment',
+    'buyer.subtitle' => 'Order Your Favorite Food',
     'buyer.promo' => 'Today\'s freshest kantin menu',
     'buyer.promo_desc' => 'Choose menu, check ratings, view kantins, then track orders from one dashboard.',
     'buyer.search_placeholder' => 'Search menu or kantin...',
@@ -209,6 +210,23 @@ return [
     'seller.thanks' => 'Thanks for ordering!',
     'seller.receipt_note' => 'This receipt serves as order proof',
 
+    // Seller Stock Info (partial)
+    'seller.stock_info.title' => 'Stock Information',
+    'seller.stock_info.items_available' => 'menus available',
+    'seller.stock_info.total_menus' => 'Total Menus',
+    'seller.stock_info.available' => 'Available',
+    'seller.stock_info.out_of_stock' => 'Out of Stock',
+    'seller.stock_info.no_menu' => 'No menu yet',
+    'seller.stock_info.add_menu_prompt' => 'Add menu to get started',
+
+    // Seller - Profile / Orders
+    'seller.edit_profile_title' => 'Edit Canteen Profile',
+    'seller.edit_profile_heading' => 'Edit Canteen Profile',
+    'seller.edit_profile_desc' => 'Manage your canteen information and appearance',
+    'seller.order_detail_title' => 'Order Details',
+    'seller.order_detail_heading' => 'Order Details',
+    'seller.order_detail_desc' => 'Customer order details',
+
     // General
     'general.anonim' => 'Anonymous',
     'general.kantin_default' => 'My Kantin',
@@ -216,6 +234,7 @@ return [
     'general.anonymous' => 'Anonymous',
     'general.loading' => 'Loading...',
     'general.an' => '',
+    'loading.please_wait' => 'Please wait',
 
     // Auth - Login
     'auth.login_title' => 'Login - Kantin Kita',
@@ -311,6 +330,32 @@ return [
     'admin.name_exists' => 'Kantin name already exists.',
     'admin.add_failed' => 'Failed to add kantin: ',
 
+    // Admin - Edit Seller/Menu
+    'admin.edit_seller_title' => 'Edit Seller - Admin',
+    'admin.edit_seller_heading' => 'Edit Seller',
+    'admin.edit_seller_desc' => 'Update seller account and link to available kantin.',
+    'admin.edit_menu_title' => 'Edit Menu - Admin',
+    'admin.edit_menu_heading' => 'Edit Menu',
+    'admin.edit_menu_desc' => 'Update menu data and status.',
+
+    // Admin - Edit Canteen
+    'admin.edit_kantin_title' => 'Edit Kantin - Admin',
+    'admin.edit_kantin_heading' => 'Edit Kantin',
+    'admin.edit_kantin_desc' => 'Update canteen basic information. Manage sellers under Seller Management.',
+
+    // Menu form labels
+    'menu.price_label' => 'Price',
+    'menu.stock_label' => 'Stock',
+    'menu.category_label' => 'Category',
+    'menu.photo_label' => 'Photo',
+    'menu.status_label' => 'Status',
+
+    // Admin - Add Seller / Add Canteen
+    'admin.add_kantin_title' => 'Add New Canteen - Kantin Kita',
+    'admin.add_seller_title' => 'Add Seller - Admin',
+    'admin.add_seller_heading' => 'Add Seller',
+    'admin.add_seller_desc' => 'Create a new seller account and link to an available stall.',
+
     // Seller Menu Management
     'seller_menu.title' => 'Manage Menu - Kantin Kita',
     'seller_menu.manage_menu' => 'Manage Kantin Menu',
@@ -389,6 +434,7 @@ return [
     'menu.all_title' => 'All Menu - Kantin Kita',
     'menu.all' => 'All Menu',
     'menu.sort_kantin' => 'Sort by kantin',
+    'menu.all_sub' => 'Available above, out-of-stock below',
 
     // Order History
     'history.title' => 'Order History - Kantin Kita',
@@ -514,4 +560,81 @@ return [
     'seller_history.no_history_desc' => 'Completed and cancelled orders will appear here.',
     'seller_history.back_incoming' => 'Back to Incoming Orders',
     'seller_history.moved' => 'Order completed and moved to history.',
+    // Alert / Toast messages (added by i18n assistant)
+    'alert.data_not_found' => 'Data not found!',
+    'alert.menu_updated_status' => 'Menu updated successfully! Status set automatically: :status',
+    'alert.db_connection_failed' => '⚠️ Database connection failed. Please try again later.',
+    'alert.invalid_user_type' => 'Invalid user type!',
+    'alert.select_class_correct' => 'Please select a valid class!',
+    'alert.username_taken' => 'Username already registered! Please use another username.',
+    'alert.email_taken' => 'Email already registered! Please use a different email or sign in.',
+    'alert.registration_session_failed' => 'Registration succeeded but failed to create a session. Please sign in.',
+    'alert.registration_save_failed' => '⚠️ Failed to save data. Please try again.',
+    'alert.username_or_email_required' => 'Username or Email cannot be empty!',
+    'alert.password_required' => 'Password cannot be empty!',
+    'alert.canteen_not_found' => 'Canteen data not found. Please contact the administrator.',
+    'alert.db_query_failed' => 'Error: Database query failed',
+    'alert.seller_not_linked' => 'Seller account is not linked to a canteen. Please contact the administrator.',
+    'alert.session_create_failed' => 'Failed to create session. Please try again.',
+    'alert.wrong_password_check' => 'Incorrect password! Please check your password and try again.',
+    'alert.not_registered' => 'Username or email is not registered. Please check or register a new account.',
+    'alert.login_required' => 'Please log in first',
+    'alert.menu_not_found' => 'Menu not found',
+    'alert.menu_out_of_stock' => 'Sorry, this menu is currently out of stock.',
+    'alert.canteen_closed_opening' => 'Sorry, :kantin is currently closed. Opens at :time',
+    'alert.insufficient_stock' => 'Sorry, insufficient stock.',
+    'alert.quantity_exceeds_stock' => 'Quantity exceeds stock. Remaining stock: :remaining',
+    'alert.added_to_cart' => 'Successfully added to cart!',
+    'alert.auth_fields_required' => 'Username/Email and Password cannot be empty!',
+    'alert.database_error_try_again' => 'Database error. Please try again.',
+    'alert.user_not_found_admin' => 'User not found or not an admin!',
+    'alert.password_wrong_simple' => 'Incorrect password!',
+    'alert.admin_use_admin_login' => 'Admin accounts must sign in via the Admin login page.',
+    // Additional UI keys added by assistant
+    'auth.validation_error_title' => 'Validation Error',
+    'auth.select_user_type' => 'Select User Type',
+    'auth.user_type.student' => 'Student',
+    'auth.user_type.teacher' => 'Teacher',
+    'auth.username' => 'Username',
+    'auth.username_placeholder' => 'username (no spaces)',
+    'auth.username_hint' => 'Only letters, numbers, underscore. Example: john_doe, siswa2024',
+    'auth.select_class' => 'Select Your Class',
+    'auth.class.10' => 'Class X (10)',
+    'auth.class.11' => 'Class XI (11)',
+    'auth.class.12' => 'Class XII (12)',
+    'auth.email_hint' => 'Email should use @gmail.com format',
+    'auth.password_rules' => 'Use a mix of upper/lower letters, numbers, and symbols',
+    // Additional admin / UI keys added during i18n sweep
+    'admin.manage_canteens_title' => 'Manage Canteens - Kantin Kita',
+    'admin.canteen_list_heading' => 'Canteen List',
+    'admin.canteen_list_desc' => 'Manage canteens registered in the system.',
+    'admin.total_canteens' => 'Total: :count Canteens',
+
+    'admin.manage_menus_title' => 'Manage Menus - Kantin Kita',
+    'admin.manage_menus_heading' => 'Manage Menus',
+    'admin.manage_menus_desc' => 'Monitor all culinary products.',
+
+    'admin.manage_sellers_title' => 'Manage Sellers - Kantin Kita',
+    'admin.manage_sellers_heading' => 'Manage Sellers',
+    'admin.manage_sellers_desc' => 'Manage seller partners and stalls on the platform.',
+
+    'action.search' => 'Search',
+    'admin.add_seller_button' => 'Add Seller',
+
+    'admin.manage_users_title' => 'Manage Users - Kantin Kita',
+    'admin.manage_users_heading' => 'Manage Users',
+    'admin.manage_users_desc' => 'Manage registered customer data in the system.',
+    'admin.add_user' => 'Add User',
+    'admin.promote_classes' => 'Promote Classes',
+
+    // Checkout / Payment
+    'checkout.success_title' => 'Payment Successful - Kantin Kita',
+    'checkout.success_heading' => 'Success!',
+    'checkout.success_label' => 'Payment',
+    'checkout.thanks' => 'Thank you',
+    'checkout.process_desc' => 'Your order is being processed by the seller',
+    'checkout.order_detail_label' => 'Order Details',
+
+    'cart.subtotal' => 'Subtotal',
+    'cart.service_fee' => 'Service Fee',
 ];

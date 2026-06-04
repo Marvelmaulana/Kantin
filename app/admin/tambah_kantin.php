@@ -162,7 +162,7 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Tambah Kantin Baru - Kantin Kita</title>
+    <title><?= t('admin.add_kantin_title', 'Tambah Kantin Baru - Kantin Kita') ?></title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
@@ -236,9 +236,9 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
             <a href="manajemen_kantin.php" class="flex w-10 sm:w-12 h-10 sm:h-12 rounded-2xl bg-white border border-slate-100 items-center justify-center text-slate-400 hover:text-primary-orange transition-all shadow-sm flex-shrink-0">
                 <span class="material-symbols-outlined text-lg sm:text-2xl">arrow_back</span>
             </a>
-            <div class="flex-1 min-w-0">
-                <h2 class="text-2xl sm:text-3xl font-extrabold text-[#003049] truncate">Tambah Kantin Baru</h2>
-                <p class="text-slate-400 font-medium text-xs sm:text-sm mt-1 line-clamp-1">Mendaftarkan penjual dan kantin baru ke platform</p>
+                <div class="flex-1 min-w-0">
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-[#003049] truncate"><?= t('admin.add_kantin_heading', 'Tambah Kantin Baru') ?></h2>
+                <p class="text-slate-400 font-medium text-xs sm:text-sm mt-1 line-clamp-1"><?= t('admin.add_kantin_desc', 'Mendaftarkan penjual dan kantin baru ke platform') ?></p>
             </div>
         </div>
     </header>

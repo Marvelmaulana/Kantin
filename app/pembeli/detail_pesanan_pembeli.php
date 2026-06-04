@@ -2,6 +2,7 @@
 session_start();
 include(__DIR__ . '/../../config/config.php');
 include(__DIR__ . '/../../includes/pembeli_helpers.php');
+include(__DIR__ . '/../../includes/language_helper.php');
 
 if (!isset($_SESSION['id_user'])) {
     header("Location: ../auth/login.php");
@@ -27,7 +28,7 @@ $query_t = mysqli_query($koneksi, "
 $data_t = mysqli_fetch_assoc($query_t);
 
 if (!$data_t) {
-    echo "<script>alert('Data tidak ditemukan!'); window.location='riwayat_pembeli.php';</script>";
+    echo "<script>alert(" . json_encode(t('alert.data_not_found')) . "); window.location='riwayat_pembeli.php';</script>";
     exit;
 }
 
@@ -43,7 +44,7 @@ $query_detail = mysqli_query($koneksi, "
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail Pesanan #<?= $id_pesanan ?></title>
+    <title><?php echo htmlspecialchars(t('order_detail.title')) . ' #' . $id_pesanan; ?></title>
     <style>
         :root { --primary: #b22204; --bg-light: #fff8f6; --white: #ffffff; }
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
@@ -68,8 +69,8 @@ $query_detail = mysqli_query($koneksi, "
 <body>
 <div class="container">
     <div class="header">
-        <h2>Detail Pesanan</h2>
-        <p>Kode: <?= htmlspecialchars($data_t['kode_pesanan'] ?? ('#' . $id_pesanan)) ?></p>
+        <h2><?php echo htmlspecialchars(t('order_detail.heading')); ?></h2>
+        <p><?php echo htmlspecialchars(t('order_detail.from')) . ': ' . htmlspecialchars($data_t['kode_pesanan'] ?? ('#' . $id_pesanan)); ?></p>
     </div>
 
     <div class="content">
