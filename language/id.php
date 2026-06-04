@@ -107,6 +107,9 @@ return [
     'general.action' => 'Aksi',
     'general.items_count_formatted' => ':count item',
 
+    // UI actions
+    'action.select_all' => 'Pilih Semua',
+
     // Buyer Navigation
     'nav.home' => 'Beranda',
     'nav.menu' => 'Menu',

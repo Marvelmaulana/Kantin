@@ -249,6 +249,12 @@ body::before {
                 <i class="fa-solid fa-bowl-food text-purple-500 text-sm"></i>
             </div>
             Ringkasan Pesanan
+            <div class="ml-auto flex items-center gap-3">
+                <label class="flex items-center gap-2 text-sm text-gray-500">
+                    <input id="selectAll" type="checkbox" class="w-4 h-4" checked>
+                    <span class="font-bold text-xs"><?= t('action.select_all', 'Pilih Semua') ?></span>
+                </label>
+            </div>
         </h3>
 
         <?php
@@ -260,6 +266,9 @@ body::before {
             $isHabis = ($row['status'] ?? 'Tersedia') === 'Habis' || (int)($row['stok'] ?? 0) <= 0;
         ?>
         <div class="item-card rounded-2xl p-4 flex gap-4 <?= $isHabis ? 'opacity-60' : '' ?>">
+            <div class="flex items-start">
+                <input type="checkbox" class="item-checkbox mr-3" value="<?= (int)$row['id_keranjang'] ?>" data-id="<?= (int)$row['id_keranjang'] ?>" checked>
+            </div>
             <img src="<?= kk_upload_url($row['foto'] ?? '', 'menu') ?>"
                  class="w-16 h-16 rounded-xl object-cover bg-orange-50 border-2 border-white shadow"
                  onerror="this.src='../../public/assets/img/default-food.svg'">
@@ -420,6 +429,34 @@ function prosesBayar() {
     document.getElementById('catatanInput').value = document.getElementById('catatan').value;
     document.getElementById('checkoutForm').submit();
 }
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const selectAll = document.getElementById('selectAll');
+    const itemCheckboxes = Array.from(document.querySelectorAll('.item-checkbox'));
+    const selectedInput = document.querySelector('input[name="selected"]');
+
+    function updateSelected() {
+        const vals = itemCheckboxes.filter(cb => cb.checked).map(cb => cb.value);
+        if (selectedInput) selectedInput.value = vals.join(',');
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            itemCheckboxes.forEach(cb => cb.checked = selectAll.checked);
+            updateSelected();
+        });
+    }
+
+    itemCheckboxes.forEach(cb => cb.addEventListener('change', function () {
+        if (!cb.checked && selectAll) selectAll.checked = false;
+        if (selectAll && itemCheckboxes.every(c => c.checked)) selectAll.checked = true;
+        updateSelected();
+    }));
+
+    // initialize
+    updateSelected();
+});
 </script>
 <style>
 @keyframes slideDown {

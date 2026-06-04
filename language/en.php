@@ -107,6 +107,9 @@ return [
     'general.action' => 'Action',
     'general.items_count_formatted' => ':count item(s)',
 
+    // UI actions
+    'action.select_all' => 'Select All',
+
     // Buyer Navigation
     'nav.home' => 'Home',
     'nav.menu' => 'Menu',
