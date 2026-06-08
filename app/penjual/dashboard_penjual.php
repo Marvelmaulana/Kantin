@@ -321,16 +321,16 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
         <?php
         $stats = [
             ['label'=> t('seller.orders_today'), 'value'=>number_format($pesanan_hari_ini),
-             'icon'=>'fa-bag-shopping', 'from'=>'from-orange-400','to'=>'to-orange-500','shadow'=>'shadow-orange-200'],
+             'icon'=>'fa-bag-shopping', 'from'=>'from-orange-400','to'=>'to-orange-500','shadow'=>'shadow-orange-200', 'link'=>'riwayat_penjual.php'],
             ['label'=> t('seller.revenue_today'), 'value'=>'Rp '.number_format($pendapatan_hari_ini,0,',','.'),
-             'icon'=>'fa-coins', 'from'=>'from-orange-500','to'=>'to-orange-600','shadow'=>'shadow-orange-200'],
+             'icon'=>'fa-coins', 'from'=>'from-orange-500','to'=>'to-orange-600','shadow'=>'shadow-orange-200', 'link'=>'laporan_penjual.php'],
             ['label'=> t('seller.menu_available'), 'value'=>number_format($menu_aktif),
-             'icon'=>'fa-utensils', 'from'=>'from-orange-500','to'=>'to-orange-600','shadow'=>'shadow-orange-200'],
+             'icon'=>'fa-utensils', 'from'=>'from-orange-500','to'=>'to-orange-600','shadow'=>'shadow-orange-200', 'link'=>'kelola_menu_penjual.php'],
             ['label'=> t('seller.total_orders'), 'value'=>number_format($total_pesanan),
-             'icon'=>'fa-list-check', 'from'=>'from-orange-500','to'=>'to-orange-700','shadow'=>'shadow-orange-200'],
+             'icon'=>'fa-list-check', 'from'=>'from-orange-500','to'=>'to-orange-700','shadow'=>'shadow-orange-200', 'link'=>'pesanan_masuk.php'],
         ];
         foreach ($stats as $s): ?>
-        <div class="group bg-white rounded-2xl lg:rounded-3xl p-5 lg:p-7 shadow-lg hover:shadow-xl transition-all border border-gray-100 relative overflow-hidden">
+        <a href="<?= $s['link'] ?>" class="block group bg-white rounded-2xl lg:rounded-3xl p-5 lg:p-7 shadow-lg hover:shadow-xl transition-all border border-gray-100 relative overflow-hidden">
             <div class="absolute top-0 right-0 w-32 h-32 rounded-full bg-gradient-to-br from-orange-100/50 to-transparent -mr-8 -mt-8 opacity-0 group-hover:opacity-100 transition-opacity"></div>
             <div class="flex items-start justify-between gap-3 relative z-10">
                 <div class="flex-1 min-w-0">
@@ -343,7 +343,7 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
                     <i class="fa-solid <?= $s['icon'] ?>"></i>
                 </div>
             </div>
-        </div>
+        </a>
         <?php endforeach; ?>
     </div>
 
@@ -495,7 +495,7 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
             ?>
             <div class="flex items-center gap-3 p-3 rounded-2xl hover:bg-orange-50 transition-all group border border-transparent hover:border-orange-100">
                 <!-- Foto menu -->
-                <div class="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100">
+                <div class="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-gray-100 relative">
                     <?php if ($ada_foto): ?>
                     <img src="<?= htmlspecialchars($fp) ?>" class="w-full h-full object-cover" alt="">
                     <?php else: ?>
@@ -503,6 +503,7 @@ body { background: radial-gradient(circle at top left, rgba(251,146,60,.15), tra
                         <i class="fa-solid fa-image text-xl"></i>
                     </div>
                     <?php endif; ?>
+                    <img src="../../uploads/logo/Cuplikan_layar_2026-06-08_104038-removebg-preview.png" alt="Halal" class="absolute bottom-1 right-1 w-4 h-4 object-contain drop-shadow-md bg-white/50 backdrop-blur-sm rounded-full p-[1px] z-10">
                 </div>
                 <!-- Info -->
                 <div class="flex-1 min-w-0">

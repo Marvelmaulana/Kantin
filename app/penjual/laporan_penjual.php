@@ -2,45 +2,35 @@
 session_start();
 include(__DIR__ . '/../../config/config.php');
 
-if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
+if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'penjual') {
     header('Location: ../auth/login.php');
     exit();
 }
 
-header('Location: dashboard_admin.php');
-exit();
-
-// Ambil data penjualan dari pesanan
-$query_pesanan = mysqli_query($koneksi, "
-    SELECT p.*, u.username, u.email, k.nama_kantin,
-           dp.nama_menu, dp.qty as jumlah_item, dp.harga, dp.subtotal,
-           dp.opsi_pilihan, dp.catatan
-    FROM pesanan p
-    LEFT JOIN users u ON p.id_user = u.id_user
-    LEFT JOIN kantin k ON p.id_kantin = k.id_kantin
-    LEFT JOIN detail_pesanan dp ON p.id_pesanan = dp.id_pesanan
-    WHERE p.status IN ('Selesai', 'Siap Diambil')
-    ORDER BY p.tanggal DESC
-    LIMIT 200
-");
+$id_kantin = (int)($_SESSION['id_kantin'] ?? 0);
+if ($id_kantin <= 0) {
+    header('Location: dashboard_penjual.php');
+    exit();
+}
 
 // Statistik penjualan
-$total_pesanan = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan WHERE status IN ('Selesai', 'Siap Diambil')"))['total'] ?? 0;
-$total_pendapatan = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COALESCE(SUM(total_harga),0) as total FROM pesanan WHERE status IN ('Selesai', 'Siap Diambil')"))['total'] ?? 0;
-$pesanan_bulan_ini = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan WHERE MONTH(tanggal) = MONTH(NOW()) AND YEAR(tanggal) = YEAR(NOW()) AND status IN ('Selesai', 'Siap Diambil')"))['total'] ?? 0;
-$pendapatan_bulan_ini = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COALESCE(SUM(total_harga),0) as total FROM pesanan WHERE MONTH(tanggal) = MONTH(NOW()) AND YEAR(tanggal) = YEAR(NOW()) AND status IN ('Selesai', 'Siap Diambil')"))['total'] ?? 0;
+$total_pesanan = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan WHERE id_kantin=$id_kantin AND status IN ('Selesai', 'Siap Diambil')"))['total'] ?? 0;
+// We only calculate pendapatan as (total_harga - pajak)
+$total_pendapatan = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COALESCE(SUM(total_harga - COALESCE(pajak,0)),0) as total FROM pesanan WHERE id_kantin=$id_kantin AND status IN ('Selesai', 'Siap Diambil')"))['total'] ?? 0;
+$pesanan_bulan_ini = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COUNT(*) as total FROM pesanan WHERE id_kantin=$id_kantin AND MONTH(tanggal) = MONTH(NOW()) AND YEAR(tanggal) = YEAR(NOW()) AND status IN ('Selesai', 'Siap Diambil')"))['total'] ?? 0;
+$pendapatan_bulan_ini = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT COALESCE(SUM(total_harga - COALESCE(pajak,0)),0) as total FROM pesanan WHERE id_kantin=$id_kantin AND MONTH(tanggal) = MONTH(NOW()) AND YEAR(tanggal) = YEAR(NOW()) AND status IN ('Selesai', 'Siap Diambil')"))['total'] ?? 0;
 
 // Top selling items
 $top_menu = mysqli_query($koneksi, "
-    SELECT m.nama_menu, m.harga, m.foto, k.nama_kantin,
+    SELECT m.nama_menu, m.harga, m.foto,
            COALESCE(SUM(dp.qty), 0) as total_terjual,
            COALESCE(AVG(rm.nilai_rating), 0) as avg_rating,
            COUNT(DISTINCT rm.id_rating) as jml_rating
     FROM menu m
-    JOIN kantin k ON m.id_kantin = k.id_kantin
     LEFT JOIN detail_pesanan dp ON m.id_menu = dp.id_menu
     LEFT JOIN pesanan p ON dp.id_pesanan = p.id_pesanan AND p.status IN ('Selesai', 'Siap Diambil')
     LEFT JOIN rating_menu rm ON m.id_menu = rm.id_menu
+    WHERE m.id_kantin = $id_kantin
     GROUP BY m.id_menu
     ORDER BY total_terjual DESC
     LIMIT 5
@@ -53,7 +43,7 @@ $kat_result = mysqli_query($koneksi, "
     FROM detail_pesanan dp
     JOIN menu m ON dp.id_menu = m.id_menu
     JOIN pesanan p ON dp.id_pesanan = p.id_pesanan
-    WHERE p.status IN ('Selesai', 'Siap Diambil')
+    WHERE p.id_kantin = $id_kantin AND p.status IN ('Selesai', 'Siap Diambil')
     GROUP BY m.kategori
 ");
 while ($kat = mysqli_fetch_assoc($kat_result)) {
@@ -61,18 +51,13 @@ while ($kat = mysqli_fetch_assoc($kat_result)) {
 }
 
 // Filter
-$filterTanggal = $_GET['tanggal'] ?? date('Y-m-d');
-$filterKantin = $_GET['kantin'] ?? '';
+$filterTanggal = $_GET['tanggal'] ?? '';
 $filterKategori = $_GET['kategori'] ?? '';
 
-$where = ["p.status IN ('Selesai', 'Siap Diambil')"];
+$where = ["p.id_kantin = $id_kantin", "p.status IN ('Selesai', 'Siap Diambil')"];
 if ($filterTanggal) {
     $safe_tanggal = mysqli_real_escape_string($koneksi, $filterTanggal);
     $where[] = "DATE(p.tanggal) = '$safe_tanggal'";
-}
-if ($filterKantin) {
-    $safe_kantin = mysqli_real_escape_string($koneksi, $filterKantin);
-    $where[] = "p.id_kantin = '$safe_kantin'";
 }
 if ($filterKategori) {
     $safe_kat = mysqli_real_escape_string($koneksi, $filterKategori);
@@ -81,13 +66,37 @@ if ($filterKategori) {
 
 $where_sql = implode(' AND ', $where);
 
+// Chart 14 Hari Terakhir
+$chart_labels = $chart_data = [];
+$q_chart = mysqli_query($koneksi, "
+    SELECT DATE(tanggal) as tgl, COALESCE(SUM(total_harga - COALESCE(pajak,0)),0) as total
+    FROM pesanan
+    WHERE id_kantin = $id_kantin AND status IN('Selesai','Siap Diambil')
+    AND   DATE(tanggal) BETWEEN DATE_SUB(CURDATE(), INTERVAL 13 DAY) AND CURDATE()
+    GROUP BY DATE(tanggal) ORDER BY DATE(tanggal) ASC
+");
+
+$data_by_date = [];
+if ($q_chart && mysqli_num_rows($q_chart) > 0) {
+    while ($r = mysqli_fetch_assoc($q_chart)) {
+        $data_by_date[$r['tgl']] = (float)$r['total'];
+    }
+}
+
+for ($i = 13; $i >= 0; $i--) {
+    $date_str = date('Y-m-d', strtotime("-$i days"));
+    $chart_labels[] = date('d M', strtotime($date_str));
+    $chart_data[]   = $data_by_date[$date_str] ?? 0;
+}
+$chart_labels_json = json_encode($chart_labels);
+$chart_data_json   = json_encode($chart_data);
+
 $query_filtered = mysqli_query($koneksi, "
-    SELECT p.*, u.username, u.email, k.nama_kantin,
+    SELECT p.*, u.username, u.email,
            dp.nama_menu, dp.qty, dp.harga, dp.subtotal,
            dp.opsi_pilihan, dp.catatan, m.kategori
     FROM pesanan p
     LEFT JOIN users u ON p.id_user = u.id_user
-    LEFT JOIN kantin k ON p.id_kantin = k.id_kantin
     LEFT JOIN detail_pesanan dp ON p.id_pesanan = dp.id_pesanan
     LEFT JOIN menu m ON dp.id_menu = m.id_menu
     WHERE $where_sql
@@ -95,8 +104,6 @@ $query_filtered = mysqli_query($koneksi, "
     LIMIT 200
 ");
 
-// Daftar kantin untuk filter
-$daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kantin ORDER BY nama_kantin");
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -105,6 +112,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>Laporan Penjualan - Kantin Kita</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
@@ -113,24 +121,23 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
             theme: {
                 extend: {
                     colors: {
-                        'bg-soft': '#FFF4EB',
-                        'primary-orange': '#E25E3E',
-                        'primary-orange-dark': '#C2410C',
-                        'accent-orange': '#fb8500',
-                        'neon-orange': '#ffb703'
-                    },
-                    borderRadius: { '4xl': '2.5rem' }
+                        'primary-orange': '#f97316',
+                    }
                 }
             }
         }
     </script>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: radial-gradient(circle at top left, rgba(251,146,60,.20), transparent 32%), radial-gradient(circle at 80% 20%, rgba(255,183,3,.12), transparent 25%), linear-gradient(180deg,#fff7f1 0%,#fff2e7 38%,#fff9f3 100%); }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #fffcf8; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-thumb { background: #FF8C20; border-radius: 10px; }
-        .glow-card { box-shadow: 0 25px 80px rgba(251,146,60,0.16); }
         .table-container { overflow-x: auto; -webkit-overflow-scrolling: touch; }
         .table-container table { min-width: 700px; }
+        @media print {
+            body > *:not(main) { display: none !important; }
+            main { margin: 0 !important; padding: 0 !important; width: 100% !important; }
+            .no-print { display: none !important; }
+        }
         @media (max-width: 640px) {
             .mobile-card { display: block !important; }
             .mobile-card thead { display: none; }
@@ -143,36 +150,36 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
 </head>
 <body class="text-slate-800 flex min-h-screen overflow-x-hidden">
 
-<?php include '../../includes/sidebar_admin.php'; ?>
+<?php include '../../includes/sidebar_penjual.php'; ?>
 
 <main class="flex-1 w-full lg:ml-72 p-4 md:p-6 lg:p-8 overflow-x-hidden max-w-full">
     <!-- Header -->
     <header class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-8 mt-14 lg:mt-0">
         <div>
             <h2 class="text-2xl md:text-3xl font-extrabold text-[#2a2a2a] tracking-tight">Laporan Penjualan</h2>
-            <p class="text-orange-700 font-semibold mt-1 text-sm md:text-base">Analisis performa penjualan kantin</p>
+            <p class="text-orange-700 font-semibold mt-1 text-sm md:text-base">Analisis performa penjualan kantin Anda</p>
         </div>
-        <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto">
+        <div class="flex flex-wrap items-center gap-3 w-full lg:w-auto no-print">
             <button onclick="window.print()" class="bg-gradient-to-r from-orange-500 to-orange-600 text-white px-4 py-2.5 rounded-2xl font-bold shadow-lg flex items-center justify-center gap-2 hover:-translate-y-0.5 transition-all text-sm w-full sm:w-auto">
-                <span class="material-symbols-outlined text-lg">print</span> Cetak
+                <span class="material-symbols-outlined text-lg">print</span> Cetak Laporan
             </button>
         </div>
     </header>
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white/90 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-orange-100 shadow-glow-card">
+        <div class="bg-white p-4 md:p-6 rounded-3xl border border-gray-100 shadow-lg">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white shrink-0">
                     <span class="material-symbols-outlined text-xl md:text-2xl">shopping_bag</span>
                 </div>
                 <div>
-                    <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Total Pesanan</p>
+                    <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Total Pesanan Selesai</p>
                     <h3 class="text-lg md:text-xl font-extrabold text-[#2a2a2a]"><?= number_format($total_pesanan) ?></h3>
                 </div>
             </div>
         </div>
-        <div class="bg-white/90 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-orange-100 shadow-glow-card">
+        <div class="bg-white p-4 md:p-6 rounded-3xl border border-gray-100 shadow-lg">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center text-white shrink-0">
                     <span class="material-symbols-outlined text-xl md:text-2xl">payments</span>
@@ -183,7 +190,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                 </div>
             </div>
         </div>
-        <div class="bg-white/90 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-orange-100 shadow-glow-card">
+        <div class="bg-white p-4 md:p-6 rounded-3xl border border-gray-100 shadow-lg">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white shrink-0">
                     <span class="material-symbols-outlined text-xl md:text-2xl">calendar_month</span>
@@ -194,7 +201,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                 </div>
             </div>
         </div>
-        <div class="bg-white/90 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-orange-100 shadow-glow-card">
+        <div class="bg-white p-4 md:p-6 rounded-3xl border border-gray-100 shadow-lg">
             <div class="flex items-center gap-3">
                 <div class="w-10 h-10 md:w-12 md:h-12 rounded-2xl bg-gradient-to-br from-purple-400 to-purple-600 flex items-center justify-center text-white shrink-0">
                     <span class="material-symbols-outlined text-xl md:text-2xl">savings</span>
@@ -210,7 +217,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
     <!-- Top Menu & Kategori -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         <!-- Top Selling -->
-        <div class="lg:col-span-2 bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-slate-50">
+        <div class="lg:col-span-2 bg-white rounded-3xl p-4 md:p-6 shadow-lg border border-gray-100">
             <h3 class="font-extrabold text-[#003049] text-lg flex items-center gap-2 mb-4">
                 <span class="material-symbols-outlined text-primary-orange">local_fire_department</span>
                 Menu Terlaris
@@ -231,7 +238,6 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                         <img src="<?= $foto ?>" class="w-full aspect-square rounded-xl object-cover bg-orange-50" alt="<?= htmlspecialchars($menu['nama_menu']) ?>">
                         <img src="../../uploads/logo/Cuplikan_layar_2026-06-08_104038-removebg-preview.png" alt="Halal" class="absolute bottom-1 right-1 w-6 h-6 object-contain drop-shadow-md bg-white/50 backdrop-blur-sm rounded-full p-[1px] z-10">
                     </div>
-                    <p class="text-[10px] font-bold text-slate-400 truncate"><?= htmlspecialchars($menu['nama_kantin']) ?></p>
                     <p class="font-bold text-sm text-slate-800 truncate"><?= htmlspecialchars($menu['nama_menu']) ?></p>
                     <p class="text-primary-orange font-black text-sm mt-1">Rp <?= number_format($menu['harga'], 0, ',', '.') ?></p>
                     <div class="flex items-center justify-between mt-2 text-[10px]">
@@ -250,7 +256,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
         </div>
 
         <!-- Kategori -->
-        <div class="bg-white rounded-2xl p-4 md:p-6 shadow-sm border border-slate-50">
+        <div class="bg-white rounded-3xl p-4 md:p-6 shadow-lg border border-gray-100">
             <h3 class="font-extrabold text-[#003049] text-lg flex items-center gap-2 mb-4">
                 <span class="material-symbols-outlined text-primary-orange">category</span>
                 Per Kategori
@@ -284,21 +290,23 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
         </div>
     </div>
 
+    <!-- Grafik Pendapatan -->
+    <div class="bg-white rounded-3xl p-4 md:p-6 mb-8 shadow-lg border border-gray-100 no-print">
+        <h3 class="font-extrabold text-[#003049] text-lg flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-primary-orange">show_chart</span>
+            Grafik Pendapatan (14 Hari Terakhir)
+        </h3>
+        <div class="relative h-64 lg:h-80 w-full">
+            <canvas id="revenueChart"></canvas>
+        </div>
+    </div>
+
     <!-- Filter -->
-    <div class="bg-white rounded-2xl p-4 md:p-6 mb-6 shadow-sm border border-slate-50">
-        <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-white rounded-3xl p-4 md:p-6 mb-6 shadow-lg border border-gray-100 no-print">
+        <form method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Tanggal</label>
                 <input type="date" name="tanggal" value="<?= htmlspecialchars($filterTanggal) ?>" class="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-orange/20">
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Kantin</label>
-                <select name="kantin" class="w-full px-4 py-3 rounded-xl border border-slate-100 bg-slate-50 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary-orange/20">
-                    <option value="">Semua Kantin</option>
-                    <?php while ($k = mysqli_fetch_assoc($daftar_kantin)): ?>
-                    <option value="<?= $k['id_kantin'] ?>" <?= $filterKantin == $k['id_kantin'] ? 'selected' : '' ?>><?= htmlspecialchars($k['nama_kantin']) ?></option>
-                    <?php endwhile; ?>
-                </select>
             </div>
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Kategori</label>
@@ -313,7 +321,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                 <button type="submit" class="bg-primary-orange text-white px-6 py-3 rounded-xl font-bold shadow-lg hover:scale-105 transition-all text-sm flex-1">
                     <span class="material-symbols-outlined text-sm mr-1">search</span> Filter
                 </button>
-                <a href="laporan_penjualan.php" class="bg-slate-200 text-slate-600 px-4 py-3 rounded-xl font-bold hover:bg-slate-300 transition-all text-sm">
+                <a href="laporan_penjual.php" class="bg-slate-200 text-slate-600 px-4 py-3 rounded-xl font-bold hover:bg-slate-300 transition-all text-sm flex items-center justify-center">
                     Reset
                 </a>
             </div>
@@ -321,8 +329,8 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
     </div>
 
     <!-- Table -->
-    <div class="bg-white rounded-2xl shadow-sm border border-slate-50 overflow-hidden">
-        <div class="p-4 md:p-6 border-b border-slate-50">
+    <div class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+        <div class="p-4 md:p-6 border-b border-gray-50">
             <h3 class="font-extrabold text-[#003049] text-lg flex items-center gap-2">
                 <span class="material-symbols-outlined text-primary-orange">list_alt</span>
                 Detail Penjualan
@@ -337,7 +345,6 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                         <th class="px-4 py-4 text-left">ID Pesanan</th>
                         <th class="px-4 py-4 text-left">Pengguna</th>
                         <th class="px-4 py-4 text-left hidden md:table-cell">Menu</th>
-                        <th class="px-4 py-4 text-left hidden sm:table-cell">Kantin</th>
                         <th class="px-4 py-4 text-left">Tanggal</th>
                         <th class="px-4 py-4 text-left">Total</th>
                     </tr>
@@ -347,7 +354,7 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                         <?php while ($row = mysqli_fetch_assoc($query_filtered)): ?>
                         <tr class="hover:bg-orange-50/50 transition-colors">
                             <td class="px-4 py-4" data-label="ID Pesanan">
-                                <span class="font-mono font-bold text-sm">#<?= $row['id_pesanan'] ?></span>
+                                <span class="font-mono font-bold text-sm">#<?= $row['kode_pesanan'] ?: $row['id_pesanan'] ?></span>
                             </td>
                             <td class="px-4 py-4" data-label="Pengguna">
                                 <div class="flex items-center gap-3">
@@ -363,9 +370,6 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                                     <p class="text-xs text-slate-400"><?= (int)($row['qty'] ?? 0) ?> x Rp <?= number_format($row['harga'] ?? 0, 0, ',', '.') ?></p>
                                 </div>
                             </td>
-                            <td class="px-4 py-4 hidden sm:table-cell" data-label="Kantin">
-                                <span class="text-sm"><?= htmlspecialchars($row['nama_kantin'] ?? '-') ?></span>
-                            </td>
                             <td class="px-4 py-4" data-label="Tanggal">
                                 <div>
                                     <p class="text-sm font-semibold"><?= date('d M Y', strtotime($row['tanggal'])) ?></p>
@@ -373,13 +377,13 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                                 </div>
                             </td>
                             <td class="px-4 py-4" data-label="Total">
-                                <span class="font-bold text-primary-orange">Rp <?= number_format($row['subtotal'] ?? $row['total_harga'], 0, ',', '.') ?></span>
+                                <span class="font-bold text-primary-orange">Rp <?= number_format($row['subtotal'] ?? ($row['total_harga'] - ($row['pajak'] ?? 0)), 0, ',', '.') ?></span>
                             </td>
                         </tr>
                         <?php endwhile; ?>
                     <?php else: ?>
                         <tr>
-                            <td colspan="6" class="px-4 py-16 text-center">
+                            <td colspan="5" class="px-4 py-16 text-center">
                                 <div class="flex flex-col items-center text-slate-300">
                                     <span class="material-symbols-outlined text-5xl">shopping_bag</span>
                                     <p class="mt-3 font-bold text-slate-400">Belum ada data penjualan</p>
@@ -393,5 +397,71 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
     </div>
 </main>
 
+<script>
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    
+    // Gradient fill
+    let gradient = ctx.createLinearGradient(0, 0, 0, 400);
+    gradient.addColorStop(0, 'rgba(249, 115, 22, 0.4)');
+    gradient.addColorStop(1, 'rgba(249, 115, 22, 0.0)');
+
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: <?= $chart_labels_json ?>,
+            datasets: [{
+                label: 'Pendapatan',
+                data: <?= $chart_data_json ?>,
+                borderColor: '#f97316',
+                backgroundColor: gradient,
+                borderWidth: 3,
+                pointBackgroundColor: '#ffffff',
+                pointBorderColor: '#f97316',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            let label = context.dataset.label || '';
+                            if (label) {
+                                label += ': ';
+                            }
+                            if (context.parsed.y !== null) {
+                                label += new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR' }).format(context.parsed.y);
+                            }
+                            return label;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    grid: { color: 'rgba(0,0,0,0.05)', drawBorder: false },
+                    ticks: {
+                        callback: function(value) {
+                            if (value >= 1000000) return 'Rp ' + (value / 1000000) + 'Jt';
+                            if (value >= 1000) return 'Rp ' + (value / 1000) + 'Rb';
+                            return 'Rp ' + value;
+                        }
+                    }
+                },
+                x: {
+                    grid: { display: false, drawBorder: false }
+                }
+            }
+        }
+    });
+</script>
 </body>
 </html>

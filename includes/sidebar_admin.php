@@ -113,18 +113,6 @@ textarea {
 
         <div class="px-1">
             <div class="text-xs font-black text-rose-50 uppercase tracking-wider px-4 py-3 bg-rose-500/10 rounded-3xl">Laporan</div>
-            <a href="laporan_transaksi.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all border border-transparent <?= ($current_page == 'laporan_transaksi.php') ? 'bg-white/20 text-white shadow-lg shadow-rose-500/20 border-white/20' : 'text-rose-50 hover:bg-white/15 hover:text-white' ?>">
-                <span class="material-symbols-outlined">receipt_long</span>
-                <span class="text-sm">Laporan Transaksi</span>
-            </a>
-            <a href="laporan_penjualan.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all border border-transparent <?= ($current_page == 'laporan_penjualan.php') ? 'bg-white/20 text-white shadow-lg shadow-orange-500/20 border-white/20' : 'text-orange-50 hover:bg-white/15 hover:text-white' ?>">
-                <span class="material-symbols-outlined">bar_chart</span>
-                <span class="text-sm">Laporan Penjualan</span>
-            </a>
-            <a href="laporan_pendapatan_admin.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all border border-transparent <?= ($current_page == 'laporan_pendapatan_admin.php') ? 'bg-white/20 text-white shadow-lg shadow-orange-500/20 border-white/20' : 'text-orange-50 hover:bg-white/15 hover:text-white' ?>">
-                <span class="material-symbols-outlined">attach_money</span>
-                <span class="text-sm">Pendapatan Admin</span>
-            </a>
             <a href="laporan_kantin.php" class="flex items-center gap-4 px-4 py-3 rounded-[22px] font-bold transition-all border border-transparent <?= ($current_page == 'laporan_kantin.php') ? 'bg-white/20 text-white shadow-lg shadow-orange-500/20 border-white/20' : 'text-orange-50 hover:bg-white/15 hover:text-white' ?>">
                 <span class="material-symbols-outlined">domain</span>
                 <span class="text-sm">Laporan Kantin</span>

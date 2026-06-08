@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_menu'])) {
     </div>
     <?php endif; ?>
 
-    <form method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-2xl shadow">
+    <form method="POST" enctype="multipart/form-data" class="bg-white p-6 rounded-2xl shadow" onsubmit="return confirm('Apakah Anda yakin ingin menambahkan menu ini?');">
         <input type="hidden" name="tambah_menu" value="1" />
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>

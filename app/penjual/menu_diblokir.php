@@ -8,21 +8,9 @@ if (!isset($_SESSION['role']) || $_SESSION['role'] != 'penjual') {
 
 $id_k = $_SESSION['id_kantin'];
 $username_kantin = $_SESSION['username'] ?? 'kantin_user';
-$filter = isset($_GET['kat']) ? mysqli_real_escape_string($koneksi, $_GET['kat']) : 'Semua';
-$allowedFilters = ['Semua', 'Tersedia', 'Dinonaktifkan'];
-if (!in_array($filter, $allowedFilters, true)) {
-    $filter = 'Semua';
-}
 
-$sql = "SELECT * FROM menu WHERE id_kantin = '$id_k'";
-if ($filter === 'Semua') {
-    $sql .= " AND status NOT IN ('Diblokir','Dinonaktifkan')";
-} elseif ($filter === 'Tersedia') {
-    $sql .= " AND status = 'Tersedia'";
-} elseif ($filter === 'Dinonaktifkan') {
-    $sql .= " AND status = 'Dinonaktifkan'";
-}
-$query = mysqli_query($koneksi, $sql . " ORDER BY id_menu DESC");
+$sql = "SELECT * FROM menu WHERE id_kantin = '$id_k' AND status = 'Diblokir' ORDER BY id_menu DESC";
+$query = mysqli_query($koneksi, $sql);
 $menu_count = mysqli_num_rows($query);
 ?>
 
@@ -30,7 +18,7 @@ $menu_count = mysqli_num_rows($query);
 <html lang="id">
 <head>
     <meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-    <title>Kelola Menu - Kantin Kita</title>
+    <title>Menu Diblokir - Kantin Kita</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet"/>
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
@@ -49,30 +37,24 @@ $menu_count = mysqli_num_rows($query);
     <main class="flex-1 lg:ml-72 p-4 md:p-8 transition-all">
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 mb-10 mt-14 lg:mt-0">
             <div>
-                <h2 class="text-3xl font-extrabold tracking-tight text-stone-900">Kelola Menu</h2>
-                <p class="text-stone-500 text-sm mt-1">Atur katalog jualan kamu agar pembeli makin tertarik.</p>
-                <p class="text-stone-400 text-xs mt-2">Menampilkan <strong><?= $menu_count ?></strong> menu pada filter <strong><?= htmlspecialchars($filter) ?></strong>.</p>
+                <h2 class="text-3xl font-extrabold tracking-tight text-stone-900">Menu Diblokir</h2>
+                <p class="text-stone-500 text-sm mt-1">Daftar menu Anda yang sedang diblokir oleh admin.</p>
+                <p class="text-stone-400 text-xs mt-2">Menemukan <strong><?= $menu_count ?></strong> menu yang diblokir.</p>
             </div>
-            <a href="tambah_menu.php" class="w-full sm:w-auto bg-primary text-white px-8 py-4 rounded-full flex justify-center items-center gap-3 font-bold shadow-lg shadow-red-900/20 active:scale-95 transition-all hover:bg-red-800">
-                <span class="material-symbols-outlined text-[20px]">add</span> Tambah Menu
-            </a>
         </header>
 
-        <div class="overflow-x-auto no-scrollbar mb-8">
-            <div class="flex gap-2 p-1.5 bg-white border border-orange-50 w-fit rounded-2xl shadow-sm">
-                <?php foreach (['Semua', 'Tersedia', 'Dinonaktifkan'] as $kat): ?>
-                    <a href="?kat=<?= $kat ?>" class="px-6 py-2.5 rounded-xl text-sm transition-all <?= $filter === $kat ? 'bg-primary text-white font-bold shadow-md' : 'text-stone-400 hover:text-primary' ?>">
-                        <?= $kat ?>
-                    </a>
-                <?php endforeach; ?>
-            </div>
+        <?php if ($menu_count === 0): ?>
+        <div class="bg-white rounded-[2.5rem] p-12 text-center border border-orange-50 shadow-sm">
+            <span class="material-symbols-outlined text-6xl text-stone-300 mb-4 block">check_circle</span>
+            <h3 class="text-xl font-bold text-stone-700">Tidak ada menu yang diblokir</h3>
+            <p class="text-stone-500 text-sm mt-2">Semua menu Anda aman dan sesuai dengan kebijakan.</p>
         </div>
-
+        <?php else: ?>
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
             <?php while($m = mysqli_fetch_assoc($query)): 
                 $canViewDetail = true;
             ?>
-            <div class="bg-white rounded-[2.5rem] border border-orange-50 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group">
+            <div class="bg-white rounded-[2.5rem] border border-orange-50 overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group opacity-90 grayscale-[10%]">
                 <?php if ($canViewDetail): ?>
                 <a href="detail_menu_penjual.php?id=<?= $m['id_menu'] ?>" class="relative h-56 bg-stone-100 overflow-hidden block">
                 <?php else: ?>
@@ -81,15 +63,7 @@ $menu_count = mysqli_num_rows($query);
                     <img src="../../uploads/<?= $m['foto'] ?>" class="w-full h-full object-cover transition-transform duration-500 <?= $canViewDetail ? 'group-hover:scale-110' : '' ?>" onerror="this.src='https://placehold.co/600x400?text=Menu'">
                     <img src="../../uploads/logo/Cuplikan_layar_2026-06-08_104038-removebg-preview.png" alt="Halal" class="absolute bottom-2 right-2 w-8 h-8 md:w-10 md:h-10 object-contain drop-shadow-md bg-white/50 backdrop-blur-sm rounded-full p-0.5 z-10">
                     <div class="absolute top-4 right-4 z-10">
-                        <?php
-                            $badgeColor = 'bg-red-500/90 text-white';
-                            if ($m['status'] === 'Tersedia') {
-                                $badgeColor = 'bg-green-500/90 text-white';
-                            } elseif ($m['status'] === 'Dinonaktifkan') {
-                                $badgeColor = 'bg-orange-500/90 text-white';
-                            }
-                        ?>
-                        <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md <?= $badgeColor ?>">
+                        <span class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-sm backdrop-blur-md bg-red-600/90 text-white">
                             <?= htmlspecialchars($m['status']) ?>
                         </span>
                     </div>
@@ -105,23 +79,29 @@ $menu_count = mysqli_num_rows($query);
                     <div class="font-bold text-xl text-stone-800 leading-tight mb-2"><?= htmlspecialchars($m['nama_menu']) ?></div>
                     <?php endif; ?>
                     <p class="text-xs text-stone-400 line-clamp-2 leading-relaxed"><?= $m['deskripsi'] ?></p>
-                    <?php if (!empty($m['catatan_blokir']) && in_array($m['status'], ['Diblokir', 'Dinonaktifkan'], true)): ?>
-                    <p class="mt-3 text-[11px] text-slate-500 bg-slate-50 border border-slate-100 rounded-2xl px-3 py-2">
-                        <strong class="text-slate-700">Alasan:</strong> <?= htmlspecialchars($m['catatan_blokir']) ?>
-                    </p>
+                    <?php if (!empty($m['catatan_blokir'])): ?>
+                    <div class="mt-4 p-4 rounded-2xl bg-red-50 border border-red-100 flex gap-3 items-start">
+                        <span class="material-symbols-outlined text-red-500 text-[20px] mt-0.5">warning</span>
+                        <div>
+                            <p class="text-[11px] font-black uppercase tracking-wider text-red-600 mb-1">Alasan Diblokir</p>
+                            <p class="text-xs text-red-700 font-medium leading-relaxed">
+                                <?= htmlspecialchars($m['catatan_blokir']) ?>
+                            </p>
+                        </div>
+                    </div>
                     <?php endif; ?>
-                    <div class="mt-8 flex justify-between items-center pt-6 border-t border-stone-50">
+                    <div class="mt-auto flex justify-between items-center pt-6 border-t border-stone-50">
                         <div>
                             <p class="text-[10px] font-bold text-stone-400 uppercase mb-1 tracking-wider">Harga Menu</p>
                             <span class="text-2xl font-black text-primary">Rp <?= number_format($m['harga'], 0, ',', '.') ?></span>
                         </div>
                         <div class="flex gap-2">
                             <?php if ($canViewDetail): ?>
-                            <a href="edit_menu.php?id=<?= $m['id_menu'] ?>" class="p-3 bg-stone-50 text-stone-400 hover:bg-blue-50 hover:text-blue-600 rounded-2xl transition-all">
+                            <a href="edit_menu.php?id=<?= $m['id_menu'] ?>" class="p-3 bg-stone-50 text-stone-400 hover:bg-blue-50 hover:text-blue-600 rounded-2xl transition-all" title="Edit Menu">
                                 <span class="material-symbols-outlined text-[20px]">edit_note</span>
                             </a>
                             <?php endif; ?>
-                            <a href="proses_menu.php?aksi=hapus&id=<?= $m['id_menu'] ?>" onclick="return confirm('Hapus menu ini?')" class="p-3 bg-stone-50 text-stone-400 hover:bg-red-50 hover:text-red-600 rounded-2xl transition-all">
+                            <a href="proses_menu.php?aksi=hapus&id=<?= $m['id_menu'] ?>" onclick="return confirm('Hapus menu ini?')" class="p-3 bg-stone-50 text-stone-400 hover:bg-red-50 hover:text-red-600 rounded-2xl transition-all" title="Hapus Menu">
                                 <span class="material-symbols-outlined text-[20px]">delete_forever</span>
                             </a>
                         </div>
@@ -130,6 +110,7 @@ $menu_count = mysqli_num_rows($query);
             </div>
             <?php endwhile; ?>
         </div>
+        <?php endif; ?>
     </main>
 </body>
 </html>

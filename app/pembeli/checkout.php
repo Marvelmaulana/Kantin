@@ -30,7 +30,7 @@ if ($id_menu_langsung) {
     if ($data_stok) {
         $stok_status = $data_stok['status'] ?? 'Tersedia';
         $stok_jumlah = (int)($data_stok['stok'] ?? 0);
-        if ($stok_status === 'Habis' || $stok_jumlah <= 0 || $qty_langsung > $stok_jumlah) {
+        if ($stok_status === 'Habis' || in_array($stok_status, ['Diblokir', 'Dinonaktifkan'], true) || $stok_jumlah <= 0 || $qty_langsung > $stok_jumlah) {
             header("Location: detail_menu.php?id=$id_menu_langsung");
             exit();
         }
@@ -43,6 +43,7 @@ if ($id_menu_langsung) {
         FROM menu
         JOIN kantin ON menu.id_kantin = kantin.id_kantin
         WHERE menu.id_menu = '$id_menu_langsung'
+          AND COALESCE(menu.status,'Tersedia') NOT IN ('Diblokir','Dinonaktifkan')
     ");
 } else {
     $selected_raw = isset($_GET['selected']) ? $_GET['selected'] : '';
@@ -59,6 +60,7 @@ if ($id_menu_langsung) {
             JOIN kantin ON menu.id_kantin = kantin.id_kantin
             WHERE keranjang.id_user = '$id_user'
             AND keranjang.id_keranjang IN ($ids_str)
+            AND COALESCE(menu.status,'Tersedia') NOT IN ('Diblokir','Dinonaktifkan')
         ");
     }
 }
@@ -255,8 +257,7 @@ body::before {
                     <span class="font-bold text-xs"><?= t('action.select_all', 'Pilih Semua') ?></span>
                 </label>
             </div>
-        </h3>
-
+        </h3>        <p class="text-xs text-slate-500">Centang menu yang ingin dibayar. Item yang tidak dipilih akan tetap berada di keranjang.</p>
         <?php
         $total_bayar = 0;
         mysqli_data_seek($query, 0);
@@ -265,9 +266,10 @@ body::before {
             $total_bayar += $sub;
             $isHabis = ($row['status'] ?? 'Tersedia') === 'Habis' || (int)($row['stok'] ?? 0) <= 0;
         ?>
+        <?php $itemId = isset($row['id_keranjang']) ? (int)$row['id_keranjang'] : (int)$row['id_menu']; ?>
         <div class="item-card rounded-2xl p-4 flex gap-4 <?= $isHabis ? 'opacity-60' : '' ?>">
             <div class="flex items-start">
-                <input type="checkbox" class="item-checkbox mr-3" value="<?= (int)$row['id_keranjang'] ?>" data-id="<?= (int)$row['id_keranjang'] ?>" checked>
+                <input type="checkbox" class="item-checkbox mr-3" value="<?= $itemId ?>" data-id="<?= $itemId ?>" checked>
             </div>
             <img src="<?= kk_upload_url($row['foto'] ?? '', 'menu') ?>"
                  class="w-16 h-16 rounded-xl object-cover bg-orange-50 border-2 border-white shadow"
@@ -346,6 +348,15 @@ body::before {
                     <span class="text-xs font-black text-gray-800">GOPAY</span>
                 </div>
             </label>
+            <label class="payment-card block">
+                <input type="radio" name="payment_method" value="QRIS" class="hidden peer">
+                <div class="bg-white rounded-2xl border-2 border-gray-100 p-4 flex flex-col items-center gap-2 transition-all">
+                    <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center">
+                        <i class="fa-solid fa-qrcode text-slate-600 text-2xl"></i>
+                    </div>
+                    <span class="text-xs font-black text-gray-800">QRIS</span>
+                </div>
+            </label>
         </div>
     </section>
 
@@ -409,6 +420,7 @@ function showToast(message, icon = '✓') {
 
 function prosesBayar() {
     const btn = document.getElementById('btnBayar');
+    const selectedInput = document.querySelector('input[name="selected"]');
     <?php if ($luarJamOperasional): ?>
     showToast('Maaf, kantin sedang tutup. Coba lagi saat jam operasional!', '🕐');
     return;
@@ -417,6 +429,10 @@ function prosesBayar() {
     showToast('Ada menu yang stoknya habis atau tidak mencukupi!', 'Stok');
     return;
     <?php endif; ?>
+    if (selectedInput && selectedInput.value.trim() === '') {
+        showToast('Pilih minimal 1 item sebelum membayar.', '⚠️');
+        return;
+    }
     const selectedMethod = document.querySelector('input[name="payment_method"]:checked');
     if (!selectedMethod) {
         showToast('Pilih metode pembayaran dulu!', '⚠️');
@@ -435,16 +451,27 @@ document.addEventListener('DOMContentLoaded', function () {
     const selectAll = document.getElementById('selectAll');
     const itemCheckboxes = Array.from(document.querySelectorAll('.item-checkbox'));
     const selectedInput = document.querySelector('input[name="selected"]');
+    const payButton = document.getElementById('btnBayar');
 
     function updateSelected() {
         const vals = itemCheckboxes.filter(cb => cb.checked).map(cb => cb.value);
         if (selectedInput) selectedInput.value = vals.join(',');
     }
 
+    function updateCheckoutEnabled() {
+        if (!selectedInput || !payButton) return;
+        const hasSelected = selectedInput.value.trim().length > 0;
+        const disabled = !hasSelected || <?= ($luarJamOperasional || $adaStokBermasalah) ? 'true' : 'false' ?>;
+        payButton.disabled = disabled;
+        payButton.classList.toggle('opacity-50', disabled && !hasSelected);
+        payButton.classList.toggle('cursor-not-allowed', disabled && !hasSelected);
+    }
+
     if (selectAll) {
         selectAll.addEventListener('change', function () {
             itemCheckboxes.forEach(cb => cb.checked = selectAll.checked);
             updateSelected();
+            updateCheckoutEnabled();
         });
     }
 
@@ -452,10 +479,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!cb.checked && selectAll) selectAll.checked = false;
         if (selectAll && itemCheckboxes.every(c => c.checked)) selectAll.checked = true;
         updateSelected();
+        updateCheckoutEnabled();
     }));
 
     // initialize
     updateSelected();
+    updateCheckoutEnabled();
 });
 </script>
 <style>

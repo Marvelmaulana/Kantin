@@ -42,7 +42,7 @@ $allowedKategori = ['Semua', 'Makanan', 'Minuman', 'Camilan'];
 if (!in_array($kategoriKantin, $allowedKategori, true)) $kategoriKantin = 'Semua';
 
 $selectMenu = "
-    SELECT m.*, k.nama_kantin,
+    SELECT m.*, k.nama_kantin, k.jam_buka, k.jam_tutup, k.status_buka, k.tipe_operasi,
            COALESCE(AVG(rm.nilai_rating),0) AS avg_rating,
            COUNT(rm.id_rating) AS jml_rating,
            COUNT(u.id_ulasan) AS jml_ulasan
@@ -52,7 +52,7 @@ $selectMenu = "
     LEFT JOIN ulasan u ON m.id_menu = u.id_menu
 ";
 
-$whereAvailable = " WHERE 1=1 ";
+$whereAvailable = " WHERE 1=1 AND COALESCE(m.status,'Tersedia') NOT IN ('Diblokir','Dinonaktifkan') ";
 $katSql = mysqli_real_escape_string($koneksi, $kategoriMenu);
 
 if ($tab === 'favorit' && !empty($favorit_ids)) {
@@ -72,7 +72,7 @@ $query_terlaris = mysqli_query($koneksi, "$selectMenu $whereAvailable GROUP BY m
 $kantinWhere = '';
 if ($kategoriKantin !== 'Semua') {
     $katKantinSql = mysqli_real_escape_string($koneksi, $kategoriKantin);
-    $kantinWhere = "WHERE EXISTS (SELECT 1 FROM menu m2 WHERE m2.id_kantin=k.id_kantin AND m2.kategori='$katKantinSql' AND COALESCE(m2.status,'Tersedia') <> 'Habis' AND COALESCE(m2.stok,0) > 0)";
+    $kantinWhere = "WHERE EXISTS (SELECT 1 FROM menu m2 WHERE m2.id_kantin=k.id_kantin AND m2.kategori='$katKantinSql' AND COALESCE(m2.status,'Tersedia') NOT IN ('Habis','Diblokir','Dinonaktifkan') AND COALESCE(m2.stok,0) > 0)";
 }
 $query_kantin = mysqli_query($koneksi, "
     SELECT k.*,
@@ -80,7 +80,7 @@ $query_kantin = mysqli_query($koneksi, "
            COALESCE(AVG(rm.nilai_rating),0) AS avg_rating,
            COUNT(rm.id_rating) AS total_rating
     FROM kantin k
-    LEFT JOIN menu m ON k.id_kantin=m.id_kantin AND COALESCE(m.status,'Tersedia') <> 'Habis' AND COALESCE(m.stok,0) > 0
+    LEFT JOIN menu m ON k.id_kantin=m.id_kantin AND COALESCE(m.status,'Tersedia') NOT IN ('Habis','Diblokir','Dinonaktifkan') AND COALESCE(m.stok,0) > 0
     LEFT JOIN rating_menu rm ON m.id_menu=rm.id_menu
     $kantinWhere
     GROUP BY k.id_kantin
@@ -100,10 +100,26 @@ function renderMenuCard($m, $is_fav) {
     $foto = kk_upload_url($m['foto'] ?? '', 'menu');
     $loved = $is_fav ? 'loved text-red-500' : 'text-gray-300';
     $fill = $is_fav ? '1' : '0';
-    $available = kk_is_menu_available($m);
-    $badgeText = $available ? 'Tersedia' : 'Habis';
-    $badgeClass = $available ? 'bg-orange-500/95 text-white' : 'bg-red-500/95 text-white';
-    $cardClass = $available ? '' : 'opacity-75 grayscale-[35%]';
+
+    $menuStatus = kk_get_menu_status($m, $m);
+    $isHabis = ($menuStatus === 'habis');
+    $isLuarJam = ($menuStatus === 'tutup');
+    $isHabisInt = $isHabis ? 1 : 0;
+    $isLuarJamInt = $isLuarJam ? 1 : 0;
+
+    if ($isLuarJam) {
+        $badgeText = 'Tutup';
+        $badgeClass = 'bg-purple-500/95 text-white';
+        $cardClass = 'opacity-75 grayscale-[35%]';
+    } elseif ($isHabis) {
+        $badgeText = 'Habis';
+        $badgeClass = 'bg-red-500/95 text-white';
+        $cardClass = 'opacity-75 grayscale-[35%]';
+    } else {
+        $badgeText = 'Tersedia';
+        $badgeClass = 'bg-orange-500/95 text-white';
+        $cardClass = '';
+    }
 
     return "
     <article class='menu-card bg-white rounded-3xl overflow-hidden border-2 border-transparent shadow-lg relative group hover:shadow-2xl hover:shadow-orange-200/40 hover:border-orange-300 transition-all duration-300 $cardClass' data-card>
@@ -113,13 +129,17 @@ function renderMenuCard($m, $is_fav) {
         <a href='detail_menu.php?id=$id' class='block'>
             <div class='relative overflow-hidden'>
                 <img class='w-full aspect-square object-cover bg-gradient-to-br from-orange-50 to-orange-100 group-hover:scale-110 transition-transform duration-500' src='$foto' alt='".htmlspecialchars($m['nama_menu'] ?? '')."'>
+                
+                <!-- Logo Halal -->
+                <img src='/kantin/uploads/logo/Cuplikan_layar_2026-06-08_104038-removebg-preview.png' alt='Halal' class='absolute bottom-3 right-3 w-10 h-10 object-contain drop-shadow-md z-10'>
+
                 <div class='absolute top-3 right-3 $badgeClass text-[10px] font-black px-3 py-1.5 rounded-full shadow-lg uppercase tracking-wide'>$badgeText</div>
                 <div class='absolute left-3 bottom-3 bg-white/95 backdrop-blur-lg px-3 py-1.5 rounded-full flex items-center gap-1 shadow-lg'>
                     <span class='material-symbols-outlined text-yellow-400 text-base'>star</span>
                     <span class='text-xs font-black text-gray-800'>$ratingTxt</span>
                 </div>
             </div>
-            <div class='p-4'>
+            <div class='p-4 pb-2'>
                 <p class='text-[10px] text-gray-400 font-black uppercase tracking-wider truncate'>".htmlspecialchars($m['nama_kantin'] ?? 'Kantin')."</p>
                 <h4 class='font-black text-sm truncate mt-1 bg-gradient-to-r from-gray-800 to-gray-600 bg-clip-text text-transparent leading-tight'>".htmlspecialchars($m['nama_menu'] ?? 'Menu')."</h4>
                 <div class='flex items-center gap-2 mt-2'>
@@ -127,12 +147,17 @@ function renderMenuCard($m, $is_fav) {
                 </div>
                 <div class='flex items-center justify-between mt-2'>
                     <span class='text-[10px] text-gray-400 font-semibold'>$ulasanTxt</span>
-                    <span class='w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center shadow-lg shadow-orange-200 group-hover:scale-110 transition-all'>
-                        <span class='material-symbols-outlined text-sm'>add</span>
-                    </span>
                 </div>
             </div>
         </a>
+        <div class='px-4 pb-4 flex gap-2'>
+            <button onclick='event.preventDefault(); dashboardProsesKeKeranjang($id, $isHabisInt, $isLuarJamInt)' class='flex-1 h-10 rounded-xl border-2 border-orange-400 text-orange-600 font-bold flex items-center justify-center transition-all hover:bg-orange-50 hover:border-orange-500 " . (($isHabis || $isLuarJam) ? "opacity-40 cursor-not-allowed" : "") . "' " . (($isHabis || $isLuarJam) ? "disabled" : "") . " title='Tambah ke Keranjang'>
+                <span class='material-symbols-outlined text-[20px]'>shopping_bag</span>
+            </button>
+            <button onclick='event.preventDefault(); dashboardPesanSekarang($id, $isHabisInt, $isLuarJamInt)' class='flex-[2] h-10 rounded-xl font-bold flex items-center justify-center transition-all " . (($isHabis || $isLuarJam) ? "bg-gray-300 text-gray-500 cursor-not-allowed" : "bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-200 hover:from-orange-600 hover:to-orange-700") . "' " . (($isHabis || $isLuarJam) ? "disabled" : "") . ">
+                <span class='text-sm'>" . ($isLuarJam ? "Tutup" : "Beli Sekarang") . "</span>
+            </button>
+        </div>
     </article>";
 }
 ?>
@@ -503,6 +528,32 @@ function filterSearch(val){
     document.querySelectorAll('.menu-card').forEach(card=>{
         card.style.display=card.textContent.toLowerCase().includes(val)?'':'none';
     });
+}
+
+function dashboardPesanSekarang(id_menu, isHabis, isLuarJam) {
+    if (isHabis === 1) {
+        showToast('Maaf, menu ini sedang habis.');
+        return;
+    }
+    if (isLuarJam === 1) {
+        showToast('Maaf, kantin ini sedang tutup.');
+        return;
+    }
+    const p = new URLSearchParams({id_menu: id_menu, qty: 1, opsi: ''});
+    location.href = 'checkout.php?' + p.toString();
+}
+
+function dashboardProsesKeKeranjang(id_menu, isHabis, isLuarJam) {
+    if (isHabis === 1) {
+        showToast('Maaf, menu ini sedang habis.');
+        return;
+    }
+    if (isLuarJam === 1) {
+        showToast('Maaf, kantin ini sedang tutup.');
+        return;
+    }
+    const p = new URLSearchParams({id: id_menu, qty: 1, opsi: '', csrf_token: '<?= $csrfToken ?>'});
+    location.href = 'tambah_keranjang.php?' + p.toString();
 }
 </script>
 

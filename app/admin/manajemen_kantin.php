@@ -91,7 +91,15 @@ try {
                 <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xl">search</span>
                 <input type="text" name="search" value="<?= htmlspecialchars($search) ?>" placeholder="Cari kantin atau pemilik..." class="pl-12 pr-4 py-3 w-full rounded-2xl border border-slate-200 focus:border-primary-orange focus:ring-primary-orange/20" />
             </form>
-            <a href="tambah_kantin.php" class="bg-primary-orange text-white px-4 py-2 rounded-2xl font-bold shadow-lg hover:bg-orange-600 transition-all"><?= t('admin.add_kantin', 'Tambah Kantin') ?></a>
+            <?php
+            $kantin_limit_cek = 10;
+            $cek_total = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM kantin");
+            $total_saat_ini = $cek_total ? (int)mysqli_fetch_assoc($cek_total)['total'] : 0;
+            if ($total_saat_ini >= $kantin_limit_cek): ?>
+                <button onclick="alert('Slot kantin penuh! Maksimal 10 kantin telah tercapai. Silakan hapus kantin yang tidak aktif jika ingin menambahkan baru.')" class="bg-slate-300 text-slate-500 cursor-not-allowed px-4 py-2 rounded-2xl font-bold shadow-lg transition-all"><?= t('admin.add_kantin', 'Tambah Kantin') ?> (Penuh)</button>
+            <?php else: ?>
+                <a href="tambah_kantin.php" class="bg-primary-orange text-white px-4 py-2 rounded-2xl font-bold shadow-lg hover:bg-orange-600 transition-all"><?= t('admin.add_kantin', 'Tambah Kantin') ?></a>
+            <?php endif; ?>
         </div>
     </header>
     <?php if ($message !== ''): ?>

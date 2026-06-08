@@ -48,8 +48,8 @@ $menu_habis = count(array_filter($menus, fn($m) => $m['stok'] <= 0));
                 <i class="fa-solid fa-box text-blue-600 text-lg"></i>
             </div>
             <div>
-                <h2 class="text-xl font-black text-gray-900"><?= t('seller.stock_info.title', 'Informasi Stok') ?></h2>
-                    <p class="text-xs text-gray-500 mt-0.5"><?= $total_menu ?> <?= t('seller.stock_info.items_available', 'menu tersedia') ?></p>
+                <h2 class="text-xl font-black text-gray-900">Informasi Stok</h2>
+                <p class="text-xs text-gray-500 mt-0.5"><?= $total_menu ?> menu tersedia</p>
             </div>
         </div>
     </div>
@@ -58,15 +58,15 @@ $menu_habis = count(array_filter($menus, fn($m) => $m['stok'] <= 0));
     <div class="grid grid-cols-3 gap-3 mb-6">
         <div class="bg-gradient-to-br from-blue-50 to-blue-100 rounded-2xl p-4 text-center">
             <p class="text-2xl font-black text-blue-700"><?= $total_menu ?></p>
-            <p class="text-xs text-blue-600 font-semibold mt-1"><?= t('seller.stock_info.total_menus', 'Total Menu') ?></p>
+            <p class="text-xs text-blue-600 font-semibold mt-1">Total Menu</p>
         </div>
         <div class="bg-gradient-to-br from-green-50 to-green-100 rounded-2xl p-4 text-center">
             <p class="text-2xl font-black text-green-700"><?= $menu_tersedia ?></p>
-            <p class="text-xs text-green-600 font-semibold mt-1"><?= t('seller.stock_info.available', 'Tersedia') ?></p>
+            <p class="text-xs text-green-600 font-semibold mt-1">Tersedia</p>
         </div>
         <div class="bg-gradient-to-br from-red-50 to-red-100 rounded-2xl p-4 text-center">
             <p class="text-2xl font-black text-red-700"><?= $menu_habis ?></p>
-            <p class="text-xs text-red-600 font-semibold mt-1"><?= t('seller.stock_info.out_of_stock', 'Habis') ?></p>
+            <p class="text-xs text-red-600 font-semibold mt-1">Habis</p>
         </div>
     </div>
 
@@ -76,8 +76,8 @@ $menu_habis = count(array_filter($menus, fn($m) => $m['stok'] <= 0));
         <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gray-100 flex items-center justify-center">
             <i class="fa-solid fa-inbox text-2xl text-gray-300"></i>
         </div>
-        <p class="text-gray-500 font-semibold"><?= t('seller.stock_info.no_menu', 'Belum ada menu') ?></p>
-        <p class="text-sm text-gray-400 mt-1"><?= t('seller.stock_info.add_menu_prompt', 'Tambahkan menu untuk memulai') ?></p>
+        <p class="text-gray-500 font-semibold">Belum ada menu</p>
+        <p class="text-sm text-gray-400 mt-1">Tambahkan menu untuk memulai</p>
     </div>
     <?php else: ?>
     <div class="space-y-2 max-h-80 overflow-y-auto">

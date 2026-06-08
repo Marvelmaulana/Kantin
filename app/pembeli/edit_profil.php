@@ -12,8 +12,13 @@ if (!isset($_SESSION['id_user'])) {
 }
 
 $id_user = (int)$_SESSION['id_user'];
-$query = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = $id_user");
-$user = mysqli_fetch_assoc($query);
+$query = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = $id_user LIMIT 1");
+$user = $query ? mysqli_fetch_assoc($query) : null;
+
+if (!$user) {
+    header("Location: ../auth/logout.php");
+    exit();
+}
 
 // Siapkan data untuk siswa
 $is_siswa = isset($user['tipe_pengguna']) && $user['tipe_pengguna'] === 'siswa';

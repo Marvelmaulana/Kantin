@@ -23,7 +23,7 @@ $q_kantin = mysqli_query($koneksi, "
            COUNT(rm.id_rating) AS total_rating,
            COUNT(DISTINCT m.id_menu) AS total_menu
     FROM kantin k
-    LEFT JOIN menu m ON k.id_kantin=m.id_kantin AND COALESCE(m.status,'Tersedia') <> 'Habis'
+    LEFT JOIN menu m ON k.id_kantin=m.id_kantin AND COALESCE(m.status,'Tersedia') NOT IN ('Habis','Diblokir','Dinonaktifkan')
     LEFT JOIN rating_menu rm ON m.id_menu=rm.id_menu
     WHERE k.id_kantin=$id_kantin
     GROUP BY k.id_kantin
@@ -49,7 +49,7 @@ $query_menu = mysqli_query($koneksi, "
     FROM menu m
     LEFT JOIN rating_menu rm ON m.id_menu=rm.id_menu
     LEFT JOIN ulasan u ON m.id_menu=u.id_menu
-    WHERE m.id_kantin=$id_kantin AND COALESCE(m.status,'Tersedia') <> 'Habis'
+    WHERE m.id_kantin=$id_kantin AND COALESCE(m.status,'Tersedia') NOT IN ('Habis','Diblokir','Dinonaktifkan')
     GROUP BY m.id_menu
     ORDER BY m.id_menu DESC
 ");

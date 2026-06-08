@@ -21,7 +21,7 @@ if (!$penjual) {
 
 $message = '';
 $message_type = 'success';
-$kantins = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kantin ORDER BY nama_kantin ASC");
+$kantins = mysqli_query($koneksi, "SELECT k.id_kantin, k.nama_kantin, COUNT(u.id_user) AS jumlah_penjual FROM kantin k LEFT JOIN users u ON k.id_kantin = u.id_kantin AND u.role = 'penjual' GROUP BY k.id_kantin HAVING jumlah_penjual < 5 OR k.id_kantin = " . (int)$penjual['id_kantin'] . " ORDER BY k.nama_kantin ASC");
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = mysqli_real_escape_string($koneksi, trim($_POST['username'] ?? ''));
@@ -44,27 +44,39 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Username atau email sudah dipakai oleh user lain.';
             $message_type = 'error';
         } else {
-            mysqli_begin_transaction($koneksi);
-            try {
-                // Update users dengan id_kantin dan nama_kantin yang baru
-                $set_password = '';
-                if ($password !== '') {
-                    $hash = password_hash($password, PASSWORD_DEFAULT);
-                    $set_password = ", password='$hash'";
+            // Validasi server-side: jika memilih kantin baru, pastikan tidak melebihi batas 5 penjual
+            if ($id_kantin > 0 && $id_kantin !== (int)$penjual['id_kantin']) {
+                $cnt_res = mysqli_query($koneksi, "SELECT COUNT(id_user) AS total FROM users WHERE id_kantin=$id_kantin AND role='penjual'");
+                $cnt_row = $cnt_res ? mysqli_fetch_assoc($cnt_res) : null;
+                if ($cnt_row && isset($cnt_row['total']) && (int)$cnt_row['total'] >= 5) {
+                    $message = 'Kantin yang dipilih sudah mencapai maksimal 5 penjual.';
+                    $message_type = 'error';
                 }
-                $nama_kantin_sql = $id_kantin > 0 ? "(SELECT nama_kantin FROM kantin WHERE id_kantin=$id_kantin)" : 'NULL';
-                $updated = mysqli_query($koneksi, "UPDATE users SET username='$username', email='$email', id_kantin=" . ($id_kantin>0?$id_kantin:'NULL') . ", nama_kantin=$nama_kantin_sql $set_password WHERE id_user=$id_user AND role='penjual'");
-                if (!$updated) {
-                    throw new Exception(mysqli_error($koneksi));
+            }
+
+            if ($message_type !== 'error') {
+                mysqli_begin_transaction($koneksi);
+                try {
+                    // Update users dengan id_kantin dan nama_kantin yang baru
+                    $set_password = '';
+                    if ($password !== '') {
+                        $hash = password_hash($password, PASSWORD_DEFAULT);
+                        $set_password = ", password='$hash'";
+                    }
+                    $nama_kantin_sql = $id_kantin > 0 ? "(SELECT nama_kantin FROM kantin WHERE id_kantin=$id_kantin)" : 'NULL';
+                    $updated = mysqli_query($koneksi, "UPDATE users SET username='$username', email='$email', id_kantin=" . ($id_kantin>0?$id_kantin:'NULL') . ", nama_kantin=$nama_kantin_sql $set_password WHERE id_user=$id_user AND role='penjual'");
+                    if (!$updated) {
+                        throw new Exception(mysqli_error($koneksi));
+                    }
+                    mysqli_commit($koneksi);
+                    $message = 'Data penjual berhasil diperbarui.';
+                    $message_type = 'success';
+                    $penjual = kk_fetch_one($koneksi, "SELECT * FROM users WHERE id_user=$id_user LIMIT 1");
+                } catch (Throwable $e) {
+                    mysqli_rollback($koneksi);
+                    $message = 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage();
+                    $message_type = 'error';
                 }
-                mysqli_commit($koneksi);
-                $message = 'Data penjual berhasil diperbarui.';
-                $message_type = 'success';
-                $penjual = kk_fetch_one($koneksi, "SELECT * FROM users WHERE id_user=$id_user LIMIT 1");
-            } catch (Throwable $e) {
-                mysqli_rollback($koneksi);
-                $message = 'Terjadi kesalahan saat menyimpan data: ' . $e->getMessage();
-                $message_type = 'error';
             }
         }
     }
@@ -108,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?= $message ?>
     </div>
     <?php endif; ?>
-    <form method="POST" class="bg-white rounded-3xl shadow p-6 max-w-3xl grid gap-6">
+    <form method="POST" class="bg-white rounded-3xl shadow p-6 max-w-3xl grid gap-6" onsubmit="return confirm('Apakah Anda yakin ingin menyimpan perubahan penjual ini?');">
         <div>
             <label class="block text-sm font-bold mb-2">Username</label>
             <input name="username" value="<?= htmlspecialchars($_POST['username'] ?? $penjual['username']) ?>" required class="w-full px-4 py-3 border rounded-2xl" />

@@ -14,6 +14,10 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
 $message = '';
 $message_type = 'success';
 $kantin_id = null;
+$kantin_limit = 10;
+$kantin_count_result = mysqli_query($koneksi, "SELECT COUNT(*) as total FROM kantin");
+$kantin_total = $kantin_count_result ? (int)mysqli_fetch_assoc($kantin_count_result)['total'] : 0;
+$kantin_limit_reached = $kantin_total >= $kantin_limit;
 
 // PROSES FORM
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -70,6 +74,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = 'Format email tidak valid!';
                 $message_type = 'error';
             }
+        } elseif ($kantin_limit_reached) {
+            $message = 'Maksimal 10 kantin telah tercapai. Hapus kantin yang tidak lagi aktif sebelum menambahkan kantin baru.';
+            $message_type = 'error';
         } elseif ($owner_id && mysqli_num_rows(mysqli_query($koneksi, "SELECT id_user FROM users WHERE id_user=$owner_id AND role='penjual' LIMIT 1")) === 0) {
             $message = 'Pemilik tidak valid atau bukan penjual.';
             $message_type = 'error';
@@ -255,7 +262,18 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
     </div>
     <?php endif; ?>
 
-    <form method="POST" enctype="multipart/form-data" class="space-y-8">
+    <?php if ($kantin_limit_reached): ?>
+    <div class="mb-6 px-6 py-4 rounded-2xl border bg-orange-50 border-orange-100 text-orange-700 font-semibold text-sm">
+        <div class="flex items-start gap-3">
+            <span class="material-symbols-outlined mt-0.5">warning</span>
+            <div>
+                Batas maksimal <strong><?= $kantin_limit ?></strong> kantin sudah tercapai. Hapus atau nonaktifkan kantin lama sebelum menambahkan yang baru.
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <form method="POST" enctype="multipart/form-data" class="space-y-8" onsubmit="return confirm('Apakah Anda yakin ingin menambahkan kantin ini?');">
         <input type="hidden" name="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
 
         <!-- SECTION 1: INFORMASI PENJUAL -->
@@ -423,7 +441,7 @@ $penjual_list = mysqli_query($koneksi, "SELECT id_user, username FROM users WHER
 
         <!-- TOMBOL -->
         <div class="flex flex-col sm:flex-row gap-3 pb-10">
-            <button type="submit" class="flex-1 sm:flex-none bg-gradient-to-r from-primary-orange to-red-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-bold text-sm sm:text-base shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2">
+            <button type="submit" class="flex-1 sm:flex-none bg-gradient-to-r from-primary-orange to-red-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-2xl font-bold text-sm sm:text-base shadow-lg shadow-orange-200 hover:shadow-orange-300 hover:scale-105 active:scale-95 transition-all flex items-center justify-center gap-2" <?= $kantin_limit_reached ? 'disabled' : '' ?>>
                 <span class="material-symbols-outlined">add_business</span>
                 <span>Tambahkan Kantin</span>
             </button>

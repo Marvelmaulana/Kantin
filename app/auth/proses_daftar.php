@@ -30,7 +30,7 @@ if (!$koneksi || mysqli_connect_errno()) {
     exit();
 }
 
-if (isset($_POST['username']) || isset($_POST['daftar_btn'])) {
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     // Ambil input dari form
     $username = trim($_POST['username'] ?? '');

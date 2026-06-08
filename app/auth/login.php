@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 include(__DIR__ . '/../../includes/language_helper.php');
 ?>
 <!DOCTYPE html>
-<html lang="<?= get_current_language(); ?>">
+<html lang="id">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -40,37 +40,16 @@ include(__DIR__ . '/../../includes/language_helper.php');
     <style>
         /* Glassmorphism Styles */
         .glass-card {
-            background:
-                linear-gradient(135deg, rgba(255, 255, 255, 0.72), rgba(255, 247, 237, 0.72), rgba(236, 254, 255, 0.62));
+            background: rgba(255, 255, 255, 0.45);
             backdrop-filter: blur(24px);
             -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(251, 146, 60, 0.28);
-            box-shadow: 0 24px 60px rgba(249, 115, 22, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.05);
         }
         .dark .glass-card {
-            background:
-                linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(67, 20, 7, 0.55), rgba(19, 78, 74, 0.46));
+            background: rgba(15, 23, 42, 0.45);
             border: 1px solid rgba(255, 255, 255, 0.05);
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-        }
-
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            pointer-events: none;
-            background:
-                radial-gradient(circle at 15% 14%, rgba(255, 107, 53, .18), transparent 28%),
-                radial-gradient(circle at 85% 18%, rgba(78, 205, 196, .18), transparent 26%),
-                radial-gradient(circle at 74% 86%, rgba(236, 72, 153, .12), transparent 30%);
-            z-index: 0;
-        }
-
-        header,
-        main,
-        footer {
-            position: relative;
-            z-index: 1;
         }
 
         /* Hover & Transition Utilities */
@@ -154,10 +133,6 @@ include(__DIR__ . '/../../includes/language_helper.php');
             <!-- Help Trigger Button -->
             <button id="helpBtn" class="p-2.5 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-500 dark:text-slate-400 hover:text-brand-orange dark:hover:text-brand-orange smooth-transition shadow-sm hover:scale-105" title="Bantuan Login">
                 <span class="material-symbols-outlined block text-xl">help_outline</span>
-            </button>
-            <button id="languageToggle" type="button" class="p-2.5 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-500 dark:text-slate-400 hover:text-brand-orange dark:hover:text-brand-orange smooth-transition shadow-sm hover:scale-105" title="<?= t('lang.title', 'Ubah Bahasa') ?>" aria-label="<?= t('lang.title', 'Ubah Bahasa') ?>">
-                <span class="material-symbols-outlined text-xl">language</span>
-                <span id="languageLabel" class="ml-2 hidden sm:inline text-[11px] font-bold uppercase"></span>
             </button>
             <!-- Dark Mode Switcher -->
             <button id="darkModeToggle" class="p-2.5 rounded-xl bg-white/70 dark:bg-slate-800/80 border border-slate-200/50 dark:border-slate-700/50 text-slate-500 dark:text-slate-400 hover:text-brand-orange dark:hover:text-brand-orange smooth-transition shadow-sm hover:scale-105" title="Ganti Tema">
@@ -454,9 +429,6 @@ include(__DIR__ . '/../../includes/language_helper.php');
             // --- Dark Mode Toggle ---
             const darkModeToggle = document.getElementById('darkModeToggle');
             const darkIcon = document.getElementById('darkIcon');
-            const languageToggle = document.getElementById('languageToggle');
-            const languageLabel = document.getElementById('languageLabel');
-            const currentLanguage = '<?= get_current_language(); ?>';
 
             function applyTheme(isDark) {
                 if (isDark) {
@@ -467,23 +439,6 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     darkIcon.textContent = 'light_mode';
                 }
             }
-
-            function updateLanguageControl(lang) {
-                const nextLang = lang === 'en' ? 'id' : 'en';
-                languageToggle.dataset.nextLang = nextLang;
-                languageLabel.textContent = nextLang.toUpperCase();
-                languageToggle.title = lang === 'en' ? 'Switch to Bahasa Indonesia' : 'Switch to English';
-                languageToggle.setAttribute('aria-label', languageToggle.title);
-            }
-
-            updateLanguageControl(currentLanguage);
-
-            languageToggle.addEventListener('click', () => {
-                const nextLang = languageToggle.dataset.nextLang;
-                const url = new URL(window.location.href);
-                url.searchParams.set('lang', nextLang);
-                window.location.href = url.toString();
-            });
 
             const savedTheme = localStorage.getItem('darkMode');
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;

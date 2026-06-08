@@ -96,8 +96,8 @@ if (!function_exists('kk_ensure_buyer_schema')) {
         ");
 
         @mysqli_query($koneksi, "UPDATE menu SET stok = 0 WHERE stok IS NULL");
-        @mysqli_query($koneksi, "UPDATE menu SET status = 'Habis' WHERE COALESCE(stok,0) <= 0");
-        @mysqli_query($koneksi, "UPDATE menu SET status = 'Tersedia' WHERE COALESCE(stok,0) > 0 AND COALESCE(status,'') <> 'Tersedia'");
+        @mysqli_query($koneksi, "UPDATE menu SET status = 'Habis' WHERE COALESCE(stok,0) <= 0 AND status NOT IN ('Diblokir', 'Dinonaktifkan')");
+        @mysqli_query($koneksi, "UPDATE menu SET status = 'Tersedia' WHERE COALESCE(stok,0) > 0 AND status NOT IN ('Tersedia', 'Diblokir', 'Dinonaktifkan')");
         @mysqli_query($koneksi, "UPDATE kantin SET jam_buka = '07:00:00' WHERE jam_buka IS NULL");
         @mysqli_query($koneksi, "UPDATE kantin SET jam_tutup = '15:00:00' WHERE jam_tutup IS NULL");
         @mysqli_query($koneksi, "UPDATE kantin SET status_buka = 'Buka' WHERE status_buka IS NULL");

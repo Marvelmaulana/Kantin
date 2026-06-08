@@ -7,6 +7,9 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
+header('Location: dashboard_admin.php');
+exit();
+
 // === FILTER INPUT ===
 $filter_status = $_GET['status'] ?? '';
 $filter_tanggal = $_GET['tanggal'] ?? date('Y-m-d');

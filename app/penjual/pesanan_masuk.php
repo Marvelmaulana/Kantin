@@ -138,6 +138,8 @@ body::before {
 .btn-siap:hover    { background:#a7f3d0; transform:translateY(-1px); box-shadow:0 6px 16px rgba(16,185,129,0.25); }
 .btn-selesai { background:linear-gradient(135deg,#b22204,#ff6b35); color:#fff; }
 .btn-selesai:hover { transform:translateY(-1px); box-shadow:0 8px 20px rgba(178,34,4,0.3); }
+.btn-batal { background:linear-gradient(135deg,#fecaca,#f87171); color:#7f1d1d; }
+.btn-batal:hover { background:#fda4af; transform:translateY(-1px); box-shadow:0 6px 16px rgba(248,113,113,0.25); }
 
 /* MODAL */
 .overlay {
@@ -451,6 +453,14 @@ body::before {
                         <?= t('action.confirm') ?> &amp; <?= t('status.processing') ?>
                     </button>
                 </form>
+                <form action="update_status.php" method="POST" onsubmit="return confirm('Batalkan pesanan ini?');">
+                    <input type="hidden" name="id_pesanan" value="<?= $id_p ?>">
+                    <input type="hidden" name="status_baru" value="Dibatalkan">
+                    <button type="submit" class="btn-aksi btn-batal">
+                        <span class="material-symbols-outlined" style="font-size:15px">cancel</span>
+                        Batalkan Pesanan
+                    </button>
+                </form>
             <?php elseif ($status == 'Diproses'): ?>
                 <form action="update_status.php" method="POST">
                     <input type="hidden" name="id_pesanan" value="<?= $id_p ?>">
@@ -458,6 +468,14 @@ body::before {
                     <button type="submit" class="btn-aksi btn-siap">
                         <span class="material-symbols-outlined" style="font-size:15px">check_circle</span>
                         <?= t('tracking.ready') ?> — <?= t('action.confirm') ?>
+                    </button>
+                </form>
+                <form action="update_status.php" method="POST" onsubmit="return confirm('Batalkan pesanan ini?');">
+                    <input type="hidden" name="id_pesanan" value="<?= $id_p ?>">
+                    <input type="hidden" name="status_baru" value="Dibatalkan">
+                    <button type="submit" class="btn-aksi btn-batal">
+                        <span class="material-symbols-outlined" style="font-size:15px">cancel</span>
+                        Batalkan Pesanan
                     </button>
                 </form>
             <?php elseif ($status == 'Siap Diambil'): ?>

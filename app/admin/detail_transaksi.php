@@ -10,7 +10,7 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
 
 $id_pesanan = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 if (!$id_pesanan) {
-    header('Location: laporan_transaksi.php');
+    header('Location: dashboard_admin.php');
     exit();
 }
 
@@ -135,11 +135,11 @@ $statusClass = match($transaksi['status']) {
     <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 mt-14 lg:mt-0 no-print">
         <div>
             <div class="flex items-center gap-2 text-sm text-orange-600 font-bold mb-2">
-                <a href="laporan_transaksi.php" class="hover:underline flex items-center gap-1">
+                <a href="dashboard_admin.php" class="hover:underline flex items-center gap-1">
                     <span class="material-symbols-outlined text-sm">arrow_back</span> Kembali
                 </a>
             </div>
-            <h2 class="text-2xl md:text-3xl font-extrabold text-[#2a2a2a] tracking-tight">Detail Transaksi</h2>
+            <h2 class="text-2xl md:text-3xl font-extrabold text-[#2a2a2a] tracking-tight">Detail Transaksi</h2
             <p class="text-orange-700 font-semibold mt-1 text-sm md:text-base">Informasi rincian transaksi #<?= $id_transaksi ?></p>
         </div>
         <div class="flex items-center gap-3 w-full sm:w-auto">

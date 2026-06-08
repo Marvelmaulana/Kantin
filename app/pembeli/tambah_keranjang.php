@@ -40,8 +40,8 @@ $data_menu = mysqli_fetch_assoc($cek_menu);
 $stok_menu = (int)($data_menu['stok'] ?? 0);
 $status_menu = $data_menu['status'] ?? 'Tersedia';
 
-// Cek jika stok habis atau status Habis
-if ($status_menu === 'Habis' || $stok_menu <= 0) {
+// Cek jika stok habis, status Habis, atau menu tidak boleh dibeli
+if ($status_menu === 'Habis' || $stok_menu <= 0 || in_array($status_menu, ['Diblokir', 'Dinonaktifkan'], true)) {
     echo "<script>alert(" . json_encode(t('alert.menu_out_of_stock')) . "); window.location='detail_menu.php?id=$id_menu';</script>";
     exit();
 }

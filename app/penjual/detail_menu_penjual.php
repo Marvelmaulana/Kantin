@@ -85,7 +85,8 @@ body{font-family:'Be Vietnam Pro',sans-serif;background:linear-gradient(135deg,#
     <div class="lg:grid lg:grid-cols-2 gap-6 bg-white rounded-3xl p-5 shadow-xl">
         <div class="relative overflow-hidden rounded-3xl bg-orange-50 shadow-xl border border-orange-100">
             <img class="w-full h-[420px] object-cover" src="<?= kk_upload_url($data['foto'] ?? '', 'menu'); ?>" onerror="this.src='../../public/assets/img/default-food.svg'">
-            <div class="absolute left-4 bottom-4 bg-white/95 backdrop-blur-lg px-4 py-2 rounded-full flex items-center gap-2 shadow-xl">
+            <img src="../../uploads/logo/Cuplikan_layar_2026-06-08_104038-removebg-preview.png" alt="Halal" class="absolute bottom-4 right-4 w-12 h-12 md:w-16 md:h-16 object-contain drop-shadow-md bg-white/50 backdrop-blur-sm rounded-full p-1 z-10">
+            <div class="absolute left-4 bottom-4 bg-white/95 backdrop-blur-lg px-4 py-2 rounded-full flex items-center gap-2 shadow-xl z-10">
                 <span class="material-symbols-outlined text-yellow-400 text-xl">star</span>
                 <span class="headline font-black text-base"><?= $avg > 0 ? $avg : 'Baru' ?></span>
                 <span class="text-xs text-gray-400 font-semibold"><?= $jml ?> ulasan</span>

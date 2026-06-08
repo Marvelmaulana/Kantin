@@ -8,6 +8,25 @@ if (!isset($_SESSION['id_user']) || $_SESSION['role'] != 'admin') {
     exit();
 }
 
+header('Location: dashboard_admin.php');
+exit();
+
+$flash_message = '';
+$flash_type = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_revenue_id'])) {
+    $delete_id = (int)$_POST['delete_revenue_id'];
+    if ($delete_id > 0) {
+        $delete_query = mysqli_query($koneksi, "UPDATE pesanan SET pajak = 0 WHERE id_pesanan = $delete_id");
+        if ($delete_query) {
+            $flash_message = 'Pendapatan admin berhasil dihapus untuk transaksi #' . $delete_id . '.';
+            $flash_type = 'success';
+        } else {
+            $flash_message = 'Gagal menghapus pendapatan: ' . mysqli_error($koneksi);
+            $flash_type = 'error';
+        }
+    }
+}
+
 // === FILTER INPUT ===
 $filterTanggal = $_GET['tanggal'] ?? date('Y-m-d');
 $filterKantin = $_GET['kantin'] ?? '';
@@ -346,6 +365,15 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
         </div>
     </header>
 
+    <?php if (!empty($flash_message)): ?>
+    <div class="mb-6 px-6 py-4 rounded-2xl border <?= $flash_type === 'success' ? 'bg-green-50 border-green-100 text-green-700' : 'bg-red-50 border-red-100 text-red-700' ?> font-semibold text-sm">
+        <div class="flex items-start gap-3">
+            <span class="material-symbols-outlined mt-0.5"><?= $flash_type === 'success' ? 'check_circle' : 'error' ?></span>
+            <div><?= htmlspecialchars($flash_message) ?></div>
+        </div>
+    </div>
+    <?php endif; ?>
+
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div class="bg-white/90 backdrop-blur-xl p-4 md:p-6 rounded-2xl border border-orange-100 shadow-glow-card">
@@ -551,6 +579,16 @@ $daftar_kantin = mysqli_query($koneksi, "SELECT id_kantin, nama_kantin FROM kant
                                     <a href="detail_transaksi.php?id=<?= $detail['id_transaksi'] ?>" class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-orange-100 text-primary-orange hover:bg-primary-orange hover:text-white transition-all" title="Lihat Detail">
                                         <span class="material-symbols-outlined text-sm">visibility</span>
                                     </a>
+                                    <?php if ((int)$detail['jumlah_pajak'] > 0): ?>
+                                    <form method="POST" onsubmit="return confirm('Hapus pendapatan admin untuk transaksi #<?= $detail['id_transaksi'] ?>?');">
+                                        <input type="hidden" name="delete_revenue_id" value="<?= $detail['id_transaksi'] ?>">
+                                        <button type="submit" class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-red-100 text-red-600 hover:bg-red-500 hover:text-white transition-all" title="Hapus Pendapatan Admin">
+                                            <span class="material-symbols-outlined text-sm">delete</span>
+                                        </button>
+                                    </form>
+                                    <?php else: ?>
+                                    <span class="text-[11px] text-slate-400 font-semibold">Sudah dihapus</span>
+                                    <?php endif; ?>
                                 </div>
                             </td>
                         </tr>

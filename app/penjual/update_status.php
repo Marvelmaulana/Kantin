@@ -20,7 +20,7 @@ $status = trim($_POST['status_baru']   ?? '');
 $id_k   = intval($_SESSION['id_kantin'] ?? 0);
 
 // Status yang diizinkan
-$status_valid = ['Pending', 'Diproses', 'Siap Diambil', 'Selesai'];
+$status_valid = ['Pending', 'Diproses', 'Siap Diambil', 'Selesai', 'Dibatalkan'];
 
 if ($id_p <= 0 || !in_array($status, $status_valid)) {
     header("Location: pesanan_masuk.php?error=Data+tidak+valid");

@@ -421,24 +421,6 @@ if (!$max_val || $max_val <= 0) {
                 <h3 class="text-base sm:text-lg lg:text-xl font-extrabold text-[#2a2a2a] mt-0.5"><?= number_format($jumlah_menu) ?></h3>
             </div>
         </a>
-        <a href="laporan_transaksi.php" class="bg-white/90 backdrop-blur-xl p-3 sm:p-4 rounded-xl lg:rounded-2xl border border-orange-100 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer group">
-            <div class="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white group-hover:shadow-lg transition-all">
-                <span class="material-symbols-outlined text-lg sm:text-xl">receipt_long</span>
-            </div>
-            <div class="text-center">
-                <p class="text-[8px] sm:text-[9px] font-black text-emerald-500 uppercase tracking-wider leading-tight">Transaksi</p>
-                <h3 class="text-base sm:text-lg lg:text-xl font-extrabold text-[#2a2a2a] mt-0.5"><?= number_format($jumlah_transaksi) ?></h3>
-            </div>
-        </a>
-        <a href="laporan_pendapatan_admin.php" class="bg-white/90 backdrop-blur-xl p-3 sm:p-4 rounded-xl lg:rounded-2xl border border-orange-100 flex flex-col items-center gap-2 shadow-sm hover:shadow-md hover:scale-105 transition-all cursor-pointer group">
-            <div class="w-10 sm:w-12 h-10 sm:h-12 rounded-lg bg-gradient-to-br from-rose-400 to-rose-600 flex items-center justify-center text-white group-hover:shadow-lg transition-all">
-                <span class="material-symbols-outlined text-lg sm:text-xl">trending_up</span>
-            </div>
-            <div class="text-center">
-                <p class="text-[8px] sm:text-[9px] font-black text-rose-500 uppercase tracking-wider leading-tight">Seluruh Pendapatan</p>
-                <h3 class="text-xs sm:text-sm lg:text-base font-extrabold text-[#2a2a2a] mt-0.5">Rp <?= number_format($pendapatan_admin, 0, ',', '.') ?></h3>
-            </div>
-        </a>
     </section>
 
     <!-- Grafik Penjualan -->

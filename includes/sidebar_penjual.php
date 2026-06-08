@@ -47,6 +47,27 @@ $q_chat_unread = mysqli_query($koneksi, "
 
 $data_chat_unread = mysqli_fetch_assoc($q_chat_unread);
 $chat_unread = $data_chat_unread['total'] ?? 0;
+
+// HITUNG BREAKDOWN PESANAN PER STATUS
+$q_counts = mysqli_query($koneksi, "
+    SELECT
+       SUM(status='Pending') as pending,
+       SUM(status='Diproses') as diproses,
+       SUM(status='Siap Diambil') as siap,
+       SUM(status='Selesai') as selesai
+    FROM pesanan
+    WHERE id_kantin = '$id_kantin'
+");
+$counts = mysqli_fetch_assoc($q_counts);
+$pending = (int)($counts['pending'] ?? 0);
+$diproses = (int)($counts['diproses'] ?? 0);
+$siap = (int)($counts['siap'] ?? 0);
+$selesai = (int)($counts['selesai'] ?? 0);
+
+// HITUNG PENJUALAN HARI INI (Selesai)
+$q_sales = mysqli_query($koneksi, "SELECT COALESCE(SUM(total_harga),0) as total FROM pesanan WHERE id_kantin='$id_kantin' AND status='Selesai' AND DATE(tanggal)=CURDATE()");
+$row_sales = mysqli_fetch_assoc($q_sales);
+$today_sales = $row_sales['total'] ?? 0;
 ?>
 
 <style>
@@ -158,6 +179,8 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear
                     <?= $user_display; ?>
                 </p>
 
+                <p class="text-xs text-white/80 mt-2">Penjualan Hari Ini: <span class="font-bold"><?= 'Rp ' . number_format((float)$today_sales,0,',','.') ?></span></p>
+
             </div>
 
         </div>
@@ -183,6 +206,15 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear
                 <?= t('nav.manage_menu') ?>
             </a>
 
+            <!-- MENU DIBLOKIR -->
+            <a href="menu_diblokir.php"
+               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all border border-transparent <?= ($current_page == 'menu_diblokir.php') ? 'bg-white/25 text-white font-bold shadow-xl shadow-orange-500/20 border-white/20' : 'text-white/80 hover:bg-white/15 hover:text-white' ?>">
+
+                <span class="material-symbols-outlined">block</span>
+
+                Menu Diblokir
+            </a>
+
             <!-- PESANAN -->
             <a href="pesanan_masuk.php"
                class="flex items-center justify-between px-6 py-4 rounded-[28px] text-sm transition-all border border-transparent <?= ($current_page == 'pesanan_masuk.php') ? 'bg-white/25 text-white font-bold shadow-xl shadow-orange-500/20 border-white/20' : 'text-white/80 hover:bg-white/15 hover:text-white' ?>">
@@ -191,6 +223,9 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear
                     <span class="material-symbols-outlined">pending_actions</span>
 
                     <span><?= t('nav.incoming_orders') ?></span>
+                    <span class="text-white/70 ml-2" title="Pending: <?= $pending ?>, Diproses: <?= $diproses ?>, Siap Diambil: <?= $siap ?>, Selesai: <?= $selesai ?>">
+                        <span class="material-symbols-outlined text-sm">info</span>
+                    </span>
                 </div>
 
                 <?php if($total_notif > 0): ?>
@@ -236,6 +271,15 @@ class="h-screen w-72 fixed left-0 top-0 flex flex-col overflow-hidden bg-[linear
                 <span class="material-symbols-outlined">history</span>
 
                 <?= t('nav.history') ?>
+            </a>
+
+            <!-- LAPORAN -->
+            <a href="laporan_penjual.php"
+               class="flex items-center gap-4 px-6 py-4 rounded-[28px] text-sm transition-all border border-transparent <?= ($current_page == 'laporan_penjual.php') ? 'bg-white/25 text-white font-bold shadow-xl shadow-orange-500/20 border-white/20' : 'text-white/80 hover:bg-white/15 hover:text-white' ?>">
+
+                <span class="material-symbols-outlined">bar_chart</span>
+
+                Laporan
             </a>
 
             <!-- EDIT PROFIL -->

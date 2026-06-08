@@ -5,7 +5,7 @@ if (session_status() === PHP_SESSION_NONE) {
 include(__DIR__ . '/../../includes/language_helper.php');
 ?>
 <!DOCTYPE html>
-<html lang="id">
+<html lang="<?= htmlspecialchars(get_current_language(), ENT_QUOTES, 'UTF-8') ?>">
 <head>
     <meta charset="utf-8"/>
     <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
@@ -110,19 +110,25 @@ include(__DIR__ . '/../../includes/language_helper.php');
     <!-- Header -->
     <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl flex items-center justify-between px-6 py-4 w-full sticky top-0 z-50 shadow-sm border-b border-slate-200 dark:border-slate-800">
         <div class="flex items-center gap-3 md:gap-4">
-            <a href="login.php" class="p-2 rounded-lg text-slate-400 hover:text-brand-orange dark:hover:text-brand-orange hover:bg-slate-100 dark:hover:bg-slate-800 smooth-transition" title="Kembali">
+            <a href="login.php" class="p-2 rounded-lg text-slate-400 hover:text-brand-orange dark:hover:text-brand-orange hover:bg-slate-100 dark:hover:bg-slate-800 smooth-transition" title="<?= t('common.back', 'Kembali') ?>">
                 <span class="material-symbols-outlined text-xl">arrow_back</span>
             </a>
             <div>
                 <h1 class="text-lg md:text-xl font-black font-fun text-transparent bg-clip-text bg-gradient-to-r from-brand-orange to-[#FF8A50]">
                     Kantin Kita
                 </h1>
-                <p class="text-[8px] uppercase tracking-widest font-bold text-slate-400">Pendaftaran Akun</p>
+                <p class="text-[8px] uppercase tracking-widest font-bold text-slate-400"><?= t('auth.account_registration', 'Pendaftaran Akun') ?></p>
             </div>
         </div>
-        <button id="darkModeToggle" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-brand-orange dark:hover:text-brand-orange smooth-transition" title="Ganti Tema">
-            <span id="darkIcon" class="material-symbols-outlined text-lg">light_mode</span>
-        </button>
+        <div class="flex items-center gap-2">
+            <button id="languageToggle" type="button" class="inline-flex items-center gap-1.5 p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-brand-orange dark:hover:text-brand-orange smooth-transition" title="<?= t('lang.title', 'Ubah Bahasa') ?>" aria-label="<?= t('lang.title', 'Ubah Bahasa') ?>">
+                <span class="material-symbols-outlined text-lg">language</span>
+                <span id="languageLabel" class="hidden sm:inline text-[11px] font-black uppercase leading-none"></span>
+            </button>
+            <button id="darkModeToggle" type="button" class="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-brand-orange dark:hover:text-brand-orange smooth-transition" title="<?= t('common.change_theme', 'Ganti Tema') ?>">
+                <span id="darkIcon" class="material-symbols-outlined text-lg">light_mode</span>
+            </button>
+        </div>
     </header>
 
     <!-- Main Content -->
@@ -167,7 +173,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                                 data-type="siswa"
                                 onclick="setUserType('siswa')"
                             >
-                                <span class="text-3xl">👨‍🎓</span>
+                                <span class="material-symbols-outlined text-3xl select-none">school</span>
                                 <span class="text-sm"><?= t('auth.user_type.student', 'Siswa') ?></span>
                             </button>
                             <button 
@@ -176,11 +182,12 @@ include(__DIR__ . '/../../includes/language_helper.php');
                                 data-type="guru"
                                 onclick="setUserType('guru')"
                             >
-                                <span class="text-3xl">👨‍🏫</span>
+                                <span class="material-symbols-outlined text-3xl select-none">co_present</span>
                                 <span class="text-sm"><?= t('auth.user_type.teacher', 'Guru') ?></span>
                             </button>
                         </div>
                         <input type="hidden" id="userTypeInput" name="user_type" value="siswa">
+                        <input type="hidden" name="bahasa" value="<?= htmlspecialchars(get_current_language(), ENT_QUOTES, 'UTF-8') ?>">
                     </div>
 
                     <!-- Step 2: Username -->
@@ -228,7 +235,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     <!-- Step 4: Class Selection (Only for Siswa) -->
                     <div id="kelasContainer" class="conditional-container show field-animation" style="animation-delay: 0.2s">
                         <label class="block text-xs uppercase tracking-widest font-extrabold text-slate-400 dark:text-slate-500 mb-3 px-1">
-                            <span class="material-symbols-outlined text-sm align-middle mr-1 select-none">layers</span> Kelas
+                            <span class="material-symbols-outlined text-sm align-middle mr-1 select-none">layers</span> <?= t('auth.class_label', 'Kelas') ?>
                         </label>
                         <div class="relative">
                             <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg select-none pointer-events-none">school</span>
@@ -249,7 +256,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     <!-- Step 5: Password Fields -->
                     <div class="field-animation" style="animation-delay: 0.25s">
                         <label class="block text-xs uppercase tracking-widest font-extrabold text-slate-400 dark:text-slate-500 mb-3 px-1">
-                            <span class="material-symbols-outlined text-sm align-middle mr-1 select-none">lock</span> Password
+                            <span class="material-symbols-outlined text-sm align-middle mr-1 select-none">lock</span> <?= t('auth.password', 'Password') ?>
                         </label>
                         <div class="relative">
                             <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg select-none pointer-events-none">vpn_key</span>
@@ -258,25 +265,25 @@ include(__DIR__ . '/../../includes/language_helper.php');
                                 name="password" 
                                 id="passwordInput" 
                                 class="input-field w-full pl-11 pr-12 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange" 
-                                placeholder="Minimal 8 karakter" 
+                                placeholder="<?= t('auth.password_placeholder', 'Minimal 8 karakter') ?>" 
                                 required 
                             />
                             <button 
                                 type="button" 
                                 onclick="togglePasswordField('passwordInput', 'passwordEyeIcon')" 
                                 class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 smooth-transition hover:bg-slate-100 dark:hover:bg-slate-800/50" 
-                                title="Tampilkan Password"
+                                title="<?= t('auth.show_password', 'Tampilkan Password') ?>"
                             >
                                 <span id="passwordEyeIcon" class="material-symbols-outlined text-lg select-none">visibility</span>
                             </button>
                         </div>
-                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1">Gunakan kombinasi huruf besar, kecil, angka, dan simbol</p>
+                        <p class="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 px-1"><?= t('auth.password_rules', 'Gunakan kombinasi huruf besar, kecil, angka, dan simbol') ?></p>
                     </div>
 
                     <!-- Confirm Password -->
                     <div class="field-animation" style="animation-delay: 0.3s">
                         <label class="block text-xs uppercase tracking-widest font-extrabold text-slate-400 dark:text-slate-500 mb-3 px-1">
-                            <span class="material-symbols-outlined text-sm align-middle mr-1 select-none">lock_open</span> Konfirmasi Password
+                            <span class="material-symbols-outlined text-sm align-middle mr-1 select-none">lock_open</span> <?= t('auth.confirm_password', 'Konfirmasi Password') ?>
                         </label>
                         <div class="relative">
                             <span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500 text-lg select-none pointer-events-none">verified_user</span>
@@ -285,14 +292,14 @@ include(__DIR__ . '/../../includes/language_helper.php');
                                 name="confirm_password" 
                                 id="confirmPasswordInput" 
                                 class="input-field w-full pl-11 pr-12 py-3 rounded-2xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100 text-sm placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:border-brand-orange focus:ring-2 focus:ring-brand-orange/20 dark:focus:border-brand-orange" 
-                                placeholder="Ulangi password Anda" 
+                                placeholder="<?= t('auth.confirm_password_placeholder', 'Ulangi password Anda') ?>" 
                                 required 
                             />
                             <button 
                                 type="button" 
                                 onclick="togglePasswordField('confirmPasswordInput', 'confirmEyeIcon')" 
                                 class="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 smooth-transition hover:bg-slate-100 dark:hover:bg-slate-800/50" 
-                                title="Tampilkan Password"
+                                title="<?= t('auth.show_password', 'Tampilkan Password') ?>"
                             >
                                 <span id="confirmEyeIcon" class="material-symbols-outlined text-lg select-none">visibility</span>
                             </button>
@@ -309,7 +316,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                             required
                         />
                         <label class="text-xs md:text-sm text-slate-600 dark:text-slate-400 leading-relaxed cursor-pointer" for="termsCheckbox">
-                            Saya setuju dengan <a href="../../pages/syarat_ketentuan.php" target="_blank" class="text-brand-orange font-bold hover:underline">Syarat & Ketentuan</a> dan <a href="../../pages/syarat_ketentuan.php" target="_blank" class="text-brand-orange font-bold hover:underline">Kebijakan Privasi</a>
+                            <?= t('auth.terms_agree_prefix', 'Saya setuju dengan') ?> <a href="../../pages/syarat_ketentuan.php" target="_blank" class="text-brand-orange font-bold hover:underline"><?= t('auth.terms_conditions', 'Syarat & Ketentuan') ?></a> <?= t('auth.terms_and', 'dan') ?> <a href="../../pages/syarat_ketentuan.php" target="_blank" class="text-brand-orange font-bold hover:underline"><?= t('auth.privacy_policy', 'Kebijakan Privasi') ?></a>
                         </label>
                     </div>
 
@@ -321,7 +328,7 @@ include(__DIR__ . '/../../includes/language_helper.php');
                         style="animation-delay: 0.4s"
                     >
                         <span id="btnSpinner" class="spinner hidden"></span>
-                        <span id="btnText">Daftar Sekarang</span>
+                        <span id="btnText"><?= t('auth.register_now', 'Daftar Sekarang') ?></span>
                     </button>
                 </form>
 
@@ -330,15 +337,15 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     <div class="absolute inset-0 flex items-center">
                         <div class="w-full border-t border-slate-200 dark:border-slate-800"></div>
                     </div>
-                    <span class="relative px-3 bg-white dark:bg-slate-900 text-xs font-bold text-slate-400 uppercase tracking-widest">atau</span>
+                    <span class="relative px-3 bg-white dark:bg-slate-900 text-xs font-bold text-slate-400 uppercase tracking-widest"><?= t('common.or', 'atau') ?></span>
                 </div>
 
                 <!-- Login Link -->
                 <div class="text-center">
                     <p class="text-sm text-slate-600 dark:text-slate-400">
-                        Sudah punya akun?
+                        <?= t('auth.already_have_account', 'Sudah punya akun?') ?>
                         <a href="login.php" class="font-extrabold text-brand-orange hover:text-brand-orangeHover hover:underline ml-1 smooth-transition">
-                            Masuk di sini
+                            <?= t('auth.login_here', 'Masuk di sini') ?>
                         </a>
                     </p>
                 </div>
@@ -348,11 +355,34 @@ include(__DIR__ . '/../../includes/language_helper.php');
 
     <!-- Footer -->
     <footer class="py-6 text-center text-[10px] tracking-[0.15em] font-bold uppercase text-slate-400 dark:text-slate-600">
-        &copy; <?= date('Y') ?> Kantin Kita Sekolah Digital
+        &copy; <?= date('Y') ?> Kantin Kita <?= t('common.digital_school', 'Sekolah Digital') ?>
     </footer>
 
     <!-- Scripts -->
     <script>
+        const i18n = {
+            usernameNoSpaces: <?= json_encode(t('auth.error.username_no_spaces', 'Username tidak boleh mengandung spasi')) ?>,
+            usernameInvalidChars: <?= json_encode(t('auth.error.username_invalid_chars', 'Hanya huruf, angka, dan underscore yang diizinkan')) ?>,
+            usernameMinLengthShort: <?= json_encode(t('auth.error.username_min_length_short', 'Minimal 3 karakter')) ?>,
+            emailMustBeGmail: <?= json_encode(t('auth.error.email_must_be_gmail', 'Email harus menggunakan @gmail.com')) ?>,
+            emailInvalidFormat: <?= json_encode(t('auth.error.email_invalid_format', 'Format email tidak valid')) ?>,
+            passwordMismatch: <?= json_encode(t('auth.error.password_mismatch', 'Password tidak cocok')) ?>,
+            passwordMatch: <?= json_encode(t('auth.password_match', 'Password cocok')) ?>,
+            usernameRequired: <?= json_encode(t('auth.error.username_required', 'Username tidak boleh kosong')) ?>,
+            usernameInvalidAlert: <?= json_encode(t('auth.error.username_invalid_alert', 'Username hanya boleh berisi huruf, angka, dan underscore')) ?>,
+            usernameMinLength: <?= json_encode(t('auth.error.username_min_length', 'Username minimal 3 karakter')) ?>,
+            emailRequired: <?= json_encode(t('auth.error.email_required', 'Email tidak boleh kosong')) ?>,
+            emailMustUseGmailFormat: <?= json_encode(t('auth.error.email_must_use_gmail_format', 'Email harus menggunakan format @gmail.com')) ?>,
+            classRequired: <?= json_encode(t('auth.error.class_required', 'Silakan pilih kelas Anda')) ?>,
+            passwordRequired: <?= json_encode(t('auth.error.password_required', 'Password tidak boleh kosong')) ?>,
+            passwordMinLength: <?= json_encode(t('auth.error.password_min_length', 'Password minimal 8 karakter')) ?>,
+            confirmPasswordRequired: <?= json_encode(t('auth.error.confirm_password_required', 'Konfirmasi password tidak boleh kosong')) ?>,
+            termsRequired: <?= json_encode(t('auth.error.terms_required', 'Anda harus menyetujui syarat dan ketentuan')) ?>,
+            registering: <?= json_encode(t('auth.registering', 'Mendaftar...')) ?>,
+            switchToId: <?= json_encode(t('lang.switch_to_id', 'Ganti ke Bahasa Indonesia')) ?>,
+            switchToEn: <?= json_encode(t('lang.switch_to_en', 'Switch to English')) ?>
+        };
+
         // Fungsi toggle password visibility
         window.togglePasswordField = function(fieldId, iconId) {
             const field = document.getElementById(fieldId);
@@ -371,6 +401,9 @@ include(__DIR__ . '/../../includes/language_helper.php');
             // --- Dark Mode Toggle ---
             const darkModeToggle = document.getElementById('darkModeToggle');
             const darkIcon = document.getElementById('darkIcon');
+            const languageToggle = document.getElementById('languageToggle');
+            const languageLabel = document.getElementById('languageLabel');
+            const currentLanguage = <?= json_encode(get_current_language()) ?>;
 
             function applyTheme(isDark) {
                 if (isDark) {
@@ -381,6 +414,25 @@ include(__DIR__ . '/../../includes/language_helper.php');
                     darkIcon.textContent = 'light_mode';
                 }
             }
+
+            function updateLanguageControl(lang) {
+                if (!languageToggle || !languageLabel) return;
+                const nextLang = lang === 'en' ? 'id' : 'en';
+                const title = nextLang === 'id' ? i18n.switchToId : i18n.switchToEn;
+                languageToggle.dataset.nextLang = nextLang;
+                languageLabel.textContent = nextLang.toUpperCase();
+                languageToggle.title = title;
+                languageToggle.setAttribute('aria-label', title);
+            }
+
+            updateLanguageControl(currentLanguage);
+
+            languageToggle?.addEventListener('click', () => {
+                const nextLang = languageToggle.dataset.nextLang || (currentLanguage === 'en' ? 'id' : 'en');
+                const url = new URL(window.location.href);
+                url.searchParams.set('lang', nextLang);
+                window.location.assign(url.toString());
+            });
 
             const savedTheme = localStorage.getItem('darkMode');
             const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -434,30 +486,30 @@ include(__DIR__ . '/../../includes/language_helper.php');
 
                 // Cek spasi
                 if (username.includes(' ')) {
-                    usernameError.textContent = '❌ Username tidak boleh mengandung spasi';
+                    usernameError.textContent = 'X ' + i18n.usernameNoSpaces;
                     usernameError.classList.remove('hidden');
-                    usernameStatus.textContent = '❌';
+                    usernameStatus.textContent = 'X';
                     return;
                 }
 
                 // Cek format (hanya huruf, angka, underscore)
                 if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-                    usernameError.textContent = '❌ Hanya huruf, angka, dan underscore yang diizinkan';
+                    usernameError.textContent = 'X ' + i18n.usernameInvalidChars;
                     usernameError.classList.remove('hidden');
-                    usernameStatus.textContent = '❌';
+                    usernameStatus.textContent = 'X';
                     return;
                 }
 
                 // Cek panjang
                 if (username.length < 3) {
-                    usernameError.textContent = '❌ Minimal 3 karakter';
+                    usernameError.textContent = 'X ' + i18n.usernameMinLengthShort;
                     usernameError.classList.remove('hidden');
-                    usernameStatus.textContent = '❌';
+                    usernameStatus.textContent = 'X';
                     return;
                 }
 
                 // Jika semua validasi passed
-                usernameStatus.textContent = '✅';
+                usernameStatus.textContent = 'OK';
                 usernameError.classList.add('hidden');
             });
 
@@ -475,22 +527,22 @@ include(__DIR__ . '/../../includes/language_helper.php');
 
                 // Cek format @gmail.com
                 if (!email.endsWith('@gmail.com')) {
-                    emailError.textContent = '❌ Email harus menggunakan @gmail.com';
+                    emailError.textContent = 'X ' + i18n.emailMustBeGmail;
                     emailError.classList.remove('hidden');
-                    emailStatus.textContent = '❌';
+                    emailStatus.textContent = 'X';
                     return;
                 }
 
                 // Cek format email valid
                 if (!/^[a-zA-Z0-9._-]+@gmail\.com$/.test(email)) {
-                    emailError.textContent = '❌ Format email tidak valid';
+                    emailError.textContent = 'X ' + i18n.emailInvalidFormat;
                     emailError.classList.remove('hidden');
-                    emailStatus.textContent = '❌';
+                    emailStatus.textContent = 'X';
                     return;
                 }
 
                 // Jika semua validasi passed
-                emailStatus.textContent = '✅';
+                emailStatus.textContent = 'OK';
                 emailError.classList.add('hidden');
             });
 
@@ -506,10 +558,10 @@ include(__DIR__ . '/../../includes/language_helper.php');
                 }
 
                 if (passwordInput.value !== confirmPasswordInput.value) {
-                    passwordMatchStatus.textContent = '❌ Password tidak cocok';
+                    passwordMatchStatus.textContent = 'X ' + i18n.passwordMismatch;
                     passwordMatchStatus.className = 'text-[10px] text-red-500 mt-1.5 px-1';
                 } else {
-                    passwordMatchStatus.textContent = '✅ Password cocok';
+                    passwordMatchStatus.textContent = 'OK ' + i18n.passwordMatch;
                     passwordMatchStatus.className = 'text-[10px] text-green-500 mt-1.5 px-1';
                 }
             }
@@ -547,76 +599,76 @@ include(__DIR__ . '/../../includes/language_helper.php');
                 const kelasSelect = document.getElementById('kelasSelect');
                 const termsCheckbox = document.getElementById('termsCheckbox');
 
-                // ✅ Validasi Username (tidak boleh spasi)
+                // Validasi username (tidak boleh spasi)
                 if (!username) {
-                    showErrorAlert('Username tidak boleh kosong');
+                    showErrorAlert(i18n.usernameRequired);
                     return false;
                 }
                 if (username.includes(' ')) {
-                    showErrorAlert('Username tidak boleh mengandung spasi');
+                    showErrorAlert(i18n.usernameNoSpaces);
                     return false;
                 }
                 if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-                    showErrorAlert('Username hanya boleh berisi huruf, angka, dan underscore');
+                    showErrorAlert(i18n.usernameInvalidAlert);
                     return false;
                 }
                 if (username.length < 3) {
-                    showErrorAlert('Username minimal 3 karakter');
+                    showErrorAlert(i18n.usernameMinLength);
                     return false;
                 }
 
-                // ✅ Validasi Email (@gmail.com)
+                // Validasi email (@gmail.com)
                 if (!email) {
-                    showErrorAlert('Email tidak boleh kosong');
+                    showErrorAlert(i18n.emailRequired);
                     return false;
                 }
                 if (!email.endsWith('@gmail.com')) {
-                    showErrorAlert('Email harus menggunakan format @gmail.com');
+                    showErrorAlert(i18n.emailMustUseGmailFormat);
                     return false;
                 }
                 if (!/^[a-zA-Z0-9._-]+@gmail\.com$/.test(email)) {
-                    showErrorAlert('Format email tidak valid');
+                    showErrorAlert(i18n.emailInvalidFormat);
                     return false;
                 }
 
-                // ✅ Validasi Kelas (hanya untuk Siswa)
+                // Validasi kelas (hanya untuk siswa)
                 if (userType === 'siswa') {
                     if (!kelasSelect.value) {
-                        showErrorAlert('Silakan pilih kelas Anda');
+                        showErrorAlert(i18n.classRequired);
                         return false;
                     }
                 }
 
-                // ✅ Validasi Password
+                // Validasi password
                 if (!password) {
-                    showErrorAlert('Password tidak boleh kosong');
+                    showErrorAlert(i18n.passwordRequired);
                     return false;
                 }
                 if (password.length < 8) {
-                    showErrorAlert('Password minimal 8 karakter');
+                    showErrorAlert(i18n.passwordMinLength);
                     return false;
                 }
 
-                // ✅ Validasi Confirm Password
+                // Validasi konfirmasi password
                 if (!confirmPassword) {
-                    showErrorAlert('Konfirmasi password tidak boleh kosong');
+                    showErrorAlert(i18n.confirmPasswordRequired);
                     return false;
                 }
                 if (password !== confirmPassword) {
-                    showErrorAlert('Password tidak cocok');
+                    showErrorAlert(i18n.passwordMismatch);
                     return false;
                 }
 
-                // ✅ Validasi Terms
+                // Validasi persetujuan syarat
                 if (!termsCheckbox.checked) {
-                    showErrorAlert('Anda harus menyetujui syarat dan ketentuan');
+                    showErrorAlert(i18n.termsRequired);
                     return false;
                 }
 
-                // ✅ All validations passed - Submit Form
+                // Semua validasi berhasil - kirim formulir
                 submitBtn.disabled = true;
                 btnSpinner.classList.remove('hidden');
-                btnText.textContent = 'Mendaftar...';
+                btnText.textContent = i18n.registering;
 
                 registerForm.submit();
                 return true;

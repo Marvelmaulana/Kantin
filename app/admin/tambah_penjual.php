@@ -59,19 +59,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $message_type = 'error';
                 } else {
                     $hash = password_hash($password, PASSWORD_DEFAULT);
-                    $ins = mysqli_query($koneksi, "INSERT INTO users (username,email,password,role,id_kantin) VALUES ('$username','$email','$hash','penjual',$id_kantin)");
-                    if (!$ins) {
-                        $message = 'Gagal menambahkan penjual: ' . mysqli_error($koneksi);
+
+                    // Ambil nama kantin untuk disimpan di users supaya tidak perlu update terpisah
+                    $kantin_row = mysqli_fetch_assoc(mysqli_query($koneksi, "SELECT nama_kantin FROM kantin WHERE id_kantin=$id_kantin LIMIT 1"));
+                    $nama_kantin_val = $kantin_row ? $kantin_row['nama_kantin'] : null;
+
+                    // Gunakan prepared statement untuk menambah penjual secara aman
+                    $stmt = mysqli_prepare($koneksi, "INSERT INTO users (username,email,password,role,id_kantin,nama_kantin,tipe_pengguna) VALUES (?, ?, ?, 'penjual', ?, ?, 'pemilik_kantin')");
+                    if (!$stmt) {
+                        $message = 'Gagal menyiapkan query: ' . mysqli_error($koneksi);
                         $message_type = 'error';
                     } else {
-                        $new_id = mysqli_insert_id($koneksi);
-                        // Update nama_kantin di users
-                        $update = mysqli_query($koneksi, "UPDATE users SET nama_kantin=(SELECT nama_kantin FROM kantin WHERE id_kantin=$id_kantin) WHERE id_user=$new_id");
-                        if (!$update) {
-                            $message = 'Penjual berhasil ditambahkan, tapi gagal update nama kantin: ' . mysqli_error($koneksi);
+                        mysqli_stmt_bind_param($stmt, 'sssis', $username, $email, $hash, $id_kantin, $nama_kantin_val);
+                        $exec = mysqli_stmt_execute($stmt);
+                        if (!$exec) {
+                            $message = 'Gagal menambahkan penjual: ' . mysqli_stmt_error($stmt);
                             $message_type = 'error';
                         } else {
-                            // Redirect ke manajemen penjual setelah berhasil
+                            mysqli_stmt_close($stmt);
                             header('Location: manajemen_penjual.php?success=1');
                             exit();
                         }
@@ -161,7 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?= $message ?>
     </div>
     <?php endif; ?>
-    <form method="POST" class="bg-white rounded-3xl shadow p-4 sm:p-6 lg:p-8 max-w-4xl grid gap-4 sm:gap-6">
+    <form method="POST" class="bg-white rounded-3xl shadow p-4 sm:p-6 lg:p-8 max-w-4xl grid gap-4 sm:gap-6" onsubmit="return confirm('Apakah Anda yakin ingin menambahkan penjual ini?');">
         <div>
             <label class="block text-sm sm:text-base font-bold mb-2">Username</label>
             <input name="username" value="<?= htmlspecialchars($_POST['username'] ?? '') ?>" pattern="^\S+$" title="Username tidak boleh menggunakan spasi" required class="w-full px-4 py-3 sm:py-4 border rounded-2xl text-base" />

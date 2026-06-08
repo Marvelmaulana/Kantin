@@ -15,36 +15,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['tambah_user'])) {
     $username = mysqli_real_escape_string($koneksi, trim($_POST['username'] ?? ''));
     $email    = mysqli_real_escape_string($koneksi, trim($_POST['email'] ?? ''));
     $password = trim($_POST['password'] ?? '');
-    $role     = $_POST['role'] ?? 'pembeli';
+    $selected_role = $_POST['role'] ?? 'siswa';
     $kelas    = $_POST['kelas'] ?? null;
 
-    if ($username === '' || $email === '' || $password === '') {
-        $message = 'Semua kolom wajib diisi.';
-        $message_type = 'error';
-    } elseif (preg_match('/\s/', $username)) {
-        $message = 'Username tidak boleh mengandung spasi.';
-        $message_type = 'error';
-    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $message = 'Format email tidak valid.';
-        $message_type = 'error';
-    } elseif (!preg_match('/@gmail\.com$/', $email)) {
-        $message = 'Email harus berakhir dengan @gmail.com';
-        $message_type = 'error';
+    $role = 'pembeli';
+    $tipe_pengguna = null;
+
+    if ($selected_role === 'siswa') {
+        $role = 'pembeli';
+        $tipe_pengguna = 'siswa';
+    } elseif ($selected_role === 'guru') {
+        $role = 'pembeli';
+        $tipe_pengguna = 'guru';
+        $kelas = null;
+    } elseif ($selected_role === 'pemilik_kantin') {
+        $role = 'penjual';
+        $tipe_pengguna = 'guru';
+        $kelas = null;
+    } elseif ($selected_role === 'admin') {
+        $role = 'admin';
+        $tipe_pengguna = null;
+        $kelas = null;
     } else {
-        $exists = mysqli_query($koneksi, "SELECT id_user FROM users WHERE username='$username' OR email='$email' LIMIT 1");
-        if (mysqli_num_rows($exists) > 0) {
-            $message = 'Username atau email sudah terdaftar.';
+        $message = 'Tipe pengguna tidak valid.';
+        $message_type = 'error';
+    }
+
+    if ($message_type !== 'error') {
+        if ($username === '' || $email === '' || $password === '') {
+            $message = 'Semua kolom wajib diisi.';
+            $message_type = 'error';
+        } elseif (preg_match('/\s/', $username)) {
+            $message = 'Username tidak boleh mengandung spasi.';
+            $message_type = 'error';
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            $message = 'Format email tidak valid.';
+            $message_type = 'error';
+        } elseif (!preg_match('/@gmail\.com$/', $email)) {
+            $message = 'Email harus berakhir dengan @gmail.com';
+            $message_type = 'error';
+        } elseif ($selected_role === 'siswa' && !in_array($kelas, ['10', '11', '12'], true)) {
+            $message = 'Kelas harus dipilih untuk siswa.';
             $message_type = 'error';
         } else {
-            $hash = password_hash($password, PASSWORD_DEFAULT);
-            $kl = $kelas ? "', kelas='$kelas'" : "";
-            $ins = mysqli_query($koneksi, "INSERT INTO users (username,email,password,role,kelas) VALUES ('$username','$email','$hash','$role', " . ($kelas?"'$kelas'":"NULL") . ")");
-            if ($ins) {
-                $message = 'User berhasil ditambahkan.';
-                $message_type = 'success';
-            } else {
-                $message = 'Gagal menambahkan user: ' . mysqli_error($koneksi);
+            $exists = mysqli_query($koneksi, "SELECT id_user FROM users WHERE username='$username' OR email='$email' LIMIT 1");
+            if (mysqli_num_rows($exists) > 0) {
+                $message = 'Username atau email sudah terdaftar.';
                 $message_type = 'error';
+            } else {
+                $hash = password_hash($password, PASSWORD_DEFAULT);
+                $tipe_sql = $tipe_pengguna ? "'$tipe_pengguna'" : 'NULL';
+                $kelas_sql = ($selected_role === 'siswa' && $kelas) ? "'$kelas'" : 'NULL';
+                $ins = mysqli_query($koneksi, "INSERT INTO users (username,email,password,role,tipe_pengguna,kelas) VALUES ('$username','$email','$hash','$role',$tipe_sql,$kelas_sql)");
+                if ($ins) {
+                    $message = 'User berhasil ditambahkan.';
+                    $message_type = 'success';
+                } else {
+                    $message = 'Gagal menambahkan user: ' . mysqli_error($koneksi);
+                    $message_type = 'error';
+                }
             }
         }
     }
@@ -205,9 +234,15 @@ $query = mysqli_query($koneksi, $query_sql);
                             <span class="text-sm font-medium text-slate-600"><?= htmlspecialchars($user['kelas'] ?: '-') ?></span>
                         </td>
                         <td class="py-6 px-8">
+                            <?php
+                                $user_type_label = $user['tipe_pengguna'] ?: $user['role'];
+                                $status_text = $user_type_label === 'siswa'
+                                    ? 'Siswa ' . ($user['kelas'] ? 'Kelas ' . htmlspecialchars($user['kelas']) : '')
+                                    : ($user_type_label === 'guru' ? 'Guru' : ucfirst(htmlspecialchars($user_type_label)));
+                            ?>
                             <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-accent-green text-[10px] font-black uppercase rounded-lg border border-green-100">
                                 <span class="w-1.5 h-1.5 rounded-full bg-accent-green animate-pulse"></span>
-                                Active <?= $user['role'] ?>
+                                <?= $status_text ?>
                             </span>
                         </td>
                         <td class="py-6 px-8">
@@ -266,17 +301,20 @@ $query = mysqli_query($koneksi, $query_sql);
                     <input name="password" type="password" required class="w-full px-3 py-2 border rounded mt-2" />
                 </div>
                 <div>
-                    <label class="text-sm font-bold">Role</label>
-                    <select name="role" class="w-full px-3 py-2 border rounded mt-2">
-                        <option value="pembeli">Pembeli</option>
-                        <option value="penjual">Penjual</option>
+                    <label class="text-sm font-bold">Peran</label>
+                    <select name="role" onchange="onRoleChange()" class="w-full px-3 py-2 border rounded mt-2">
+                        <option value="siswa">Siswa</option>
+                        <option value="guru">Guru</option>
+                        <option value="pemilik_kantin">Pemilik Kantin</option>
                         <option value="admin">Admin</option>
                     </select>
+                    <p class="text-xs text-slate-400 mt-1">Pilih tipe akun. Pemilik kantin akan dibuat sebagai akun penjual.</p>
                 </div>
             </div>
-            <div>
-                <label class="text-sm font-bold">Kelas (jika Pembeli)</label>
+            <div id="kelasGroup">
+                <label class="text-sm font-bold">Kelas (hanya untuk siswa)</label>
                 <input name="kelas" class="w-full px-3 py-2 border rounded mt-2" placeholder="10 / 11 / 12" />
+                <p class="text-xs text-slate-400 mt-1">Hanya diperlukan saat memilih peran siswa.</p>
             </div>
             <div class="flex gap-3 justify-end">
                 <button type="button" onclick="closeTambahUser()" class="px-4 py-2 rounded border">Batal</button>
@@ -289,6 +327,22 @@ $query = mysqli_query($koneksi, $query_sql);
 <script>
 function openTambahUser(){ document.getElementById('modal-tambah-user').classList.remove('hidden'); }
 function closeTambahUser(){ document.getElementById('modal-tambah-user').classList.add('hidden'); }
+function onRoleChange(){
+    const role = document.querySelector('select[name="role"]').value;
+    const kelasGroup = document.getElementById('kelasGroup');
+    const kelasInput = document.querySelector('input[name="kelas"]');
+    if (role === 'siswa') {
+        kelasGroup.style.display = 'block';
+        kelasInput.required = true;
+    } else {
+        kelasGroup.style.display = 'none';
+        kelasInput.required = false;
+        kelasInput.value = '';
+    }
+}
+document.addEventListener('DOMContentLoaded', function(){
+    onRoleChange();
+});
 </script>
 
 </body>

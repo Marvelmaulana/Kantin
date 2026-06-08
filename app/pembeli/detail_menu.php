@@ -176,6 +176,9 @@ function goBack() {
                 <img class="w-full h-[420px] object-cover" src="<?= kk_upload_url($data['foto'] ?? '', 'menu'); ?>"
         onerror="this.src='../../public/assets/img/default-food.svg'"
     >
+                
+                <!-- Logo Halal -->
+                <img src='/kantin/uploads/logo/Cuplikan_layar_2026-06-08_104038-removebg-preview.png' alt='Halal' class='absolute bottom-4 right-4 w-16 h-16 object-contain drop-shadow-lg z-10'>
 
                 <!-- Rating Badge -->
                 <div class="absolute left-4 bottom-4 bg-white/95 backdrop-blur-lg px-4 py-2 rounded-full flex items-center gap-2 shadow-xl">

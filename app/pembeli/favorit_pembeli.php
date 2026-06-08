@@ -5,5 +5,6 @@ $id_user = $_SESSION['id_user'];
 
 $query = mysqli_query($koneksi, "SELECT menu.* FROM favorit 
     JOIN menu ON favorit.id_menu = menu.id_menu 
-    WHERE favorit.id_user = '$id_user'");
+    WHERE favorit.id_user = '$id_user'
+    AND COALESCE(menu.status,'Tersedia') NOT IN ('Diblokir','Dinonaktifkan')");
 ?>

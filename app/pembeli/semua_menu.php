@@ -16,6 +16,7 @@ $q = mysqli_query($koneksi, "
     FROM menu m
     JOIN kantin k ON m.id_kantin = k.id_kantin
     LEFT JOIN rating_menu rm ON m.id_menu = rm.id_menu
+    WHERE COALESCE(m.status,'Tersedia') NOT IN ('Diblokir','Dinonaktifkan')
     GROUP BY m.id_menu
     ORDER BY CASE WHEN COALESCE(m.status,'Tersedia')='Tersedia' AND COALESCE(m.stok,0) > 0 THEN 0 ELSE 1 END,
              k.nama_kantin ASC, m.id_menu DESC
@@ -48,6 +49,8 @@ $q = mysqli_query($koneksi, "
         <a href="detail_menu.php?id=<?= (int)$m['id_menu'] ?>" class="bg-white rounded-3xl overflow-hidden border border-orange-100 shadow-sm hover:shadow-xl hover:shadow-red-900/5 transition relative <?= $tersedia ? '' : 'opacity-70 grayscale-[35%]' ?>">
             <div class="relative">
                 <img src="<?= kk_upload_url($m['foto'] ?? '', 'menu') ?>" class="w-full aspect-square object-cover bg-stone-100" onerror="this.src='../../public/assets/img/default-food.svg'">
+                <!-- Logo Halal -->
+                <img src='/kantin/uploads/logo/Cuplikan_layar_2026-06-08_104038-removebg-preview.png' alt='Halal' class='absolute bottom-2 right-2 w-8 h-8 object-contain drop-shadow-md z-10'>
                 <span class="absolute top-2 right-2 px-2.5 py-1 rounded-full text-[10px] font-black text-white <?= $tersedia ? 'bg-green-500' : 'bg-red-500' ?>">
                     <?= $tersedia ? 'Tersedia' : 'Habis' ?>
                 </span>

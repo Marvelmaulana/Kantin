@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?= $message ?>
     </div>
     <?php endif; ?>
-    <form method="POST" class="bg-white rounded-3xl shadow p-6 grid gap-5 max-w-3xl">
+    <form method="POST" class="bg-white rounded-3xl shadow p-6 grid gap-5 max-w-3xl" onsubmit="return confirm('Apakah Anda yakin ingin menyimpan perubahan pada kantin ini?');">
         <?= admin_csrf_token_field() ?>
         
         <div>

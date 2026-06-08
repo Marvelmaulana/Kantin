@@ -131,7 +131,8 @@ if (!function_exists('kk_ensure_core_schema')) {
                 deskripsi TEXT NULL,
                 opsi_pilihan TEXT NULL,
                 stok INT NOT NULL DEFAULT 0,
-                status ENUM('Tersedia','Habis') NOT NULL DEFAULT 'Tersedia',
+                status ENUM('Tersedia','Habis','Dinonaktifkan','Diblokir') NOT NULL DEFAULT 'Tersedia',
+                catatan_blokir TEXT NULL,
                 created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
                 INDEX (id_kantin)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci",
@@ -395,6 +396,14 @@ if (!kk_column_exists($koneksi, 'transaksi', 'metode_pembayaran')) {
 
 if (!kk_column_exists($koneksi, 'transaksi', 'id_pesanan')) {
     mysqli_query($koneksi, "ALTER TABLE transaksi ADD COLUMN id_pesanan INT NULL");
+}
+
+if (!kk_column_exists($koneksi, 'menu', 'catatan_blokir')) {
+    mysqli_query($koneksi, "ALTER TABLE menu ADD COLUMN catatan_blokir TEXT NULL");
+}
+
+if (kk_column_exists($koneksi, 'menu', 'status')) {
+    mysqli_query($koneksi, "ALTER TABLE menu MODIFY COLUMN status ENUM('Tersedia','Habis','Dinonaktifkan','Diblokir') NOT NULL DEFAULT 'Tersedia'");
 }
 
 // Isi data awal berdasarkan relasi yang ada

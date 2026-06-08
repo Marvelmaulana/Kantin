@@ -24,13 +24,20 @@ $message_type = 'success';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = mysqli_real_escape_string($koneksi, trim($_POST['username'] ?? ''));
     $email = mysqli_real_escape_string($koneksi, trim($_POST['email'] ?? ''));
+    $user_type = $_POST['user_type'] ?? ($user['tipe_pengguna'] ?? 'siswa');
     $kelas = mysqli_real_escape_string($koneksi, trim($_POST['kelas'] ?? ''));
 
     if ($username === '' || $email === '') {
         $message = 'Username dan email wajib diisi.';
         $message_type = 'error';
+    } elseif (!in_array($user_type, ['siswa', 'guru'], true)) {
+        $message = 'Tipe pengguna tidak valid.';
+        $message_type = 'error';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $message = 'Format email tidak valid.';
+        $message_type = 'error';
+    } elseif ($user_type === 'siswa' && !in_array($kelas, ['10', '11', '12'], true)) {
+        $message = 'Kelas harus dipilih untuk siswa.';
         $message_type = 'error';
     } else {
         $exists = mysqli_query($koneksi, "SELECT id_user FROM users WHERE (username='$username' OR email='$email') AND id_user<>$id_user LIMIT 1");
@@ -38,8 +45,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $message = 'Username atau email sudah dipakai oleh user lain.';
             $message_type = 'error';
         } else {
-            $kelas_sql = $kelas !== '' ? "kelas='$kelas'" : "kelas=NULL";
-            $updated = mysqli_query($koneksi, "UPDATE users SET username='$username', email='$email', $kelas_sql WHERE id_user=$id_user AND role='pembeli'");
+            $kelas_sql = $user_type === 'siswa' ? ("kelas='$kelas'") : "kelas=NULL";
+            $updated = mysqli_query($koneksi, "UPDATE users SET username='$username', email='$email', tipe_pengguna='$user_type', $kelas_sql WHERE id_user=$id_user AND role='pembeli'");
             if ($updated) {
                 $message = 'Data user berhasil diperbarui.';
                 $message_type = 'success';
@@ -79,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <header class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
             <h2 class="text-3xl font-extrabold">Edit User Pembeli</h2>
-            <p class="text-slate-500">Perbarui informasi pelanggan.</p>
+            <p class="text-slate-500">Perbarui informasi pelanggan. Kelas hanya diperlukan saat tipe pengguna adalah siswa.</p>
         </div>
         <a href="manajemen_user.php" class="px-4 py-2 rounded-2xl bg-slate-100 text-slate-700">Kembali</a>
     </header>
@@ -88,24 +95,50 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?= $message ?>
     </div>
     <?php endif; ?>
-    <form method="POST" class="bg-white rounded-3xl shadow p-6 grid gap-5 max-w-3xl">
+    <form method="POST" class="bg-white rounded-3xl shadow p-6 grid gap-5 max-w-3xl" onsubmit="return confirm('Simpan perubahan untuk user ini?');">
         <div>
             <label class="block text-sm font-bold mb-2">Username</label>
-            <input name="username" value="<?= htmlspecialchars($user['username']) ?>" required class="w-full px-4 py-3 border rounded-2xl" />
+            <input name="username" value="<?= htmlspecialchars($_POST['username'] ?? $user['username']) ?>" required class="w-full px-4 py-3 border rounded-2xl" />
         </div>
         <div>
             <label class="block text-sm font-bold mb-2">Email</label>
-            <input name="email" type="email" value="<?= htmlspecialchars($user['email']) ?>" required class="w-full px-4 py-3 border rounded-2xl" />
+            <input name="email" type="email" value="<?= htmlspecialchars($_POST['email'] ?? $user['email']) ?>" required class="w-full px-4 py-3 border rounded-2xl" />
         </div>
         <div>
+            <label class="block text-sm font-bold mb-2">Tipe Pengguna</label>
+            <select id="userType" name="user_type" onchange="onUserTypeChange()" class="w-full px-4 py-3 border rounded-2xl bg-white">
+                <option value="siswa" <?= (($user['tipe_pengguna'] ?? 'siswa') === 'siswa') ? 'selected' : '' ?>>Siswa</option>
+                <option value="guru" <?= (($user['tipe_pengguna'] ?? '') === 'guru') ? 'selected' : '' ?>>Guru</option>
+            </select>
+            <p class="text-xs text-slate-500 mt-2">Ubah tipe pengguna pembeli. Kelas hanya digunakan untuk siswa.</p>
+        </div>
+        <div id="kelasField">
             <label class="block text-sm font-bold mb-2">Kelas</label>
-            <input name="kelas" value="<?= htmlspecialchars($user['kelas']) ?>" placeholder="10 / 11 / 12" class="w-full px-4 py-3 border rounded-2xl" />
+            <input id="kelasInput" name="kelas" value="<?= htmlspecialchars($_POST['kelas'] ?? $user['kelas']) ?>" placeholder="10 / 11 / 12" class="w-full px-4 py-3 border rounded-2xl" />
         </div>
         <div class="flex flex-col sm:flex-row gap-3 justify-end">
             <a href="manajemen_user.php" class="px-4 py-3 rounded-2xl border border-slate-200 text-slate-700 text-center">Batal</a>
             <button type="submit" class="px-4 py-3 rounded-2xl bg-primary-orange text-white font-bold">Simpan Perubahan</button>
         </div>
     </form>
+    <script>
+        function onUserTypeChange() {
+            const type = document.getElementById('userType').value;
+            const kelasField = document.getElementById('kelasField');
+            const kelasInput = document.getElementById('kelasInput');
+            if (type === 'guru') {
+                kelasField.style.display = 'none';
+                kelasInput.required = false;
+                kelasInput.value = '';
+            } else {
+                kelasField.style.display = 'block';
+                kelasInput.required = true;
+            }
+        }
+        document.addEventListener('DOMContentLoaded', function() {
+            onUserTypeChange();
+        });
+    </script>
 </main>
 </body>
 </html>

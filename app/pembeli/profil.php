@@ -12,11 +12,16 @@ if (!isset($_SESSION['id_user'])) {
     exit();
 }
 
-$id_user = $_SESSION['id_user'];
+$id_user = (int) $_SESSION['id_user'];
 
 // Ambil data user dari database
-$query_user = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = '$id_user'");
-$u = mysqli_fetch_assoc($query_user);
+$query_user = mysqli_query($koneksi, "SELECT * FROM users WHERE id_user = $id_user LIMIT 1");
+$u = $query_user ? mysqli_fetch_assoc($query_user) : null;
+
+if (!$u) {
+    header("Location: ../auth/logout.php");
+    exit();
+}
 
 // Siapkan data kelas untuk siswa
 $is_siswa = isset($u['tipe_pengguna']) && $u['tipe_pengguna'] === 'siswa';
@@ -56,7 +61,7 @@ if ($is_siswa && isset($u['kelas'])) {
 
 <header class="bg-white sticky top-0 z-40 px-6 py-4 flex items-center justify-between shadow-sm">
     <h1 class="text-lg font-extrabold font-headline italic uppercase tracking-tighter text-primary"><?= t('profile.my_profile') ?></h1>
-    <button onclick="location.href='pengaturan.php'" class="material-symbols-outlined text-stone-400">settings</button>
+<button type="button" onclick="location.href='pengaturan.php'" class="material-symbols-outlined text-stone-400">settings</button>
 </header>
 
 <main class="max-w-xl mx-auto px-6 py-8">
@@ -85,7 +90,7 @@ if ($is_siswa && isset($u['kelas'])) {
     <div class="space-y-3">
         <h3 class="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] ml-4 mb-4"><?= t('profile.account_settings') ?></h3>
 
-        <button onclick="location.href='edit_profil.php'" class="w-full bg-white p-5 rounded-[1.5rem] flex items-center justify-between border border-stone-50 shadow-sm active:scale-95 transition-all">
+        <button type="button" onclick="location.href='edit_profil.php'" class="w-full bg-white p-5 rounded-[1.5rem] flex items-center justify-between border border-stone-50 shadow-sm active:scale-95 transition-all">
             <div class="flex items-center gap-4">
                 <div class="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center text-primary">
                     <span class="material-symbols-outlined text-xl">manage_accounts</span>
@@ -95,7 +100,7 @@ if ($is_siswa && isset($u['kelas'])) {
             <span class="material-symbols-outlined text-stone-300">chevron_right</span>
         </button>
 
-        <button onclick="location.href='ubah_password.php'" class="w-full bg-white p-5 rounded-[1.5rem] flex items-center justify-between border border-stone-50 shadow-sm active:scale-95 transition-all">
+        <button type="button" onclick="location.href='ubah_password.php'" class="w-full bg-white p-5 rounded-[1.5rem] flex items-center justify-between border border-stone-50 shadow-sm active:scale-95 transition-all">
             <div class="flex items-center gap-4">
                 <div class="w-10 h-10 bg-stone-50 rounded-xl flex items-center justify-center text-stone-400">
                     <span class="material-symbols-outlined text-xl">lock</span>
@@ -105,7 +110,7 @@ if ($is_siswa && isset($u['kelas'])) {
             <span class="material-symbols-outlined text-stone-300">chevron_right</span>
         </button>
 
-        <button onclick="location.href='pengaturan.php'" class="w-full bg-white p-5 rounded-[1.5rem] flex items-center justify-between border border-stone-50 shadow-sm active:scale-95 transition-all">
+        <button type="button" onclick="location.href='pengaturan.php'" class="w-full bg-white p-5 rounded-[1.5rem] flex items-center justify-between border border-stone-50 shadow-sm active:scale-95 transition-all">
             <div class="flex items-center gap-4">
                 <div class="w-10 h-10 bg-sky-50 rounded-xl flex items-center justify-center text-sky-500">
                     <span class="material-symbols-outlined text-xl">translate</span>
@@ -117,7 +122,7 @@ if ($is_siswa && isset($u['kelas'])) {
 
         <h3 class="text-[10px] font-black text-stone-400 uppercase tracking-[0.2em] ml-4 mt-8 mb-4"><?= t('profile.support') ?></h3>
 
-        <button onclick="location.href='bantuan.php'" class="w-full bg-white p-5 rounded-[1.5rem] flex items-center justify-between border border-stone-50 shadow-sm active:scale-95 transition-all">
+        <button type="button" onclick="location.href='bantuan.php'" class="w-full bg-white p-5 rounded-[1.5rem] flex items-center justify-between border border-stone-50 shadow-sm active:scale-95 transition-all">
             <div class="flex items-center gap-4">
                 <div class="w-10 h-10 bg-stone-50 rounded-xl flex items-center justify-center text-stone-400">
                     <span class="material-symbols-outlined text-xl">help_center</span>
@@ -127,7 +132,7 @@ if ($is_siswa && isset($u['kelas'])) {
             <span class="material-symbols-outlined text-stone-300">chevron_right</span>
         </button>
 
-        <button onclick="if(confirm('<?= t('profile.logout_confirm') ?>')) location.href='../auth/logout.php'" class="w-full bg-red-50 p-5 rounded-[1.5rem] flex items-center justify-between border border-red-100 mt-10 active:scale-95 transition-all">
+        <button type="button" onclick="if(confirm('<?= t('profile.logout_confirm') ?>')) location.href='../auth/logout.php'" class="w-full bg-red-50 p-5 rounded-[1.5rem] flex items-center justify-between border border-red-100 mt-10 active:scale-95 transition-all">
             <div class="flex items-center gap-4 text-red-600">
                 <div class="w-10 h-10 bg-red-600 rounded-xl flex items-center justify-center text-white">
                     <span class="material-symbols-outlined text-xl">logout</span>

@@ -52,14 +52,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $kategori = admin_validate_enum($_POST['kategori'] ?? 'Makanan',
             ['Makanan', 'Minuman', 'Cemilan', 'Dessert', 'Snack']);
         $status = admin_validate_enum($_POST['status'] ?? 'Tersedia',
-            ['Tersedia', 'Habis']);
+            ['Tersedia', 'Habis', 'Dinonaktifkan', 'Diblokir']);
+        $catatan_blokir = trim($_POST['catatan_blokir'] ?? '');
         $id_kantin = admin_validate_id($_POST['id_kantin'] ?? 0);
         
-        if (!$nama_menu || !$id_kantin || $harga === null || $stok === null) {
+        if (in_array($status, ['Diblokir', 'Dinonaktifkan'], true) && $catatan_blokir === '') {
+            $message = 'Catatan wajib diisi saat menu dinonaktifkan atau diblokir.';
+            $message_type = 'error';
+        } elseif (!$nama_menu || !$id_kantin || $harga === null || $stok === null) {
             $message = 'Validasi input gagal. Periksa semua field.';
             $message_type = 'error';
         } else {
             try {
+                $catatan_blokir = admin_validate_string($catatan_blokir, 0, 500, true);
                 // Handle file upload if provided
                 $foto_file = $menu['foto'];
                 
@@ -87,11 +92,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Update menu dengan prepared statement
                 admin_query_execute($koneksi,
                     "UPDATE menu SET id_kantin = ?, nama_menu = ?, harga = ?, 
-                     kategori = ?, stok = ?, status = ?, foto = ? 
+                     kategori = ?, stok = ?, status = ?, catatan_blokir = ?, foto = ? 
                      WHERE id_menu = ?",
                     [$id_kantin, $nama_menu, $harga, $kategori, $stok, $status,
-                     $foto_file, $id_menu],
-                    'isisdssi');
+                     $catatan_blokir ?: null, $foto_file, $id_menu],
+                    'isisdsssi');
                 
                 $message = 'Menu berhasil diperbarui.';
                 $message_type = 'success';
@@ -152,7 +157,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <?= $message ?>
     </div>
     <?php endif; ?>
-    <form method="POST" enctype="multipart/form-data" class="bg-white rounded-3xl shadow p-6 grid gap-5 max-w-3xl">
+    <form method="POST" enctype="multipart/form-data" class="bg-white rounded-3xl shadow p-6 grid gap-5 max-w-3xl" onsubmit="return confirm('Apakah Anda yakin ingin menyimpan perubahan pada menu ini?');">
         <?= admin_csrf_token_field() ?>
         
         <div>
@@ -184,11 +189,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
             <div>
                 <label class="block text-sm font-bold mb-2">Status</label>
-                <select name="status" required class="w-full px-4 py-3 border border-slate-200 rounded-2xl bg-white focus:border-primary-orange outline-none">
+                <select id="statusField" name="status" required class="w-full px-4 py-3 border border-slate-200 rounded-2xl bg-white focus:border-primary-orange outline-none">
                     <option value="Tersedia" <?= ($menu['status'] ?? '') === 'Tersedia' ? 'selected' : '' ?>>Tersedia</option>
                     <option value="Habis" <?= ($menu['status'] ?? '') === 'Habis' ? 'selected' : '' ?>>Habis</option>
+                    <option value="Dinonaktifkan" <?= ($menu['status'] ?? '') === 'Dinonaktifkan' ? 'selected' : '' ?>>Dinonaktifkan</option>
+                    <option value="Diblokir" <?= ($menu['status'] ?? '') === 'Diblokir' ? 'selected' : '' ?>>Diblokir</option>
                 </select>
             </div>
+        </div>
+        
+        <div id="catatanBlock" class="hidden">
+            <label class="block text-sm font-bold mb-2">Catatan untuk Penjual</label>
+            <textarea name="catatan_blokir" rows="4" class="w-full px-4 py-3 border border-slate-200 rounded-2xl focus:border-primary-orange outline-none"><?= htmlspecialchars($menu['catatan_blokir'] ?? '') ?></textarea>
+            <p class="text-xs text-slate-500 mt-2">Catatan ini dikirimkan ke penjual saat menu dinonaktifkan atau diblokir.</p>
         </div>
         
         <div>
@@ -218,5 +231,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </div>
     </form>
 </main>
+<script>
+    const statusField = document.getElementById('statusField');
+    const catatanBlock = document.getElementById('catatanBlock');
+
+    function updateCatatanVisibility() {
+        const status = statusField.value;
+        catatanBlock.classList.toggle('hidden', status !== 'Dinonaktifkan' && status !== 'Diblokir');
+    }
+
+    statusField.addEventListener('change', updateCatatanVisibility);
+    updateCatatanVisibility();
+</script>
 </body>
 </html>
